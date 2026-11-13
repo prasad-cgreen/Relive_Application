@@ -38,6 +38,8 @@ const schema = z.object({
   // "Get help" leads are emailed here. SMTP_URL e.g. smtps://user%40domain:password@smtp.host:465; unset = no emails.
   LEADS_EMAIL: z.string().email().default("relive@cgreen.in"),
   SMTP_URL: z.string().url().optional(),
+  // Cloudflare Turnstile: stops bots from triggering (billed) OTP SMS. Unset = no check (local dev, tests).
+  TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
 }).superRefine((value, ctx) => {
   const services = ["OTP_PROVIDER", "PAN_PROVIDER", "BUREAU_PROVIDER"] as const;
   if (services.some((service) => value[service] === "indiconnect")) {
@@ -49,6 +51,7 @@ const schema = z.object({
     for (const service of services) {
       if (value[service] === "mock") ctx.addIssue({ code: "custom", path: [service], message: `${service}=mock cannot run in production` });
     }
+    if (!value.TURNSTILE_SECRET_KEY) ctx.addIssue({ code: "custom", path: ["TURNSTILE_SECRET_KEY"], message: "Set TURNSTILE_SECRET_KEY in production" });
     for (const key of ["SESSION_SECRET", "OTP_PEPPER", "DATA_ENCRYPTION_KEY"] as const) {
       if (value[key].includes("change-me")) ctx.addIssue({ code: "custom", path: [key], message: `Set a real ${key} in production` });
     }

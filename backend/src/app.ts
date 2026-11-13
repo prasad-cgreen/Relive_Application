@@ -186,8 +186,27 @@ async function consumeOtp(req: Request, data: { transactionId: string; otp: stri
   return transaction;
 }
 
+/** Cloudflare Turnstile check, so bots cannot trigger billed OTP SMS. Skipped when TURNSTILE_SECRET_KEY is unset. */
+async function assertHuman(token: string | undefined) {
+  if (!env.TURNSTILE_SECRET_KEY) return;
+  if (!token) throw new HttpError(400, "CAPTCHA_REQUIRED", "Please wait for the security check to finish, then try again");
+  let result: { success?: boolean };
+  try {
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      body: new URLSearchParams({ secret: env.TURNSTILE_SECRET_KEY, response: token }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    result = await response.json();
+  } catch {
+    throw new HttpError(503, "CAPTCHA_UNAVAILABLE", "We could not run the security check. Please try again");
+  }
+  if (!result.success) throw new HttpError(400, "CAPTCHA_FAILED", "The security check failed. Please try again");
+}
+
 app.post("/api/v1/auth/request-otp", authLimiter, async (req, res) => {
   const data = requestOtpSchema.parse(req.body);
+  await assertHuman(data.turnstileToken);
   const mobileHash = hashMobile(data.mobile);
   // New numbers are allowed: the "existing user?" decision happens after OTP verification.
   const user = await production.user.upsert({ where: { mobileHash }, update: { mobileEncrypted: encrypt(data.mobile) }, create: { mobileHash, mobileLast4: data.mobile.slice(-4), mobileEncrypted: encrypt(data.mobile) } });

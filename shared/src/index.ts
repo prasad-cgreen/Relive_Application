@@ -10,6 +10,8 @@ export const requestOtpSchema = z.object({
   // One checkbox covers: terms/privacy + OTP, credit-bureau report fetch, and marketing communication.
   consent: z.literal(true, { error: "Consent is required" }),
   consentVersion: z.string().min(1).default("relive-consent-v2"),
+  // Cloudflare Turnstile token; required by the backend when TURNSTILE_SECRET_KEY is set.
+  turnstileToken: z.string().max(2048).optional(),
 });
 
 export const bureauMobileSchema = z.object({ mobile: mobileSchema });

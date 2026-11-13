@@ -18,6 +18,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { ThemeToggle } from "../components/theme-toggle";
 import { OnboardingFlow, type Workflow } from "../components/onboarding-flow";
+import { Turnstile, TURNSTILE_SITE_KEY, type CaptchaState } from "../components/turnstile";
 import { api, apiErrorCode, apiMessage, apiRetryAfter } from "../lib/api";
 
 type LoginStep = "mobile" | "otp" | "onboarding";
@@ -84,6 +85,8 @@ export default function Home() {
   const [transactionId, setTransactionId] = useState("");
   const [devOtp, setDevOtp] = useState("");
   const [busy, setBusy] = useState(false);
+  const [captcha, setCaptcha] = useState<CaptchaState>({ token: "", failed: false });
+  const [captchaRound, setCaptchaRound] = useState(0); // re-keys <Turnstile> for a fresh single-use token
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
   // ponytail: landing-form answers stay client-side; send them with the OTP/workflow call once the backend has a field for them.
   const [concern, setConcern] = useState("");
@@ -152,12 +155,28 @@ export default function Home() {
     }, 200);
   };
 
+  // Why an OTP can't be sent yet ("" = ready): the Cloudflare bot check has no token.
+  const captchaBlocker = () =>
+    !TURNSTILE_SITE_KEY || captcha.token
+      ? ""
+      : captcha.failed
+        ? "The security check could not load. Check your connection and refresh the page."
+        : "Finishing a quick security check. If you see a \"Verify you are human\" box, tick it, then try again.";
+
   const requestOtp = async (number: string) => {
-    const response = await api.post("/auth/request-otp", { mobile: number, consent: true, consentVersion: CONSENT_VERSION });
-    setTransactionId(response.data.transactionId);
-    setDevOtp(response.data.devOtp ?? "");
-    setSeconds(response.data.resendAfterSeconds ?? 10);
-    setStep("otp");
+    try {
+      const response = await api.post("/auth/request-otp", { mobile: number, consent: true, consentVersion: CONSENT_VERSION, turnstileToken: captcha.token || undefined });
+      setTransactionId(response.data.transactionId);
+      setDevOtp(response.data.devOtp ?? "");
+      setSeconds(response.data.resendAfterSeconds ?? 10);
+      setStep("otp");
+    } finally {
+      // Turnstile tokens are single-use: fetch a fresh one for the next send or resend.
+      if (TURNSTILE_SITE_KEY) {
+        setCaptcha({ token: "", failed: false });
+        setCaptchaRound((round) => round + 1);
+      }
+    }
   };
 
   // Lockout sends the user back to the mobile step (per the login flow); other errors stay inline.
@@ -182,6 +201,7 @@ export default function Home() {
     if (!normalized) return setMobileError("Mobile number is required");
     if (!/^[6-9]\d{9}$/.test(normalized)) return setMobileError("Enter a valid 10-digit mobile number");
     if (!consent) return setConsentError("Consent is required to proceed");
+    if (captchaBlocker()) return setMobileError(captchaBlocker());
     setMobile(normalized);
     setBusy(true);
     try {
@@ -213,6 +233,7 @@ export default function Home() {
 
   const resendOtp = async () => {
     if (seconds > 0 || busy) return;
+    if (captchaBlocker()) return setOtpError(captchaBlocker());
     setBusy(true);
     setOtp("");
     setOtpError("");
@@ -749,6 +770,9 @@ export default function Home() {
                 )}
               </form>
             )}
+
+            {/* Cloudflare bot check for the OTP sends; only visible if Cloudflare asks for a click */}
+            {step !== "onboarding" && <Turnstile key={captchaRound} onChange={setCaptcha} />}
           </section>
         </div>
       )}
