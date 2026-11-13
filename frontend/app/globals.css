@@ -63,6 +63,10 @@ button:focus-visible, a:focus-visible, input[type="checkbox"]:focus-visible, inp
 .animate-grow-x { transform-origin: left; animation: grow-x 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
 
+/* Signed-in visitor on "/" (see app/layout.tsx): hide the landing page while the session is checked,
+   so Back from the dashboard redirects without flashing it. */
+html[data-auth-check] .landing-root { visibility: hidden; }
+
 /* Dashboard: app-like, no visible scrollbars (wheel, trackpad, touch and keyboard still scroll). */
 .no-scrollbar, html:has(.portal-root) { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar, html:has(.portal-root)::-webkit-scrollbar { display: none; }

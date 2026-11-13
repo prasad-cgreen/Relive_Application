@@ -12,7 +12,6 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
-import Link from "next/link";
 import { useEffect } from "react";
 
 export type SidebarTab =
@@ -95,11 +94,12 @@ export function DashboardSidebar({
         }`}
       >
         <div className="flex h-16 items-center justify-between border-b border-white/[0.06] px-5 lg:h-[72px]">
-          <Link href="/" className="flex items-center" aria-label="Relive home">
+          {/* Signed-in home is the dashboard overview, not the landing page */}
+          <button type="button" onClick={() => { onTabChange("overview"); onClose(); }} className="flex items-center" aria-label="Relive dashboard home">
             {/* Sidebar is always dark, so the light logo. */}
             {/* eslint-disable-next-line @next/next/no-img-element -- static SVG */}
             <img src="/relive-logo-light.svg" alt="Relive" width={98} height={28} className="h-7 w-auto" />
-          </Link>
+          </button>
           <button type="button" onClick={onClose} aria-label="Close menu" className="rounded-lg p-1.5 text-white/60 hover:bg-white/5 hover:text-white lg:hidden">
             <X className="size-5" />
           </button>

@@ -11,7 +11,7 @@ import {
 import { z, ZodError } from "zod";
 import { env } from "./config/env.js";
 import { production } from "./database/clients.js";
-import { requireAuth } from "./middleware/auth.js";
+import { findSession, requireAuth, SESSION_COOKIE } from "./middleware/auth.js";
 import { decrypt, encrypt, hashMobile, hashOtp, hashPan, hashToken, newToken, secureEqual } from "./lib/crypto.js";
 import { HttpError, ProviderError } from "./lib/errors.js";
 import { stepForStage, trackJourney, writeAudit } from "./services/audit.js";
@@ -32,6 +32,8 @@ app.use(cookieParser());
 app.use((req, res, next) => {
   req.requestId = req.header("x-request-id") ?? randomUUID();
   res.setHeader("x-request-id", req.requestId);
+  // Responses carry personal data: never let the browser or a proxy cache them (incl. back/forward cache).
+  res.setHeader("Cache-Control", "no-store");
   next();
 });
 
@@ -63,6 +65,8 @@ const OTP_MAX_SENDS = 5; // per OTP_SEND_WINDOW_MS per user
 const OTP_SEND_WINDOW_MS = 30 * 60_000;
 const LOCKOUT_MS = 15 * 60_000;
 const SESSION_TTL_MS = 8 * 60 * 60_000;
+// Same options when setting and clearing, or the browser keeps the old cookie.
+const sessionCookie = () => ({ httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax" as const, path: "/" });
 
 const secondsUntil = (date: Date) => Math.max(1, Math.ceil((date.getTime() - Date.now()) / 1000));
 
@@ -234,7 +238,7 @@ app.post("/api/v1/auth/verify-otp", authLimiter, async (req, res) => {
 
   const token = newToken();
   await production.userSession.create({ data: { userId: transaction.userId, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + SESSION_TTL_MS) } });
-  res.cookie("relive_session", token, { httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax", maxAge: SESSION_TTL_MS, path: "/" });
+  res.cookie(SESSION_COOKIE, token, { ...sessionCookie(), maxAge: SESSION_TTL_MS });
   const workflow = await getWorkflow(transaction.userId);
   await trackJourney({
     userRef: transaction.userId, eventType: "LOGIN", step: stepForStage(workflow.stage), outcome: "SUCCESS",
@@ -243,12 +247,25 @@ app.post("/api/v1/auth/verify-otp", authLimiter, async (req, res) => {
   res.json(workflow);
 });
 
-app.post("/api/v1/auth/logout", requireAuth, async (req, res) => {
-  const token = req.cookies?.relive_session as string;
-  await production.userSession.updateMany({ where: { tokenHash: hashToken(token) }, data: { revokedAt: new Date() } });
-  res.clearCookie("relive_session", { path: "/" });
-  await writeAudit({ eventType: "LOGOUT", userRef: req.userId, status: "SUCCESS", requestId: req.requestId });
+// Always succeeds: an already-expired session must still be able to log out and clear its cookie.
+app.post("/api/v1/auth/logout", async (req, res) => {
+  const token = req.cookies?.[SESSION_COOKIE] as string | undefined;
+  const session = await findSession(req);
+  if (token) await production.userSession.updateMany({ where: { tokenHash: hashToken(token), revokedAt: null }, data: { revokedAt: new Date() } });
+  res.clearCookie(SESSION_COOKIE, sessionCookie());
+  if (session) await writeAudit({ eventType: "LOGOUT", userRef: session.userId, status: "SUCCESS", requestId: req.requestId });
   res.status(204).end();
+});
+
+// Session check for the frontend's route guards. 200 either way, so signed-out visitors don't log errors.
+app.get("/api/v1/auth/session", async (req, res) => {
+  const session = await findSession(req);
+  if (!session) {
+    if (req.cookies?.[SESSION_COOKIE]) res.clearCookie(SESSION_COOKIE, sessionCookie()); // stale cookie
+    return res.json({ authenticated: false });
+  }
+  const { stage } = await getWorkflow(session.userId);
+  res.json({ authenticated: true, stage, expiresAt: session.expiresAt.toISOString() });
 });
 
 app.get("/api/v1/workflow", requireAuth, async (req, res) => res.json(await getWorkflow(userContext(req))));

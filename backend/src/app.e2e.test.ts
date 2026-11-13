@@ -246,7 +246,15 @@ describe("Relive end-to-end member workflow", () => {
     expect(auditEvents).toBeGreaterThanOrEqual(6);
     expect(providerTransactions).toBeGreaterThanOrEqual(5);
 
+    const session = await agent.get("/api/v1/auth/session").expect(200);
+    expect(session.body).toMatchObject({ authenticated: true, stage: "DASHBOARD" });
+    expect(new Date(session.body.expiresAt).getTime()).toBeGreaterThan(Date.now());
+    expect(session.headers["cache-control"]).toBe("no-store");
+
     await agent.post("/api/v1/auth/logout").expect(204);
     await agent.get("/api/v1/workflow").expect(401);
+    expect((await agent.get("/api/v1/auth/session").expect(200)).body).toEqual({ authenticated: false });
+    // Logging out again (e.g. an expired session) still succeeds, so the UI can always sign out.
+    await agent.post("/api/v1/auth/logout").expect(204);
   }, 30_000);
 });

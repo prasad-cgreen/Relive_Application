@@ -74,7 +74,22 @@ flowchart TD
 | Already signed in, has a report | Straight to the dashboard |
 | Already signed in, onboarding unfinished | Dialog opens at the step they left |
 | Opens `/portal` with onboarding unfinished | Redirected to `/?onboarding=1`, dialog opens at that step |
+| Refreshes mid-onboarding | URL is `/?onboarding=1`, so the dialog reopens at the saved step |
 | Session expired / not signed in | Mobile step |
+
+The login dialog closes only through its Close button or on success. Clicking the backdrop and pressing Escape do nothing, so a stray click can't lose a half-entered OTP or PAN. The Cloudflare check sits directly above the Continue / Verify button and only takes up space while Cloudflare asks for a click.
+
+### Session and protected routes
+
+| Situation | Result |
+|---|---|
+| Signed-in member (has a report) opens `/`, or reaches it with Back | Redirected to `/portal` (`location.replace`, so no landing entry is added to history) |
+| Moves between dashboard tabs | Each tab is its own URL (`/portal?tab=accounts`): Back/Forward move between tabs, refresh keeps the tab |
+| Opens `/portal` with no valid session | `/?login=1` (login dialog). If this browser was signed in, also `&expired=1` → "Your session has expired" notice |
+| Session expires while the dashboard is open | Redirected to login when the expiry time passes, on the next API call (any 401), when the tab regains focus, or when the page is restored from the back/forward cache |
+| Logs out (or logs out in another tab) | Session revoked, cookie cleared, `location.replace("/")`; Back can't show dashboard data |
+
+The backend is the source of truth. `GET /auth/session` returns `{ authenticated, stage, expiresAt }` (always 200), and every API response is `Cache-Control: no-store`. `POST /auth/logout` succeeds even with an expired session, so the UI can always sign out.
 
 ### 2. Mobile and consent (`POST /auth/request-otp`)
 
@@ -177,7 +192,7 @@ Bureaus match on **name + mobile**. The mobile used is the OTP-verified alternat
 
 ## Audit trail (audit database)
 
-Nothing about onboarding is kept in the browser: it holds only the httpOnly session cookie and the theme setting. Progress lives on the server, and every step is recorded in the **audit database** (`relive_audit`). Only the last 4 digits of mobile and PAN numbers are stored there.
+Nothing about onboarding is kept in the browser: it holds only the httpOnly session cookie, the theme setting, and a `relive:signed-in` flag in localStorage. The flag is not a credential. It only lets the landing page hide itself while it checks the session, so Back from the dashboard doesn't flash the landing page. Progress lives on the server, and every step is recorded in the **audit database** (`relive_audit`). Only the last 4 digits of mobile and PAN numbers are stored there.
 
 **`audit_logs`**: one row per event, in order:
 

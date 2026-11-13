@@ -20,6 +20,7 @@ import { ThemeToggle } from "../components/theme-toggle";
 import { OnboardingFlow, type Workflow } from "../components/onboarding-flow";
 import { Turnstile, TURNSTILE_SITE_KEY, type CaptchaState } from "../components/turnstile";
 import { api, apiErrorCode, apiMessage, apiRetryAfter } from "../lib/api";
+import { getSession, setSignedInHint, type Session } from "../lib/session";
 
 type LoginStep = "mobile" | "otp" | "onboarding";
 
@@ -91,17 +92,24 @@ export default function Home() {
   // ponytail: landing-form answers stay client-side; send them with the OTP/workflow call once the backend has a field for them.
   const [concern, setConcern] = useState("");
   const [concernDetails, setConcernDetails] = useState("");
+  const [sessionNotice, setSessionNotice] = useState("");
 
+  // The dialog closes only via its Close button or on success: no outside click / Escape, so a stray
+  // click or key press can't throw away a half-entered OTP or PAN.
   useEffect(() => {
     if (!loginOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => event.key === "Escape" && setLoginOpen(false);
-    window.addEventListener("keydown", onKeyDown);
     document.body.style.overflow = "hidden";
     return () => {
-      window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = "";
     };
   }, [loginOpen]);
+
+  // Unfinished onboarding is kept in the URL, so a refresh reopens the dialog at the saved step.
+  useEffect(() => {
+    if (loginOpen && step === "onboarding" && !window.location.search.includes("onboarding=1")) {
+      window.history.replaceState(null, "", "/?onboarding=1");
+    }
+  }, [loginOpen, step]);
 
   useEffect(() => {
     if (!loginOpen || step !== "otp" || seconds <= 0) return;
@@ -109,7 +117,11 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [loginOpen, seconds, step]);
 
-  const goToPortal = () => window.location.assign("/portal");
+  // replace, not assign: the landing page must not sit in history behind the dashboard, or Back returns to it.
+  const goToPortal = () => {
+    document.documentElement.setAttribute("data-auth-check", ""); // keep the landing page hidden while leaving
+    window.location.replace("/portal");
+  };
 
   // Signed-in users skip the mobile step: straight to the dashboard, or back into onboarding.
   const resumeSession = async () => {
@@ -130,24 +142,50 @@ export default function Home() {
     void resumeSession().then((resumed) => resumed || setLoginOpen(true));
   };
 
-  // /portal sends users with unfinished onboarding here as /?onboarding=1
+  /**
+   * Route guard: members who reached the dashboard never see the landing page (including via Back or a
+   * back/forward-cache restore); they go straight to /portal. Returns the session, or null if unknown.
+   */
+  const guardLanding = async () => {
+    let session: Session | null = null;
+    try {
+      session = await getSession();
+    } catch {
+      /* API unreachable: show the landing page */
+    }
+    if (session?.authenticated && session.stage === "DASHBOARD") {
+      goToPortal();
+      return null;
+    }
+    if (session && !session.authenticated) setSignedInHint(false);
+    document.documentElement.removeAttribute("data-auth-check");
+    return session;
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.has("login")) {
-      void Promise.resolve().then(() => setLoginOpen(true)); // after "Use a different number"
-      return;
-    }
-    if (!params.has("onboarding")) return;
-    api.get<Workflow>("/workflow").then(({ data }) => {
-      if (data.stage === "DASHBOARD") return goToPortal();
-      setWorkflow(data);
-      setStep("onboarding");
-      setLoginOpen(true);
-    }, () => undefined); // not signed in: stay on the landing page
+    void guardLanding().then((session) => {
+      if (!session) return; // redirecting, or API unreachable
+      if (params.has("expired")) setSessionNotice("Your session has expired. Please log in again to continue.");
+      // ?login=1: after logout, session expiry or "Use a different number". ?onboarding=1: /portal or a refresh mid-onboarding.
+      if (params.has("login") || params.has("onboarding")) {
+        if (session.authenticated) void resumeSession();
+        else setLoginOpen(true);
+      }
+      if (params.has("login") || params.has("expired") || (params.has("onboarding") && !session.authenticated)) {
+        window.history.replaceState(null, "", "/");
+      }
+    });
+    const onPageShow = (event: PageTransitionEvent) => event.persisted && void guardLanding();
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once per page load
   }, []);
 
   const closeLogin = () => {
     setLoginOpen(false);
+    setSessionNotice("");
+    if (window.location.search) window.history.replaceState(null, "", "/");
     window.setTimeout(() => {
       setStep("mobile");
       setOtp("");
@@ -247,7 +285,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#f8faf9] text-[#0c1a13] transition-colors dark:bg-[#070e0a] dark:text-[#f0fdf4]">
+    <main className="landing-root min-h-screen overflow-hidden bg-[#f8faf9] text-[#0c1a13] transition-colors dark:bg-[#070e0a] dark:text-[#f0fdf4]">
       {/* Navigation Bar */}
       <header className="sticky top-0 z-40 border-b border-[#e5ede7] bg-white/90 backdrop-blur-md dark:border-[#14261c] dark:bg-[#070e0a]/90">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-8 md:h-20">
@@ -549,12 +587,9 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Auth / OTP Modal */}
+      {/* Auth / OTP Modal: clicking the backdrop does nothing; only the Close button (or success) closes it */}
       {loginOpen && (
-        <div
-          className="animate-in fade-in duration-200 fixed inset-0 z-50 grid place-items-end bg-black/60 p-0 backdrop-blur-xs sm:place-items-center sm:p-5"
-          onMouseDown={(e) => e.target === e.currentTarget && closeLogin()}
-        >
+        <div className="animate-in fade-in duration-200 fixed inset-0 z-50 grid place-items-end bg-black/60 p-0 backdrop-blur-xs sm:place-items-center sm:p-5">
           <section
             role="dialog"
             aria-modal="true"
@@ -591,6 +626,11 @@ export default function Home() {
                     ? "Enter the mobile number linked to your PAN. New here? We'll set you up."
                     : `Enter the 6-digit OTP sent to +91 ••••••${mobile.slice(-4)}`}
                 </p>
+                {sessionNotice && step === "mobile" && (
+                  <p role="status" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
+                    {sessionNotice}
+                  </p>
+                )}
               </div>
             )}
 
@@ -690,15 +730,18 @@ export default function Home() {
                 </div>
                 {consentError && <p className="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">{consentError}</p>}
 
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#216b49] text-sm font-semibold text-white transition hover:bg-[#155438] disabled:opacity-60 dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
-                >
-                  {busy ? "Sending OTP..." : "Continue"}
-                  {!busy && <ArrowRight className="size-4" />}
-                </button>
-
+                <div className="mt-5">
+                  {/* Cloudflare bot check sits above the button; only visible if Cloudflare asks for a click */}
+                  <Turnstile key={captchaRound} onChange={setCaptcha} />
+                  <button
+                    type="submit"
+                    disabled={busy}
+                    className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#216b49] text-sm font-semibold text-white transition hover:bg-[#155438] disabled:opacity-60 dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
+                  >
+                    {busy ? "Sending OTP..." : "Continue"}
+                    {!busy && <ArrowRight className="size-4" />}
+                  </button>
+                </div>
               </form>
             )}
 
@@ -753,15 +796,18 @@ export default function Home() {
                   )}
                 </div>
 
-
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#216b49] text-sm font-semibold text-white transition hover:bg-[#155438] disabled:opacity-60 dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
-                >
-                  {busy ? "Verifying..." : "Verify & Access Report"}
-                  {!busy && <ArrowRight className="size-4" />}
-                </button>
+                <div className="mt-5">
+                  {/* Fresh bot check for "Resend OTP", above the button like the mobile step */}
+                  <Turnstile key={captchaRound} onChange={setCaptcha} />
+                  <button
+                    type="submit"
+                    disabled={busy}
+                    className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#216b49] text-sm font-semibold text-white transition hover:bg-[#155438] disabled:opacity-60 dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
+                  >
+                    {busy ? "Verifying..." : "Verify & Access Report"}
+                    {!busy && <ArrowRight className="size-4" />}
+                  </button>
+                </div>
 
                 {devOtp && (
                   <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 text-[11px] text-emerald-900 dark:border-emerald-800/40 dark:bg-emerald-950/40 dark:text-emerald-300">
@@ -770,9 +816,6 @@ export default function Home() {
                 )}
               </form>
             )}
-
-            {/* Cloudflare bot check for the OTP sends; only visible if Cloudflare asks for a click */}
-            {step !== "onboarding" && <Turnstile key={captchaRound} onChange={setCaptcha} />}
           </section>
         </div>
       )}

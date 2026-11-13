@@ -18,6 +18,7 @@ import { type HistoryMonth } from "../../components/payment-history-grid";
 import { ScoreHero } from "../../components/score-hero";
 import { SupportRequestView } from "../../components/support-request";
 import { api, apiMessage } from "../../lib/api";
+import { logout, redirectToLogin, setSignedInHint, useSessionGuard } from "../../lib/session";
 
 type Stage = "PROFILE" | "REPORT" | "DASHBOARD";
 
@@ -99,6 +100,12 @@ function CardHeader({ eyebrow, title, aside }: { eyebrow?: string; title: string
   );
 }
 
+/** Each dashboard tab is its own history entry (/portal?tab=accounts), so Back moves between tabs. */
+function tabFromUrl(): SidebarTab {
+  const tab = new URLSearchParams(window.location.search).get("tab");
+  return tab && tab in TAB_TITLES ? (tab as SidebarTab) : "overview";
+}
+
 function greeting() {
   const hour = new Date().getHours();
   return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -115,6 +122,21 @@ export default function PortalPage() {
   const [accountsFilter, setAccountsFilter] = useState<"all" | "negative">("all");
   const [focusAccount, setFocusAccount] = useState<CreditAccountItem | null>(null);
 
+  useSessionGuard();
+
+  // Open the tab named in the URL (refresh, shared link) and follow Back/Forward between tabs.
+  useEffect(() => {
+    const syncTab = () => {
+      setActiveTab(tabFromUrl());
+      setAccountsFilter("all");
+      setFocusAccount(null);
+      setMobileMenuOpen(false);
+    };
+    syncTab();
+    window.addEventListener("popstate", syncTab);
+    return () => window.removeEventListener("popstate", syncTab);
+  }, []);
+
   const load = useCallback(async () => {
     try {
       const [workflowResponse, overviewResponse] = await Promise.all([
@@ -126,6 +148,7 @@ export default function PortalPage() {
         window.location.replace("/?onboarding=1");
         return;
       }
+      setSignedInHint(true);
       setWorkflow(workflowResponse.data);
       setOverview(overviewResponse.data);
       setError("");
@@ -133,7 +156,7 @@ export default function PortalPage() {
     } catch (requestError: unknown) {
       const status = (requestError as { response?: { status?: number } }).response?.status;
       if (status === 401) {
-        window.location.assign("/");
+        redirectToLogin();
         return;
       }
       setError(apiMessage(requestError));
@@ -168,12 +191,8 @@ export default function PortalPage() {
 
   const retrieveReport = useCallback(() => run(postReport), [run]);
 
-  const logout = async () => {
-    await api.post("/auth/logout");
-    window.location.assign("/");
-  };
-
   const changeTab = (tab: SidebarTab, filter: "all" | "negative" = "all", account: CreditAccountItem | null = null) => {
+    if (tab !== tabFromUrl()) window.history.pushState(null, "", tab === "overview" ? "/portal" : `/portal?tab=${tab}`);
     setActiveTab(tab);
     setAccountsFilter(filter);
     setFocusAccount(account);

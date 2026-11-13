@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
@@ -29,9 +29,12 @@ const loadTurnstile = () =>
  * Cloudflare Turnstile bot check. Invisible unless Cloudflare wants the visitor to click.
  * Tokens are single-use: re-key the component (key={n}) after each use to get a fresh one.
  * Renders nothing without NEXT_PUBLIC_TURNSTILE_SITE_KEY (local dev).
+ * Place it directly above the form's submit button: it takes the full form width and only adds spacing
+ * (`spacing` classes) while the "Verify you are human" box is showing.
  */
-export function Turnstile({ onChange }: { onChange: (state: CaptchaState) => void }) {
+export function Turnstile({ onChange, spacing = "mb-4" }: { onChange: (state: CaptchaState) => void; spacing?: string }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [interactive, setInteractive] = useState(false);
 
   useEffect(() => {
     if (!TURNSTILE_SITE_KEY) return;
@@ -44,6 +47,9 @@ export function Turnstile({ onChange }: { onChange: (state: CaptchaState) => voi
           sitekey: TURNSTILE_SITE_KEY,
           action: "otp",
           appearance: "interaction-only",
+          size: "flexible", // full form width, aligned with the inputs and button
+          "before-interactive-callback": () => setInteractive(true),
+          "after-interactive-callback": () => setInteractive(false),
           callback: (token: string) => onChange({ token, failed: false }),
           "expired-callback": () => onChange({ token: "", failed: false }),
           "error-callback": () => onChange({ token: "", failed: true }),
@@ -57,5 +63,5 @@ export function Turnstile({ onChange }: { onChange: (state: CaptchaState) => voi
     };
   }, [onChange]);
 
-  return TURNSTILE_SITE_KEY ? <div ref={ref} className="mt-3 flex justify-center empty:hidden" /> : null;
+  return TURNSTILE_SITE_KEY ? <div ref={ref} className={`w-full empty:hidden ${interactive ? spacing : ""}`} /> : null;
 }
