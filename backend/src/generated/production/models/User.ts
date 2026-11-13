@@ -38,6 +38,9 @@ export type UserMinAggregateOutputType = {
   id: string | null
   mobileHash: string | null
   mobileLast4: string | null
+  mobileEncrypted: string | null
+  bureauMobileEncrypted: string | null
+  bureauMobileLast4: string | null
   status: $Enums.UserStatus | null
   failedOtpWindow: number | null
   blockedUntil: Date | null
@@ -49,6 +52,9 @@ export type UserMaxAggregateOutputType = {
   id: string | null
   mobileHash: string | null
   mobileLast4: string | null
+  mobileEncrypted: string | null
+  bureauMobileEncrypted: string | null
+  bureauMobileLast4: string | null
   status: $Enums.UserStatus | null
   failedOtpWindow: number | null
   blockedUntil: Date | null
@@ -60,6 +66,9 @@ export type UserCountAggregateOutputType = {
   id: number
   mobileHash: number
   mobileLast4: number
+  mobileEncrypted: number
+  bureauMobileEncrypted: number
+  bureauMobileLast4: number
   status: number
   failedOtpWindow: number
   blockedUntil: number
@@ -81,6 +90,9 @@ export type UserMinAggregateInputType = {
   id?: true
   mobileHash?: true
   mobileLast4?: true
+  mobileEncrypted?: true
+  bureauMobileEncrypted?: true
+  bureauMobileLast4?: true
   status?: true
   failedOtpWindow?: true
   blockedUntil?: true
@@ -92,6 +104,9 @@ export type UserMaxAggregateInputType = {
   id?: true
   mobileHash?: true
   mobileLast4?: true
+  mobileEncrypted?: true
+  bureauMobileEncrypted?: true
+  bureauMobileLast4?: true
   status?: true
   failedOtpWindow?: true
   blockedUntil?: true
@@ -103,6 +118,9 @@ export type UserCountAggregateInputType = {
   id?: true
   mobileHash?: true
   mobileLast4?: true
+  mobileEncrypted?: true
+  bureauMobileEncrypted?: true
+  bureauMobileLast4?: true
   status?: true
   failedOtpWindow?: true
   blockedUntil?: true
@@ -201,6 +219,9 @@ export type UserGroupByOutputType = {
   id: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted: string | null
+  bureauMobileEncrypted: string | null
+  bureauMobileLast4: string | null
   status: $Enums.UserStatus
   failedOtpWindow: number
   blockedUntil: Date | null
@@ -235,6 +256,9 @@ export type UserWhereInput = {
   id?: Prisma.UuidFilter<"User"> | string
   mobileHash?: Prisma.StringFilter<"User"> | string
   mobileLast4?: Prisma.StringFilter<"User"> | string
+  mobileEncrypted?: Prisma.StringNullableFilter<"User"> | string | null
+  bureauMobileEncrypted?: Prisma.StringNullableFilter<"User"> | string | null
+  bureauMobileLast4?: Prisma.StringNullableFilter<"User"> | string | null
   status?: Prisma.EnumUserStatusFilter<"User"> | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFilter<"User"> | number
   blockedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -247,12 +271,16 @@ export type UserWhereInput = {
   kycs?: Prisma.KycVerificationListRelationFilter
   reports?: Prisma.CreditReportListRelationFilter
   transactions?: Prisma.ApiTransactionListRelationFilter
+  supportRequests?: Prisma.SupportRequestListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   mobileHash?: Prisma.SortOrder
   mobileLast4?: Prisma.SortOrder
+  mobileEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
+  bureauMobileEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
+  bureauMobileLast4?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   failedOtpWindow?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -265,6 +293,7 @@ export type UserOrderByWithRelationInput = {
   kycs?: Prisma.KycVerificationOrderByRelationAggregateInput
   reports?: Prisma.CreditReportOrderByRelationAggregateInput
   transactions?: Prisma.ApiTransactionOrderByRelationAggregateInput
+  supportRequests?: Prisma.SupportRequestOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -274,6 +303,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   mobileLast4?: Prisma.StringFilter<"User"> | string
+  mobileEncrypted?: Prisma.StringNullableFilter<"User"> | string | null
+  bureauMobileEncrypted?: Prisma.StringNullableFilter<"User"> | string | null
+  bureauMobileLast4?: Prisma.StringNullableFilter<"User"> | string | null
   status?: Prisma.EnumUserStatusFilter<"User"> | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFilter<"User"> | number
   blockedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -286,12 +318,16 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   kycs?: Prisma.KycVerificationListRelationFilter
   reports?: Prisma.CreditReportListRelationFilter
   transactions?: Prisma.ApiTransactionListRelationFilter
+  supportRequests?: Prisma.SupportRequestListRelationFilter
 }, "id" | "mobileHash">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   mobileHash?: Prisma.SortOrder
   mobileLast4?: Prisma.SortOrder
+  mobileEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
+  bureauMobileEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
+  bureauMobileLast4?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   failedOtpWindow?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -311,6 +347,9 @@ export type UserScalarWhereWithAggregatesInput = {
   id?: Prisma.UuidWithAggregatesFilter<"User"> | string
   mobileHash?: Prisma.StringWithAggregatesFilter<"User"> | string
   mobileLast4?: Prisma.StringWithAggregatesFilter<"User"> | string
+  mobileEncrypted?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  bureauMobileEncrypted?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  bureauMobileLast4?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   status?: Prisma.EnumUserStatusWithAggregatesFilter<"User"> | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntWithAggregatesFilter<"User"> | number
   blockedUntil?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
@@ -322,6 +361,9 @@ export type UserCreateInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -334,12 +376,16 @@ export type UserCreateInput = {
   kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -352,12 +398,16 @@ export type UserUncheckedCreateInput = {
   kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -370,12 +420,16 @@ export type UserUpdateInput = {
   kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -388,12 +442,16 @@ export type UserUncheckedUpdateInput = {
   kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -405,6 +463,9 @@ export type UserUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -416,6 +477,9 @@ export type UserUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -427,6 +491,9 @@ export type UserCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   mobileHash?: Prisma.SortOrder
   mobileLast4?: Prisma.SortOrder
+  mobileEncrypted?: Prisma.SortOrder
+  bureauMobileEncrypted?: Prisma.SortOrder
+  bureauMobileLast4?: Prisma.SortOrder
   status?: Prisma.SortOrder
   failedOtpWindow?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrder
@@ -442,6 +509,9 @@ export type UserMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   mobileHash?: Prisma.SortOrder
   mobileLast4?: Prisma.SortOrder
+  mobileEncrypted?: Prisma.SortOrder
+  bureauMobileEncrypted?: Prisma.SortOrder
+  bureauMobileLast4?: Prisma.SortOrder
   status?: Prisma.SortOrder
   failedOtpWindow?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrder
@@ -453,6 +523,9 @@ export type UserMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   mobileHash?: Prisma.SortOrder
   mobileLast4?: Prisma.SortOrder
+  mobileEncrypted?: Prisma.SortOrder
+  bureauMobileEncrypted?: Prisma.SortOrder
+  bureauMobileLast4?: Prisma.SortOrder
   status?: Prisma.SortOrder
   failedOtpWindow?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrder
@@ -472,6 +545,10 @@ export type UserScalarRelationFilter = {
 export type UserNullableScalarRelationFilter = {
   is?: Prisma.UserWhereInput | null
   isNot?: Prisma.UserWhereInput | null
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 export type EnumUserStatusFieldUpdateOperationsInput = {
@@ -582,10 +659,27 @@ export type UserUpdateOneWithoutTransactionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTransactionsInput, Prisma.UserUpdateWithoutTransactionsInput>, Prisma.UserUncheckedUpdateWithoutTransactionsInput>
 }
 
+export type UserCreateNestedOneWithoutSupportRequestsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSupportRequestsInput, Prisma.UserUncheckedCreateWithoutSupportRequestsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSupportRequestsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutSupportRequestsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSupportRequestsInput, Prisma.UserUncheckedCreateWithoutSupportRequestsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSupportRequestsInput
+  upsert?: Prisma.UserUpsertWithoutSupportRequestsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSupportRequestsInput, Prisma.UserUpdateWithoutSupportRequestsInput>, Prisma.UserUncheckedUpdateWithoutSupportRequestsInput>
+}
+
 export type UserCreateWithoutProfileInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -597,12 +691,16 @@ export type UserCreateWithoutProfileInput = {
   kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProfileInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -614,6 +712,7 @@ export type UserUncheckedCreateWithoutProfileInput = {
   kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProfileInput = {
@@ -636,6 +735,9 @@ export type UserUpdateWithoutProfileInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -647,12 +749,16 @@ export type UserUpdateWithoutProfileInput = {
   kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProfileInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -664,12 +770,16 @@ export type UserUncheckedUpdateWithoutProfileInput = {
   kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutConsentsInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -681,12 +791,16 @@ export type UserCreateWithoutConsentsInput = {
   kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutConsentsInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -698,6 +812,7 @@ export type UserUncheckedCreateWithoutConsentsInput = {
   kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutConsentsInput = {
@@ -720,6 +835,9 @@ export type UserUpdateWithoutConsentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -731,12 +849,16 @@ export type UserUpdateWithoutConsentsInput = {
   kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConsentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -748,12 +870,16 @@ export type UserUncheckedUpdateWithoutConsentsInput = {
   kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOtpsInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -765,12 +891,16 @@ export type UserCreateWithoutOtpsInput = {
   kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOtpsInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -782,6 +912,7 @@ export type UserUncheckedCreateWithoutOtpsInput = {
   kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOtpsInput = {
@@ -804,6 +935,9 @@ export type UserUpdateWithoutOtpsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -815,12 +949,16 @@ export type UserUpdateWithoutOtpsInput = {
   kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOtpsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -832,12 +970,16 @@ export type UserUncheckedUpdateWithoutOtpsInput = {
   kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -849,12 +991,16 @@ export type UserCreateWithoutSessionsInput = {
   kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -866,6 +1012,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -888,6 +1035,9 @@ export type UserUpdateWithoutSessionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -899,12 +1049,16 @@ export type UserUpdateWithoutSessionsInput = {
   kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -916,12 +1070,16 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutKycsInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -933,12 +1091,16 @@ export type UserCreateWithoutKycsInput = {
   sessions?: Prisma.UserSessionCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutKycsInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -950,6 +1112,7 @@ export type UserUncheckedCreateWithoutKycsInput = {
   sessions?: Prisma.UserSessionUncheckedCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutKycsInput = {
@@ -972,6 +1135,9 @@ export type UserUpdateWithoutKycsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -983,12 +1149,16 @@ export type UserUpdateWithoutKycsInput = {
   sessions?: Prisma.UserSessionUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutKycsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1000,12 +1170,16 @@ export type UserUncheckedUpdateWithoutKycsInput = {
   sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReportsInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1017,12 +1191,16 @@ export type UserCreateWithoutReportsInput = {
   sessions?: Prisma.UserSessionCreateNestedManyWithoutUserInput
   kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReportsInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1034,6 +1212,7 @@ export type UserUncheckedCreateWithoutReportsInput = {
   sessions?: Prisma.UserSessionUncheckedCreateNestedManyWithoutUserInput
   kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReportsInput = {
@@ -1056,6 +1235,9 @@ export type UserUpdateWithoutReportsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1067,12 +1249,16 @@ export type UserUpdateWithoutReportsInput = {
   sessions?: Prisma.UserSessionUpdateManyWithoutUserNestedInput
   kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReportsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1084,12 +1270,16 @@ export type UserUncheckedUpdateWithoutReportsInput = {
   sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
   kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTransactionsInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1101,12 +1291,16 @@ export type UserCreateWithoutTransactionsInput = {
   sessions?: Prisma.UserSessionCreateNestedManyWithoutUserInput
   kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTransactionsInput = {
   id?: string
   mobileHash: string
   mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1118,6 +1312,7 @@ export type UserUncheckedCreateWithoutTransactionsInput = {
   sessions?: Prisma.UserSessionUncheckedCreateNestedManyWithoutUserInput
   kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTransactionsInput = {
@@ -1140,6 +1335,9 @@ export type UserUpdateWithoutTransactionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1151,12 +1349,16 @@ export type UserUpdateWithoutTransactionsInput = {
   sessions?: Prisma.UserSessionUpdateManyWithoutUserNestedInput
   kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTransactionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
   mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1168,6 +1370,107 @@ export type UserUncheckedUpdateWithoutTransactionsInput = {
   sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
   kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutSupportRequestsInput = {
+  id?: string
+  mobileHash: string
+  mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
+  status?: $Enums.UserStatus
+  failedOtpWindow?: number
+  blockedUntil?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  profile?: Prisma.UserProfileCreateNestedOneWithoutUserInput
+  consents?: Prisma.UserConsentCreateNestedManyWithoutUserInput
+  otps?: Prisma.OtpTransactionCreateNestedManyWithoutUserInput
+  sessions?: Prisma.UserSessionCreateNestedManyWithoutUserInput
+  kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
+  reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
+  transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutSupportRequestsInput = {
+  id?: string
+  mobileHash: string
+  mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
+  status?: $Enums.UserStatus
+  failedOtpWindow?: number
+  blockedUntil?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  profile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput
+  consents?: Prisma.UserConsentUncheckedCreateNestedManyWithoutUserInput
+  otps?: Prisma.OtpTransactionUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.UserSessionUncheckedCreateNestedManyWithoutUserInput
+  kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
+  reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
+  transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutSupportRequestsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSupportRequestsInput, Prisma.UserUncheckedCreateWithoutSupportRequestsInput>
+}
+
+export type UserUpsertWithoutSupportRequestsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSupportRequestsInput, Prisma.UserUncheckedUpdateWithoutSupportRequestsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSupportRequestsInput, Prisma.UserUncheckedCreateWithoutSupportRequestsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSupportRequestsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSupportRequestsInput, Prisma.UserUncheckedUpdateWithoutSupportRequestsInput>
+}
+
+export type UserUpdateWithoutSupportRequestsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
+  blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  profile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput
+  consents?: Prisma.UserConsentUpdateManyWithoutUserNestedInput
+  otps?: Prisma.OtpTransactionUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUpdateManyWithoutUserNestedInput
+  kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
+  reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
+  transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSupportRequestsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
+  blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  profile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput
+  consents?: Prisma.UserConsentUncheckedUpdateManyWithoutUserNestedInput
+  otps?: Prisma.OtpTransactionUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
+  kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
+  reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
+  transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -1182,6 +1485,7 @@ export type UserCountOutputType = {
   kycs: number
   reports: number
   transactions: number
+  supportRequests: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1191,6 +1495,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   kycs?: boolean | UserCountOutputTypeCountKycsArgs
   reports?: boolean | UserCountOutputTypeCountReportsArgs
   transactions?: boolean | UserCountOutputTypeCountTransactionsArgs
+  supportRequests?: boolean | UserCountOutputTypeCountSupportRequestsArgs
 }
 
 /**
@@ -1245,11 +1550,21 @@ export type UserCountOutputTypeCountTransactionsArgs<ExtArgs extends runtime.Typ
   where?: Prisma.ApiTransactionWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSupportRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SupportRequestWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   mobileHash?: boolean
   mobileLast4?: boolean
+  mobileEncrypted?: boolean
+  bureauMobileEncrypted?: boolean
+  bureauMobileLast4?: boolean
   status?: boolean
   failedOtpWindow?: boolean
   blockedUntil?: boolean
@@ -1262,6 +1577,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   kycs?: boolean | Prisma.User$kycsArgs<ExtArgs>
   reports?: boolean | Prisma.User$reportsArgs<ExtArgs>
   transactions?: boolean | Prisma.User$transactionsArgs<ExtArgs>
+  supportRequests?: boolean | Prisma.User$supportRequestsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1269,6 +1585,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   id?: boolean
   mobileHash?: boolean
   mobileLast4?: boolean
+  mobileEncrypted?: boolean
+  bureauMobileEncrypted?: boolean
+  bureauMobileLast4?: boolean
   status?: boolean
   failedOtpWindow?: boolean
   blockedUntil?: boolean
@@ -1280,6 +1599,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   id?: boolean
   mobileHash?: boolean
   mobileLast4?: boolean
+  mobileEncrypted?: boolean
+  bureauMobileEncrypted?: boolean
+  bureauMobileLast4?: boolean
   status?: boolean
   failedOtpWindow?: boolean
   blockedUntil?: boolean
@@ -1291,6 +1613,9 @@ export type UserSelectScalar = {
   id?: boolean
   mobileHash?: boolean
   mobileLast4?: boolean
+  mobileEncrypted?: boolean
+  bureauMobileEncrypted?: boolean
+  bureauMobileLast4?: boolean
   status?: boolean
   failedOtpWindow?: boolean
   blockedUntil?: boolean
@@ -1298,7 +1623,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "mobileHash" | "mobileLast4" | "status" | "failedOtpWindow" | "blockedUntil" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "mobileHash" | "mobileLast4" | "mobileEncrypted" | "bureauMobileEncrypted" | "bureauMobileLast4" | "status" | "failedOtpWindow" | "blockedUntil" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   profile?: boolean | Prisma.User$profileArgs<ExtArgs>
   consents?: boolean | Prisma.User$consentsArgs<ExtArgs>
@@ -1307,6 +1632,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   kycs?: boolean | Prisma.User$kycsArgs<ExtArgs>
   reports?: boolean | Prisma.User$reportsArgs<ExtArgs>
   transactions?: boolean | Prisma.User$transactionsArgs<ExtArgs>
+  supportRequests?: boolean | Prisma.User$supportRequestsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1322,11 +1648,15 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     kycs: Prisma.$KycVerificationPayload<ExtArgs>[]
     reports: Prisma.$CreditReportPayload<ExtArgs>[]
     transactions: Prisma.$ApiTransactionPayload<ExtArgs>[]
+    supportRequests: Prisma.$SupportRequestPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     mobileHash: string
     mobileLast4: string
+    mobileEncrypted: string | null
+    bureauMobileEncrypted: string | null
+    bureauMobileLast4: string | null
     status: $Enums.UserStatus
     failedOtpWindow: number
     blockedUntil: Date | null
@@ -1733,6 +2063,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   kycs<T extends Prisma.User$kycsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$kycsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KycVerificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reports<T extends Prisma.User$reportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CreditReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   transactions<T extends Prisma.User$transactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApiTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  supportRequests<T extends Prisma.User$supportRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$supportRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1765,6 +2096,9 @@ export interface UserFieldRefs {
   readonly id: Prisma.FieldRef<"User", 'String'>
   readonly mobileHash: Prisma.FieldRef<"User", 'String'>
   readonly mobileLast4: Prisma.FieldRef<"User", 'String'>
+  readonly mobileEncrypted: Prisma.FieldRef<"User", 'String'>
+  readonly bureauMobileEncrypted: Prisma.FieldRef<"User", 'String'>
+  readonly bureauMobileLast4: Prisma.FieldRef<"User", 'String'>
   readonly status: Prisma.FieldRef<"User", 'UserStatus'>
   readonly failedOtpWindow: Prisma.FieldRef<"User", 'Int'>
   readonly blockedUntil: Prisma.FieldRef<"User", 'DateTime'>
@@ -2323,6 +2657,30 @@ export type User$transactionsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.ApiTransactionScalarFieldEnum | Prisma.ApiTransactionScalarFieldEnum[]
+}
+
+/**
+ * User.supportRequests
+ */
+export type User$supportRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SupportRequest
+   */
+  select?: Prisma.SupportRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SupportRequest
+   */
+  omit?: Prisma.SupportRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupportRequestInclude<ExtArgs> | null
+  where?: Prisma.SupportRequestWhereInput
+  orderBy?: Prisma.SupportRequestOrderByWithRelationInput | Prisma.SupportRequestOrderByWithRelationInput[]
+  cursor?: Prisma.SupportRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SupportRequestScalarFieldEnum | Prisma.SupportRequestScalarFieldEnum[]
 }
 
 /**

@@ -20,7 +20,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       aria-pressed={isDark}
       title={label}
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className={`theme-toggle grid size-9 shrink-0 place-items-center rounded-xl border border-[#dce2ec] bg-white text-[#526078] transition-colors hover:bg-[#f7f9fc] hover:text-[#155eef] ${className}`}
+      className={`theme-toggle grid size-9 shrink-0 place-items-center rounded-xl border border-[#d2ded6] bg-white text-[#4d6356] transition-colors hover:bg-[#f1f6f3] hover:text-[#216b49] ${className}`}
     >
       {mounted ? (isDark ? <Moon className="size-4" aria-hidden="true" /> : <Sun className="size-4" aria-hidden="true" />) : <span className="size-4" aria-hidden="true" />}
       <span className="sr-only">{mounted ? (isDark ? "Dark theme active" : "Light theme active") : "Theme"}</span>

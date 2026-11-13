@@ -1,42 +1,57 @@
-import { production } from "./clients.js";
-import { hashMobile } from "../lib/crypto.js";
+// Test logins (OTP_PROVIDER=mock, OTP = OTP_MOCK_CODE, default 123456). Re-run to reset them.
+import { randomUUID } from "node:crypto";
+import { audit, production } from "./clients.js";
+import { encrypt, hashMobile, hashPan } from "../lib/crypto.js";
+import { demoReport } from "../services/bureau.js";
 
-// User 1: Primary Demo User (Direct to Dashboard)
-const mobile = "9876543210";
-const user = await production.user.upsert({
-  where: { mobileHash: hashMobile(mobile) },
-  update: { status: "ACTIVE", blockedUntil: null },
-  create: { mobileHash: hashMobile(mobile), mobileLast4: mobile.slice(-4), status: "ACTIVE" },
-});
-console.log(`Demo user ready: ${user.id} (mobile ending ${user.mobileLast4})`);
+async function resetUser(mobile: string) {
+  const existing = await production.user.findUnique({ where: { mobileHash: hashMobile(mobile) } });
+  if (existing) {
+    await audit.auditLog.deleteMany({ where: { userRef: existing.id } });
+    await audit.onboardingJourney.deleteMany({ where: { userRef: existing.id } });
+    await production.user.delete({ where: { id: existing.id } }); // cascades to profile, OTPs, KYC, reports
+  }
+}
 
-// User 2: Dedicated PAN Card & KYC Verification Flow Test Account
-const kycMobile = "9876543211";
-const kycUser = await production.user.upsert({
-  where: { mobileHash: hashMobile(kycMobile) },
-  update: { status: "ACTIVE", blockedUntil: null },
-  create: { mobileHash: hashMobile(kycMobile), mobileLast4: kycMobile.slice(-4), status: "ACTIVE" },
-});
+async function createUser(mobile: string) {
+  await resetUser(mobile);
+  return production.user.create({ data: { mobileHash: hashMobile(mobile), mobileLast4: mobile.slice(-4), mobileEncrypted: encrypt(mobile) } });
+}
 
-await production.userProfile.upsert({
-  where: { userId: kycUser.id },
-  update: {},
-  create: {
-    userId: kycUser.id,
-    firstName: "Priya",
-    lastName: "Patel",
-    email: "priya.demo@relive.test",
-    dateOfBirth: new Date("1995-08-20"),
-    source: "NSDL",
-    verified: true,
-  },
-});
+// 1. Existing user, profile complete -> straight to the dashboard
+const complete = await createUser("9876543210");
+const pan = "ABCDE1234F";
+await production.userProfile.create({ data: {
+  userId: complete.id, firstName: "Aarav", lastName: "Sharma", email: "aarav.demo@relive.test",
+  dateOfBirth: new Date("1992-06-14"), source: "NSDL", verified: true,
+}});
+await production.kycVerification.create({ data: { userId: complete.id, panHash: hashPan(pan), panLast4: pan.slice(-4), status: "VERIFIED", verifiedAt: new Date() } });
+await production.userConsent.create({ data: { userId: complete.id, purpose: "CREDIT_REPORT", version: "relive-consent-v2" } });
+const idempotencyKey = randomUUID();
+// Always the mock bureau, even with BUREAU_PROVIDER=indiconnect: seeding must never trigger a billed pull.
+const report = { bureau: "EXPERIAN", providerRef: `seed_${idempotencyKey}`, score: 782, reportJson: demoReport(782) };
+await production.creditReport.create({ data: {
+  userId: complete.id, bureau: report.bureau, score: report.score, reportJson: report.reportJson, providerRef: report.providerRef,
+  idempotencyKey, status: "CURRENT", expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60_000),
+}});
 
-// Reset any completed reports/kyc for this user so it always lands on the KYC PAN screen
-await production.creditReport.deleteMany({ where: { userId: kycUser.id } });
-await production.kycVerification.deleteMany({ where: { userId: kycUser.id } });
-await production.userConsent.deleteMany({ where: { userId: kycUser.id } });
+// 2. Existing user, details saved but no report yet (e.g. bureaus were down) -> resumes at "fetch score"
+const partial = await createUser("9876543211");
+await production.userProfile.create({ data: {
+  userId: partial.id, firstName: "Priya", lastName: "Patel", email: "priya.demo@relive.test",
+  dateOfBirth: new Date("1995-08-20"), source: "MANUAL_UNVERIFIED", verified: false,
+}});
+await production.userConsent.create({ data: { userId: partial.id, purpose: "CREDIT_REPORT", version: "relive-consent-v2" } });
 
-console.log(`PAN/KYC test user ready: ${kycUser.id} (mobile ${kycMobile}, OTP: 123456)`);
+// 3. New user -> nothing stored, so login starts at "Enter PAN"
+await resetUser("9876543212");
 
-await production.$disconnect();
+console.table([
+  { mobile: "9876543210", case: "Existing user, profile complete", lands: "Dashboard" },
+  { mobile: "9876543211", case: "Existing user, no report yet", lands: "Fetch score (resumes onboarding)" },
+  { mobile: "9876543212", case: "New user (reset on every seed)", lands: "Enter PAN" },
+]);
+console.log("OTP for all: 123456. PAN AAAAA0000A simulates a failed PAN lookup.");
+console.log("Dev only: header x-relive-mock-scenario: business_failure on /credit/report makes Experian fail, so CRIF is used.");
+
+await Promise.all([production.$disconnect(), audit.$disconnect()]);

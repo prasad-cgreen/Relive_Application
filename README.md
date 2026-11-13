@@ -13,9 +13,38 @@ npm run dev
 ```
 
 - Web: `http://127.0.0.1:5173`
-- API health: `http://127.0.0.1:4000/health`
-- Demo mobile: `9876543210`
-- Development OTP: `123456` (also returned by the API only outside production)
+- API health: `http://127.0.0.1:4100/health`
+### Test logins (`OTP_PROVIDER=mock`, OTP `123456`)
+
+`npm run db:seed` resets these every time it runs:
+
+| Mobile | Case | Lands on |
+|---|---|---|
+| `9876543210` | Existing user, profile complete | Dashboard |
+| `9876543211` | Existing user, details saved, no report yet | Fetch score (resumes onboarding) |
+| `9876543212` | New user | Enter PAN (any valid PAN, e.g. `ABCDE1234F`) |
+
+Any other valid mobile number also works as a new user. PAN `AAAAA0000A` simulates a failed PAN lookup. Three wrong OTPs lock the number for 15 minutes; re-seed to clear it.
+
+## Login / signup journey
+
+1. **Mobile (as linked to PAN) + one consent checkbox** covering terms/privacy and OTP, credit-bureau report fetch, and marketing ("Read more" expands the text). Stored per purpose (`LOGIN`, `CREDIT_REPORT`, `MARKETING`) with the consent version, IP and user agent, before the OTP is sent.
+2. **OTP** send + verify. Resend after 10s (cancels the previous OTP); max 5 sends / 30 min; 3 wrong OTPs per user → 15-minute lockout and back to the mobile step.
+3. **Existing user** (any saved report) → dashboard. Otherwise onboarding continues in the same dialog, resuming where the user left off:
+   - **PAN** → PAN API fills the name (incl. middle name) and DOB → report is fetched immediately (no extra consent step).
+   - PAN not found / PAN service off / 5 PAN tries per day → "Enter your name as on PAN". PAN already linked to another mobile → log in with that number.
+
+## Audit trail
+
+Every login and onboarding step is recorded in the audit database (`audit_logs` events plus one `onboarding_journeys` row per user). See [docs/login-onboarding-flow.md](docs/login-onboarding-flow.md). `npm run journey -w backend` lists unfinished onboardings; add a mobile number to see one user's timeline.
+
+## Credit report (Experian → CRIF)
+
+Right after the profile is known (consent was given at signup), the API calls IndiConnect **Bureau(A) V2 / Experian** with the profile name and mobile. If Experian fails for any reason (no record, error, timeout), it calls **Bureau C / CRIF**. Only when **both** answer "no record" → 422 `NO_CREDIT_RECORD` (UI: "Edit my name as on PAN" or "Use a different mobile number"); any outage or timeout → 503 `REPORT_UNAVAILABLE` (UI: "Try again"). Max 3 report attempts per user per 24h (`REPORT_ATTEMPT_LIMIT`). Bureau calls are billable, so they are never retried automatically, and a current report (30 days) is reused instead of pulling again. The full bureau payload is stored in `credit_reports.raw_response` and never sent to the browser. PAN is optional: bureaus match on name + mobile.
+
+In mock mode, send `x-relive-mock-scenario: business_failure` to `/credit/report` to make Experian fail and exercise the CRIF fallback.
+
+Each service switches independently in `backend/.env`: `OTP_PROVIDER`, `PAN_PROVIDER`, `BUREAU_PROVIDER` = `mock` | `indiconnect`, plus `INDICONNECT_*` credentials (see `.env.example`). With `PAN_PROVIDER=mock` and `BUREAU_PROVIDER=indiconnect`, the PAN step reports "not available" so users continue without PAN and enter their real name (a fake PAN identity must never reach a billed bureau pull). Production refuses to start with any mock provider or default secrets.
 
 ## Workspace
 
@@ -27,7 +56,7 @@ The backend loads Neon connection values from `frontend/.env.local`, which is ge
 
 ## Provider mode
 
-OTP, NSDL, KYC, and Experian are intentionally implemented as `MOCK_*` adapters until documented contracts and credentials are supplied. Every adapter goes through the same timeout, controlled retry, business-failure, technical-failure, invalid-response, transaction-log, and recovery layer. The development-only `x-relive-mock-scenario` header can be `success`, `business_failure`, `technical_failure`, `timeout`, or `invalid_response`.
+In mock mode OTP, PAN and Experian use `MOCK_*` adapters. Every adapter goes through the same timeout, controlled retry, business-failure, technical-failure, invalid-response, transaction-log, and recovery layer. The development-only `x-relive-mock-scenario` header can be `success`, `business_failure`, `technical_failure`, `timeout`, or `invalid_response`.
 
 Manual profile details are stored as `MANUAL_UNVERIFIED`. Experian cannot run without successful KYC and a recorded credit-report authorization. A current saved report routes the member directly to the dashboard.
 

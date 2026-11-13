@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   AuditLog: 'AuditLog',
+  OnboardingJourney: 'OnboardingJourney',
   ErrorLog: 'ErrorLog'
 } as const
 
@@ -83,6 +84,29 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const OnboardingJourneyScalarFieldEnum = {
+  userRef: 'userRef',
+  mobileLast4: 'mobileLast4',
+  status: 'status',
+  currentStep: 'currentStep',
+  lastEvent: 'lastEvent',
+  lastOutcome: 'lastOutcome',
+  identitySource: 'identitySource',
+  panLast4: 'panLast4',
+  altMobileLast4: 'altMobileLast4',
+  bureau: 'bureau',
+  otpSends: 'otpSends',
+  otpFailures: 'otpFailures',
+  panAttempts: 'panAttempts',
+  reportAttempts: 'reportAttempts',
+  startedAt: 'startedAt',
+  lastActivityAt: 'lastActivityAt',
+  completedAt: 'completedAt'
+} as const
+
+export type OnboardingJourneyScalarFieldEnum = (typeof OnboardingJourneyScalarFieldEnum)[keyof typeof OnboardingJourneyScalarFieldEnum]
 
 
 export const ErrorLogScalarFieldEnum = {

@@ -9,7 +9,7 @@ for (const file of [resolve(process.cwd(), ".env"), resolve(process.cwd(), "../f
 
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  PORT: z.coerce.number().int().positive().default(4000),
+  PORT: z.coerce.number().int().positive().default(4100),
   FRONTEND_ORIGIN: z.string().default("http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173"),
   DATABASE_URL: z.string().url(),
   DATABASE_URL_UNPOOLED: z.string().url(),
@@ -17,11 +17,46 @@ const schema = z.object({
   AUDIT_DATABASE_URL_UNPOOLED: z.string().url().optional(),
   SESSION_SECRET: z.string().min(24).default("relive-local-session-pepper-change-me"),
   OTP_PEPPER: z.string().min(24).default("relive-local-otp-pepper-change-me-now"),
+  DATA_ENCRYPTION_KEY: z.string().min(24).default("relive-local-data-key-change-me-please"),
   OTP_MOCK_CODE: z.string().regex(/^\d{6}$/).default("123456"),
-  PROVIDER_MODE: z.literal("mock").default("mock"),
+  // Per service: mock (local fakes, OTP = OTP_MOCK_CODE) or indiconnect (real, billed API calls).
+  OTP_PROVIDER: z.enum(["mock", "indiconnect"]).default("mock"),
+  PAN_PROVIDER: z.enum(["mock", "indiconnect"]).default("mock"),
+  BUREAU_PROVIDER: z.enum(["mock", "indiconnect"]).default("mock"),
+  INDICONNECT_BASE_URL: z.string().url().default("https://api.staging.indiconnect.in"),
+  INDICONNECT_SERVICE_KEY: z.string().min(1).optional(),
+  // Full Authorization header value: "x-api-access <indc_key>:<ac_key>"
+  INDICONNECT_AUTHORIZATION: z.string().min(1).optional(),
+  INDICONNECT_APP_ID: z.string().min(1).default("verification_v1"),
+  INDICONNECT_PROVIDER_CODE: z.string().min(1).optional(),
+  // Optional PAN-specific keys (IndiConnect may issue a separate service key per API). Default: the keys above.
+  INDICONNECT_PAN_SERVICE_KEY: z.string().min(1).optional(),
+  INDICONNECT_PAN_AUTHORIZATION: z.string().min(1).optional(),
+  INDICONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
+  // Bureau pulls are slow (report generation) and billable, so they get their own, longer timeout.
+  INDICONNECT_BUREAU_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
+  // "Get help" leads are emailed here. SMTP_URL e.g. smtps://user%40domain:password@smtp.host:465; unset = no emails.
+  LEADS_EMAIL: z.string().email().default("relive@cgreen.in"),
+  SMTP_URL: z.string().url().optional(),
+}).superRefine((value, ctx) => {
+  const services = ["OTP_PROVIDER", "PAN_PROVIDER", "BUREAU_PROVIDER"] as const;
+  if (services.some((service) => value[service] === "indiconnect")) {
+    for (const key of ["INDICONNECT_SERVICE_KEY", "INDICONNECT_AUTHORIZATION"] as const) {
+      if (!value[key]) ctx.addIssue({ code: "custom", path: [key], message: `${key} is required when any *_PROVIDER=indiconnect` });
+    }
+  }
+  if (value.NODE_ENV === "production") {
+    for (const service of services) {
+      if (value[service] === "mock") ctx.addIssue({ code: "custom", path: [service], message: `${service}=mock cannot run in production` });
+    }
+    for (const key of ["SESSION_SECRET", "OTP_PEPPER", "DATA_ENCRYPTION_KEY"] as const) {
+      if (value[key].includes("change-me")) ctx.addIssue({ code: "custom", path: [key], message: `Set a real ${key} in production` });
+    }
+  }
 });
 
-export const env = schema.parse(process.env);
+// Blank lines like `INDICONNECT_SERVICE_KEY=` in .env mean "not set", not "empty value".
+export const env = schema.parse(Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== "")));
 
 export function databaseUrl(database = "neondb", pooled = true) {
   if (database === "relive_audit") {

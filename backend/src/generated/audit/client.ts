@@ -47,6 +47,12 @@ export { Prisma }
  */
 export type AuditLog = Prisma.AuditLogModel
 /**
+ * Model OnboardingJourney
+ * One row per user: where they are in login/onboarding. Unfinished = status IN_PROGRESS.
+ * Only masked identifiers (last 4 digits) are stored here.
+ */
+export type OnboardingJourney = Prisma.OnboardingJourneyModel
+/**
  * Model ErrorLog
  * 
  */

@@ -24,6 +24,9 @@ const bureauScoreConfig: Record<string, { min: number; max: number; bands: Score
   },
 };
 
+// CRIF uses the same 300-900 range, so it shares Experian's bands.
+bureauScoreConfig.CRIF = bureauScoreConfig.EXPERIAN!;
+
 function scoreConfig(bureau: string) {
   return bureauScoreConfig[bureau.toUpperCase()] ?? null;
 }
@@ -33,10 +36,27 @@ function categoryFor(score: number, bands: ScoreBand[]) {
 }
 
 export async function getCreditOverview(userId: string) {
-  const [latestReport, workflow] = await Promise.all([
-    production.creditReport.findFirst({ where: { userId }, orderBy: { retrievedAt: "desc" } }),
+  const [[latestReport, previousReport], workflow] = await Promise.all([
+    production.creditReport.findMany({ where: { userId, status: { not: "NO_RECORD" } }, orderBy: { retrievedAt: "desc" }, take: 2 }),
     getWorkflow(userId),
   ]);
+
+  const noRecord = await production.creditReport.findFirst({ where: { userId, status: "NO_RECORD", retrievedAt: { gt: latestReport?.retrievedAt ?? new Date(0) } } });
+  if (noRecord) {
+    return {
+      status: "NO_RECORD" as const,
+      score: null,
+      bureau: null,
+      scoreRange: null,
+      category: null,
+      insight: "Experian and CRIF High Mark have no credit history for you yet. This is normal if you've never had a loan or credit card.",
+      retrievedAt: noRecord.retrievedAt,
+      expiresAt: noRecord.expiresAt,
+      scoreChange: null,
+      report: null,
+      nextStage: workflow.stage,
+    };
+  }
 
   if (!latestReport) {
     return {
@@ -48,6 +68,7 @@ export async function getCreditOverview(userId: string) {
       insight: "Complete the secure setup to retrieve your credit score.",
       retrievedAt: null,
       expiresAt: null,
+      scoreChange: null,
       report: null,
       nextStage: workflow.stage,
     };
@@ -66,6 +87,8 @@ export async function getCreditOverview(userId: string) {
     insight: category?.insight ?? "Your credit score is available. Review your report for more detail.",
     retrievedAt: latestReport.retrievedAt,
     expiresAt: latestReport.expiresAt,
+    // Change since the previous report; null when this is the first one (never a made-up number).
+    scoreChange: previousReport ? latestReport.score - previousReport.score : null,
     report: latestReport.reportJson,
     nextStage: workflow.stage,
   };

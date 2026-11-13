@@ -21,6 +21,30 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+/// One row per user: where they are in login/onboarding. Unfinished = status IN_PROGRESS.
+/// Only masked identifiers (last 4 digits) are stored here.
+model OnboardingJourney {
+  userRef        String    @id @map("user_ref")
+  mobileLast4    String?   @map("mobile_last4")
+  status         String    @default("IN_PROGRESS") // IN_PROGRESS | COMPLETED | NO_CREDIT_HISTORY
+  currentStep    String    @map("current_step")    // MOBILE | OTP | PAN | DETAILS | REPORT | ALT_MOBILE | DASHBOARD
+  lastEvent      String    @map("last_event")
+  lastOutcome    String    @map("last_outcome")    // SUCCESS or the error code
+  identitySource String?   @map("identity_source") // PAN | MANUAL
+  panLast4       String?   @map("pan_last4")
+  altMobileLast4 String?   @map("alt_mobile_last4")
+  bureau         String?                           // EXPERIAN | CRIF
+  otpSends       Int       @default(0) @map("otp_sends")
+  otpFailures    Int       @default(0) @map("otp_failures")
+  panAttempts    Int       @default(0) @map("pan_attempts")
+  reportAttempts Int       @default(0) @map("report_attempts")
+  startedAt      DateTime  @default(now()) @map("started_at")
+  lastActivityAt DateTime  @default(now()) @map("last_activity_at")
+  completedAt    DateTime? @map("completed_at")
+  @@index([status, lastActivityAt])
+  @@map("onboarding_journeys")
+}
+
 model ErrorLog {
   id        String @id @default(uuid()) @db.Uuid
   code      String

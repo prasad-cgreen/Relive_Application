@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUp, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 export type ScoreBand = {
   key: string;
@@ -21,7 +21,8 @@ type CreditScoreGaugeProps = {
   bureau?: string | null;
   onRefresh?: () => void;
   refreshing?: boolean;
-  delta?: number;
+  delta?: number | null; // change since the previous report; hidden when null/0
+  inverted?: boolean; // drawn on a dark surface
 };
 
 const CX = 200;
@@ -35,7 +36,7 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function getTickColor(pct: number): string {
-  // DisputeFox rainbow gradient: Red (0-30%) -> Orange (30-50%) -> Yellow (50-70%) -> Lime Green (70-100%)
+  // Red (0-30%) -> Orange (30-50%) -> Yellow (50-70%) -> Lime Green (70-100%)
   if (pct < 0.3) return "#f43f5e"; // rose/red
   if (pct < 0.5) return "#fb923c"; // orange
   if (pct < 0.7) return "#eab308"; // warm yellow
@@ -48,11 +49,13 @@ export function CreditScoreGauge({
   min = 300,
   max = 900,
   category,
+  bands,
   loading = false,
-  bureau = "Experian",
+  bureau,
   onRefresh,
   refreshing = false,
-  delta = 6,
+  delta = null,
+  inverted = false,
 }: CreditScoreGaugeProps) {
   const safeMin = min ?? 300;
   const safeMax = max ?? 900;
@@ -60,12 +63,6 @@ export function CreditScoreGauge({
 
   const [animPct, setAnimPct] = useState(0);
   const [displayScore, setDisplayScore] = useState<number | null>(null);
-  const [activeBureau, setActiveBureau] = useState(bureau || "Experian");
-
-  useEffect(() => {
-    if (bureau) setActiveBureau(bureau);
-  }, [bureau]);
-
   useEffect(() => {
     if (loading || score == null) {
       setAnimPct(0);
@@ -73,7 +70,6 @@ export function CreditScoreGauge({
       return;
     }
 
-    let start = 0;
     const duration = 900;
     const startTime = performance.now();
 
@@ -101,7 +97,9 @@ export function CreditScoreGauge({
       const t = i / (TOTAL_TICKS - 1);
       const angleDeg = 180 + t * 180;
       const rad = (angleDeg * Math.PI) / 180;
-      const color = getTickColor(t);
+      // The bureau's own bands when known, so the arc colour matches the category label.
+      const value = safeMin + t * (safeMax - safeMin);
+      const color = bands?.find((band) => value < band.max + 1 && value >= band.min)?.color ?? getTickColor(t);
 
       const xOuter = CX + RADIUS_OUTER * Math.cos(rad);
       const yOuter = CY + RADIUS_OUTER * Math.sin(rad);
@@ -119,7 +117,7 @@ export function CreditScoreGauge({
       });
     }
     return list;
-  }, []);
+  }, [bands, safeMin, safeMax]);
 
   // Compute position for indicator pill at current score
   const indicatorAngleDeg = 180 + animPct * 180;
@@ -127,29 +125,15 @@ export function CreditScoreGauge({
   const indicatorX = CX + (RADIUS_OUTER + 8) * Math.cos(indicatorRad);
   const indicatorY = CY + (RADIUS_OUTER + 8) * Math.sin(indicatorRad);
 
-  const bureauList = ["Experian", "CIBIL"];
 
   return (
     <div className="relative flex w-full flex-col items-center">
-      {/* Bureau selector tabs matching reference */}
-      <div className="mb-4 inline-flex items-center gap-1 rounded-full border border-black/5 bg-[#f4f6f5] p-1 text-xs dark:border-white/10 dark:bg-[#121c16]">
-        {bureauList.map((b) => {
-          const isSelected = activeBureau.toUpperCase() === b.toUpperCase();
-          return (
-            <button
-              key={b}
-              type="button"
-              onClick={() => setActiveBureau(b)}
-              className={`rounded-full px-3.5 py-1 text-xs font-medium transition-all ${isSelected
-                ? "bg-white text-emerald-950 font-semibold shadow-xs dark:bg-emerald-500/20 dark:text-emerald-300"
-                : "text-[#62736b] hover:text-[#0b1712] dark:text-[#889890] dark:hover:text-white"
-                }`}
-            >
-              {b}
-            </button>
-          );
-        })}
-      </div>
+      {/* The bureau this score came from (no switching: one report = one bureau) */}
+      {bureau && (
+        <div className="mb-4 inline-flex items-center rounded-full border border-black/5 bg-[#f4f6f5] px-3.5 py-1 text-xs font-semibold text-emerald-950 dark:border-white/10 dark:bg-emerald-500/20 dark:text-emerald-300">
+          {bureau}
+        </div>
+      )}
 
       {/* Score Arc SVG */}
       <div className="relative mx-auto w-full max-w-[380px]">
@@ -176,7 +160,7 @@ export function CreditScoreGauge({
             stroke="currentColor"
             strokeWidth="2"
             strokeDasharray="2 6"
-            className="text-[#e2e8e4] dark:text-[#1e3025]"
+            className={inverted ? "text-white/10" : "text-[#e2e8e4] dark:text-[#1e3025]"}
           />
 
           {/* Dense Segmented Ticks */}
@@ -194,31 +178,30 @@ export function CreditScoreGauge({
                 strokeLinecap="round"
                 className={`transition-opacity duration-300 ${isActive
                   ? "opacity-100"
-                  : "text-[#dbe3de] opacity-40 dark:text-[#25392d]"
+                  : inverted ? "text-white/10" : "text-[#dbe3de] opacity-40 dark:text-[#25392d]"
                   }`}
               />
             );
           })}
 
           {/* Reference score milestones along arc */}
-          <text x={CX - RADIUS_OUTER - 4} y={CY + 18} textAnchor="middle" className="fill-[#84958c] text-[11px] font-semibold">
+          <text x={CX - RADIUS_OUTER - 4} y={CY + 18} textAnchor="middle" className={`${inverted ? "fill-white/50" : "fill-[#84958c]"} text-[11px] font-semibold`}>
             {safeMin}
           </text>
-          <text x={CX - 110} y={CY - 105} textAnchor="middle" className="fill-[#84958c] text-[10px] font-medium">
-            450
-          </text>
-          <text x={CX} y={CY - RADIUS_OUTER - 8} textAnchor="middle" className="fill-[#84958c] text-[10px] font-medium">
-            580
-          </text>
-          <text x={CX + 110} y={CY - 80} textAnchor="middle" className="fill-[#84958c] text-[10px] font-medium">
-            700
-          </text>
-          <text x={CX + RADIUS_OUTER + 6} y={CY + 18} textAnchor="middle" className="fill-[#84958c] text-[11px] font-semibold">
+          {[0.25, 0.5, 0.75].map((t) => {
+            const rad = ((180 + t * 180) * Math.PI) / 180;
+            return (
+              <text key={t} x={CX + (RADIUS_OUTER + 16) * Math.cos(rad)} y={CY + (RADIUS_OUTER + 16) * Math.sin(rad) + 4} textAnchor="middle" className={`${inverted ? "fill-white/50" : "fill-[#84958c]"} text-[10px] font-medium`}>
+                {Math.round((safeMin + t * (safeMax - safeMin)) / 10) * 10}
+              </text>
+            );
+          })}
+          <text x={CX + RADIUS_OUTER + 6} y={CY + 18} textAnchor="middle" className={`${inverted ? "fill-white/50" : "fill-[#84958c]"} text-[11px] font-semibold`}>
             {safeMax}
           </text>
 
-          {/* Dynamic indicator badge on arc (matching DisputeFox delta pill) */}
-          {!loading && score != null && (
+          {/* Dynamic indicator badge on arc  */}
+          {!loading && score != null && delta != null && delta !== 0 && (
             <g
               transform={`translate(${indicatorX}, ${indicatorY})`}
               className="transition-transform duration-300 ease-out"
@@ -228,7 +211,7 @@ export function CreditScoreGauge({
                   width="48"
                   height="22"
                   rx="11"
-                  className="fill-emerald-500 stroke-white stroke-2 shadow-md dark:fill-emerald-400 dark:stroke-[#0a140f]"
+                  className={`${delta > 0 ? "fill-emerald-500 dark:fill-emerald-400" : "fill-rose-500 dark:fill-rose-400"} stroke-2 ${inverted ? "stroke-[#0b2416]" : "stroke-white dark:stroke-[#0a140f]"}`}
                 />
                 <text
                   x="24"
@@ -236,7 +219,7 @@ export function CreditScoreGauge({
                   textAnchor="middle"
                   className="fill-white text-[10px] font-bold tracking-tight dark:fill-emerald-950"
                 >
-                  ▲ {delta > 0 ? `+${delta}` : delta} pts
+                  {delta > 0 ? `▲ +${delta}` : `▼ ${delta}`} pts
                 </text>
               </g>
             </g>
@@ -253,45 +236,35 @@ export function CreditScoreGauge({
           ) : (
             <>
               <div className="flex items-baseline justify-center">
-                <span className="text-[clamp(3.2rem,8vw,4.75rem)] font-bold tracking-[-0.06em] text-[#0d1f17] dark:text-[#f0fdf4]">
+                <span className={`text-[clamp(2.5rem,11vw,3.5rem)] font-semibold tabular-nums tracking-[-0.06em] ${inverted ? "text-white" : "text-[#0d1f17] dark:text-[#f0fdf4]"}`}>
                   {displayScore ?? score ?? "—"}
                 </span>
               </div>
-              <div className="mt-0.5 flex items-center gap-1.5">
+              {category && (
                 <span
-                  className="inline-flex items-center gap-1 rounded-full px-3 py-0.5 text-xs font-bold uppercase tracking-wider"
-                  style={{
-                    backgroundColor: category?.color ? `${category.color}18` : "#22c55e18",
-                    color: category?.color ?? "#16a34a",
-                  }}
+                  className="mt-0.5 inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-xs font-semibold uppercase tracking-wider"
+                  style={{ backgroundColor: `${category.color}18`, color: category.color }}
                 >
-                  <span
-                    className="size-1.5 rounded-full"
-                    style={{ backgroundColor: category?.color ?? "#16a34a" }}
-                  />
-                  {category?.label ?? "Good Standing"}
+                  <span className="size-1.5 rounded-full" style={{ backgroundColor: category.color }} />
+                  {category.label}
                 </span>
-              </div>
+              )}
             </>
           )}
         </div>
       </div>
 
-      {/* CTA Button: Update Your Credit Score matching DisputeFox dark pill */}
-      <div className="mt-2">
+      {onRefresh && (
         <button
           type="button"
           onClick={onRefresh}
           disabled={refreshing || loading}
-          className="group inline-flex items-center gap-2 rounded-full bg-[#0d1f17] px-6 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-[#163327] hover:shadow-lg disabled:opacity-60 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0d1f17] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#163327] disabled:opacity-60 sm:w-auto dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
         >
-          <RefreshCw
-            className={`size-3.5 transition-transform group-hover:rotate-180 ${refreshing ? "animate-spin" : ""
-              }`}
-          />
-          <span>{refreshing ? "Updating score..." : "Update your credit score"}</span>
+          <RefreshCw className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
+          {refreshing ? "Updating score…" : "Update credit score"}
         </button>
-      </div>
+      )}
     </div>
   );
 }

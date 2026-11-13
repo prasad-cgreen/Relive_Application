@@ -2,6 +2,9 @@
 @import "tw-animate-css";
 @import "../vendor/shadcn-tailwind-4.13.0.css";
 
+/* `dark:` follows the theme toggle (next-themes puts .dark on <html>), not the OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   color-scheme: light;
   --background: #ffffff;
@@ -43,9 +46,26 @@ html { scroll-behavior: smooth; background: #ffffff; }
 body { margin: 0; background: var(--background); color: var(--foreground); font-family: "Segoe UI", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif; text-rendering: optimizeLegibility; }
 button, a, input { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
-button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid rgba(21, 94, 239, 0.28); outline-offset: 2px; }
-::selection { background: #d8e7ff; color: #0b1739; }
+/* Text fields draw their own green focus border/ring, so only controls without one get the outline. */
+button:focus-visible, a:focus-visible, input[type="checkbox"]:focus-visible, input[type="radio"]:focus-visible { outline: 3px solid rgba(33, 107, 73, 0.35); outline-offset: 2px; }
+::selection { background: #d5e9b9; color: #183b2f; }
+/* Landing sections fade up as they scroll into view. Native scroll-driven animation, no JS;
+   browsers without it (or with reduced motion) just show the content. */
+@keyframes reveal { from { opacity: 0; transform: translateY(18px); } }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal { animation: reveal linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
+  }
+}
+
+/* Progress bars fill from the left on first paint. */
+@keyframes grow-x { from { transform: scaleX(0); } }
+.animate-grow-x { transform-origin: left; animation: grow-x 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
+
+/* Dashboard: app-like, no visible scrollbars (wheel, trackpad, touch and keyboard still scroll). */
+.no-scrollbar, html:has(.portal-root) { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar, html:has(.portal-root)::-webkit-scrollbar { display: none; }
 
 .hero-wash { background: linear-gradient(180deg, #f3f7ff 0%, rgba(247, 249, 253, 0.45) 60%, #ffffff 100%); }
 

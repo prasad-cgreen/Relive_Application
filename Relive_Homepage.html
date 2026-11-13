@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Relive by CGreen: understand your debt, explore possible resolution options and find a practical next step.">
+  <title>Relive by CGreen | A way forward for your debt</title>
+  <style>:root {
+  --ink: #193c30;
+  --text: #465a50;
+  --muted: #63776b;
+  --green: #216b49;
+  --deep: #163e2d;
+  --accent: #d5e9b9;
+  --soft: #eef4e9;
+  --canvas: #f8faf6;
+  --line: #dce5d8;
+  --white: #fff;
+  --amber: #9a5d23;
+  --error: #a13e34;
+  --radius: 22px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+body { margin: 0; color: var(--ink); background: var(--canvas); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+body.modal-open { overflow: hidden; }
+button, input, textarea { font: inherit; }
+button, a, input, textarea, summary { -webkit-tap-highlight-color: transparent; }
+button, a { touch-action: manipulation; }
+button { cursor: pointer; color: inherit; }
+a { color: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid #72a26a; outline-offset: 4px; }
+button:disabled { cursor: not-allowed; opacity: .48; }
+button, a { -webkit-user-drag: none; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { font-weight: 650; }
+p { color: var(--text); }
+svg.icon { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+svg.icon.sm { width: 17px; height: 17px; }
+svg.icon.lg { width: 25px; height: 25px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+[hidden] { display: none !important; }
+.skip { position: fixed; top: -80px; left: 20px; background: var(--deep); color: #fff; padding: 12px 20px; z-index: 100; border-radius: 8px; }
+.skip:focus { top: 12px; }
+.container { width: min(1220px, calc(100% - 88px)); margin-inline: auto; }
+.site-header { background: #ffffffed; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; backdrop-filter: blur(12px); }
+.header-inner { height: 83px; display: flex; align-items: center; justify-content: space-between; gap: 25px; }
+.brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; flex-shrink: 0; }
+.brand-symbol { display: grid; place-items: center; width: 43px; height: 45px; background: var(--deep); border-radius: 12px; }
+.brand-symbol img { width: 27px; height: 30px; object-fit: contain; }
+.brand-name { font-size: 28px; letter-spacing: -1.1px; line-height: 1; font-weight: 680; }
+.brand-byline { margin-top: 5px; display: block; color: var(--muted); font-size: 10px; letter-spacing: 1.45px; line-height: 1.2; }
+.header-right, .nav { display: flex; align-items: center; gap: 28px; }
+.nav a, .nav button { font-size: 13px; font-weight: 550; text-decoration: none; border: 0; background: transparent; padding: 8px 0; color: var(--text); }
+.nav a:hover, .nav button:hover { color: var(--green); }
+.preview-tag { font-size: 10px; letter-spacing: .7px; text-transform: uppercase; font-weight: 650; border: 1px solid var(--line); border-radius: 5px; background: #f7f9f4; color: var(--muted); padding: 4px 7px; }
+.account-button { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--line); padding: 9px 13px; border-radius: 9px; font-size: 13px; }
+.account-button:hover { background: var(--soft); }
+.hero { padding: 43px 0 55px; }
+.hero-grid { display: grid; grid-template-columns: .97fr 1.03fr; gap: clamp(34px, 5.2vw, 77px); align-items: center; }
+.eyebrow { display: flex; align-items: center; gap: 7px; color: var(--green); font-size: 10px; letter-spacing: 1.5px; line-height: 1.5; font-weight: 700; text-transform: uppercase; }
+.intro .eyebrow { margin-bottom: 24px; }
+.eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: #69a071; flex-shrink: 0; }
+h1 { font-size: clamp(42px, 3.9vw, 55px); line-height: 1.115; letter-spacing: -2.1px; }
+h1 .headline-part { display: block; }
+h1 .resolve-line { display: block; }
+h1 em { display: block; color: var(--green); font-style: normal; }
+.intro-copy { margin-top: 23px; font-size: 15px; line-height: 1.8; max-width: 480px; }
+.intro-copy strong { color: var(--ink); font-weight: 650; }
+.hero-promise { display: flex; align-items: flex-start; gap: 11px; margin-top: 25px; padding-top: 23px; border-top: 1px solid var(--line); max-width: 455px; }
+.promise-symbol { display: grid; place-items: center; width: 33px; height: 33px; flex-shrink: 0; border-radius: 9px; background: #e6efdc; color: var(--green); }
+.hero-promise p { color: var(--ink); font-size: 14px; line-height: 1.65; }
+.hero-promise strong { font-weight: 650; }
+.intro-caption { margin-top: 26px; display: flex; gap: 16px; align-items: center; color: var(--muted); font-size: 11px; }
+.intro-caption span { display: inline-flex; align-items: center; gap: 6px; }
+.intro-caption i { width: 3px; height: 3px; border-radius: 50%; background: #96ad8d; }
+.start-card { position: relative; padding: 27px 28px 23px; background: var(--white); border: 1px solid #d9e3d3; border-radius: var(--radius); box-shadow: 0 10px 35px #1c3e2c07, 0 2px 4px #1c3e2c03; }
+.start-card:before { content: ""; position: absolute; left: 29px; top: -2px; width: 47px; height: 3px; border-radius: 5px; background: #8db66b; }
+.card-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; }
+.step-pill { font-size: 10px; color: var(--muted); background: #f2f5ee; border: 1px solid #e7ecdf; padding: 2px 8px; border-radius: 20px; }
+.start-card h2 { font-size: 26px; line-height: 1.25; letter-spacing: -.6px; max-width: 390px; }
+.start-subtitle { font-size: 12px; color: var(--muted); margin: 9px 0 17px; }
+.concerns { margin: 0; padding: 0; border: 0; min-width: 0; }
+.concern-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; }
+.concern-choice { position: relative; display: block; cursor: pointer; }
+.concern-choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.concern-content { display: flex; align-items: center; gap: 9px; padding: 12px 11px; min-height: 69px; height: 100%; border: 1px solid #e0e7dc; border-radius: 10px; transition: background .15s, border-color .15s, box-shadow .15s; color: var(--text); }
+.concern-content > .icon { width: 19px; height: 19px; color: #6f8c6d; }
+.concern-text { font-size: 12px; line-height: 1.5; font-weight: 550; flex: 1; }
+.choice-dot { width: 13px; height: 13px; border: 1px solid #bccdb5; border-radius: 50%; flex-shrink: 0; position: relative; }
+.concern-choice:hover .concern-content { background: #f7faf3; border-color: #b8cdb0; }
+.concern-choice input:checked + .concern-content { background: #edf5e7; border-color: #709e60; box-shadow: inset 0 0 0 .5px #709e60; color: var(--ink); }
+.concern-choice input:checked + .concern-content .choice-dot { background: var(--green); border-color: var(--green); }
+.concern-choice input:checked + .concern-content .choice-dot:after { content: ""; position: absolute; top: 3px; left: 3px; width: 5px; height: 3px; border: solid #fff; border-width: 0 0 1.5px 1.5px; transform: rotate(-45deg); }
+.concern-choice input:focus-visible + .concern-content { outline: 3px solid #72a26a; outline-offset: 3px; }
+.concern-error { color: var(--error); font-size: 12px; margin: 10px 0 0; }
+.optional-context { margin: 13px 0 0; }
+.optional-context summary { display: flex; align-items: center; gap: 7px; width: fit-content; color: var(--text); font-size: 12px; cursor: pointer; list-style: none; min-height: 26px; }
+.optional-context summary::-webkit-details-marker { display: none; }
+.optional-context summary:before { content: "+"; color: var(--green); font-size: 19px; font-weight: 400; line-height: 1; }
+.optional-context[open] summary:before { content: "-"; }
+.optional-context summary small { color: var(--muted); font-size: 11px; }
+.context-body { margin-top: 10px; }
+textarea { resize: vertical; width: 100%; min-height: 82px; padding: 12px; border: 1px solid var(--line); border-radius: 9px; font-size: 13px; line-height: 1.6; color: var(--ink); background: #fff; }
+textarea::placeholder { color: #7c8a80; }
+.context-caption { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; font-size: 10px; color: var(--muted); margin-top: 4px; }
+.context-caption span:first-child { max-width: 340px; }
+.report-note { display: flex; align-items: flex-start; gap: 10px; padding: 12px; background: #f4f7ee; border-radius: 10px; margin: 14px 0; }
+.report-note > .icon { width: 18px; height: 18px; color: #6e875f; margin-top: 3px; }
+.report-note strong { display: block; font-size: 12px; color: var(--ink); font-weight: 650; margin-bottom: 3px; }
+.report-note p { color: var(--muted); font-size: 11px; line-height: 1.6; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 47px; border: 1px solid transparent; padding: 12px 18px; border-radius: 10px; font-size: 13px; line-height: 1.45; font-weight: 600; text-decoration: none; transition: background .15s, box-shadow .15s; }
+.btn.primary { color: #fff; background: var(--green); box-shadow: 0 2px 3px #15473312; }
+.btn.primary:hover:not(:disabled) { background: #155438; box-shadow: 0 4px 7px #15473318; }
+.btn.secondary { color: var(--ink); background: #fff; border-color: var(--line); }
+.btn.secondary:hover { background: var(--soft); }
+.btn.full { width: 100%; }
+.btn .icon { width: 17px; height: 17px; }
+.btn.arrow-between { justify-content: space-between; padding-left: 17px; }
+.btn.primary .icon { flex-shrink: 0; }
+.human-link { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 12px auto 0; padding: 0; border: 0; background: transparent; font-size: 11px; color: var(--text); min-height: 22px; }
+.human-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.section { padding: 56px 0; }
+.benefits-section { background: #fff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.section-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 30px; margin-bottom: 28px; }
+.section-heading .eyebrow { margin-bottom: 12px; }
+.section-heading h2 { font-size: 33px; line-height: 1.22; letter-spacing: -1px; }
+.section-heading > p { font-size: 13px; color: var(--muted); max-width: 294px; padding-bottom: 3px; line-height: 1.8; }
+.benefit-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+.benefit { border: 1px solid var(--line); border-radius: 16px; padding: 23px; background: #fcfdfa; }
+.benefit-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 19px; }
+.benefit-icon { display: grid; place-items: center; width: 41px; height: 41px; border-radius: 11px; background: #e9f1e2; color: #4a7946; }
+.benefit-num { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: #758b6f; }
+.benefit h3 { font-size: 17px; line-height: 1.4; letter-spacing: -.2px; margin-bottom: 8px; }
+.benefit p { font-size: 13px; line-height: 1.75; color: var(--muted); }
+.ai-strip { margin-top: 20px; padding: 18px 23px; border-radius: 13px; background: #f0f5eb; display: flex; align-items: center; gap: 14px; }
+.ai-strip > .icon { color: #4d7e4b; width: 24px; height: 24px; }
+.ai-strip p { font-size: 12px; color: #5e705d; line-height: 1.7; }
+.ai-strip strong { display: block; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+.how-section { padding: 58px 0 52px; }
+.how-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 34px; }
+.how-head .eyebrow { margin-bottom: 10px; }
+.how-head h2 { font-size: 33px; letter-spacing: -.9px; }
+.text-link { display: inline-flex; align-items: center; gap: 7px; color: var(--green); font-weight: 600; font-size: 12px; background: transparent; border: 0; padding: 5px 0; text-decoration: none; }
+.text-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+.process-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 36px; }
+.process-step { position: relative; }
+.process-step:not(:last-child):after { content: ""; position: absolute; top: 19px; left: 58px; right: -15px; height: 1px; background: #d5e2cd; }
+.step-number { width: 39px; height: 39px; display: grid; place-items: center; border-radius: 50%; border: 1px solid #cbdcc1; color: #427440; background: #edf3e6; font-size: 13px; font-weight: 650; margin-bottom: 20px; }
+.process-step h3 { font-size: 17px; letter-spacing: -.2px; margin-bottom: 9px; }
+.process-step p { font-size: 13px; line-height: 1.8; max-width: 332px; color: var(--muted); }
+.reassurance { margin-top: 39px; border-radius: 17px; background: var(--deep); padding: 30px 31px; display: flex; justify-content: space-between; align-items: center; gap: 30px; overflow: hidden; }
+.reassurance .eyebrow { color: #c4dba6; font-size: 9px; margin-bottom: 9px; }
+.reassurance p { font-size: 19px; line-height: 1.55; letter-spacing: -.25px; color: #f0f7e9; max-width: 680px; }
+.reassurance strong { font-weight: 600; color: #d5e9b9; }
+.btn.lime { background: #d5e9b9; color: #193e29; font-size: 12px; flex-shrink: 0; border-color: #d5e9b9; }
+.btn.lime:hover { background: #e3f1ce; }
+.before-section { padding-bottom: 45px; }
+.before-title { font-size: 16px; display: flex; align-items: center; gap: 9px; margin-bottom: 16px; }
+.before-title .icon { width: 18px; height: 18px; color: #6e805f; }
+.before-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; border-top: 1px solid var(--line); padding-top: 19px; }
+.before-grid h3 { font-size: 12px; font-weight: 600; margin-bottom: 5px; }
+.before-grid p { color: var(--muted); font-size: 11px; line-height: 1.8; }
+footer { background: #fff; border-top: 1px solid var(--line); }
+.footer-main { display: flex; align-items: center; justify-content: space-between; padding: 23px 0; gap: 25px; }
+.footer-brand { font-size: 18px; color: var(--ink); font-weight: 650; letter-spacing: -.5px; white-space: nowrap; }
+.footer-brand span { color: var(--muted); font-size: 11px; font-weight: 400; letter-spacing: 0; margin-left: 6px; }
+.footer-links { display: flex; flex-wrap: wrap; gap: 23px; }
+.footer-links button { background: transparent; border: 0; padding: 3px 0; color: var(--muted); font-size: 11px; }
+.footer-links button:hover { text-decoration: underline; text-underline-offset: 3px; }
+.preview-footer { color: #697968; background: #f3f6ed; font-size: 10px; line-height: 1.6; text-align: center; padding: 9px 20px; border-top: 1px solid var(--line); }
+.mobile-start { display: none; }
+/* Native dialogs provide keyboard focus containment and escape-to-close. */
+dialog { width: min(570px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); border: 1px solid var(--line); border-radius: 22px; background: #fff; color: var(--ink); padding: 0; box-shadow: 0 25px 100px #102b3050; }
+dialog::backdrop { background: #102d2466; backdrop-filter: blur(3px); }
+.dialog-inner { padding: 29px; }
+.dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 18px; }
+.dialog-head .eyebrow { margin-bottom: 9px; font-size: 9px; }
+.dialog-head h2 { font-size: 25px; line-height: 1.25; letter-spacing: -.55px; }
+.close-button { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--line); background: #fff; border-radius: 8px; flex-shrink: 0; }
+.close-button:hover { background: var(--soft); }
+.dialog-lead { font-size: 13px; line-height: 1.8; margin-bottom: 18px; color: var(--text); }
+.dialog-panel { padding: 14px 16px; border: 1px solid var(--line); background: #f7f9f3; border-radius: 11px; margin: 16px 0; }
+.dialog-panel h3 { font-size: 13px; margin-bottom: 6px; }
+.dialog-panel p { font-size: 12px; line-height: 1.75; color: var(--muted); }
+.dialog-panel ul { margin: 8px 0 0; padding-left: 17px; font-size: 12px; color: var(--text); line-height: 1.85; }
+.consent-row { display: flex; align-items: flex-start; gap: 11px; margin: 16px 0; cursor: pointer; }
+.consent-row input { width: 17px; height: 17px; flex-shrink: 0; margin: 3px 0 0; accent-color: var(--green); }
+.consent-row span { font-size: 12px; color: var(--text); line-height: 1.75; }
+.dialog-note { font-size: 11px; color: var(--muted); line-height: 1.8; margin-top: 12px; }
+.dialog-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 9px; margin-top: 21px; }
+.prototype-note { border-left: 3px solid #d7c898; background: #faf7ef; padding: 11px 13px; font-size: 11px; color: #7e6b3d; border-radius: 0 7px 7px 0; margin: 18px 0; line-height: 1.7; }
+.help-topics { display: grid; gap: 8px; margin-bottom: 17px; }
+.help-choice { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; color: var(--text); cursor: pointer; }
+.help-choice:has(input:checked) { background: var(--soft); border-color: #8cad7e; }
+.help-choice input { accent-color: var(--green); }
+.help-label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.help-error { color: var(--error); font-size: 12px; margin-top: 8px; }
+.review-value { font-size: 13px; color: var(--ink); font-weight: 550; overflow-wrap: anywhere; white-space: pre-wrap; margin-bottom: 12px; }
+.review-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin: 10px 0 5px; }
+.ready-icon { display: grid; place-items: center; background: var(--soft); color: var(--green); width: 50px; height: 50px; border-radius: 14px; margin-bottom: 17px; }
+.ready-icon .icon { width: 25px; height: 25px; }
+.verification-list { display: grid; gap: 12px; margin: 18px 0; }
+.verification-step { display: flex; align-items: center; gap: 11px; font-size: 12px; color: var(--text); }
+.verification-step > span { background: var(--soft); color: var(--green); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 650; }
+.inline-status { font-size: 12px; color: var(--error); line-height: 1.7; margin-top: 12px; }
+noscript p { padding: 20px; background: #fff4e1; text-align: center; }
+@media (min-width: 1600px) {
+  .container { width: min(1290px, calc(100% - 120px)); }
+  .hero { padding: 59px 0 64px; }
+  h1 { font-size: 59px; }
+  .start-card { padding: 30px 31px 26px; }
+  .start-card h2 { font-size: 28px; }
+  .concern-content { min-height: 73px; }
+  .concern-text { font-size: 13px; }
+  .intro-copy { font-size: 16px; }
+}
+@media (max-width: 1100px) {
+  .container { width: calc(100% - 56px); }
+  .hero-grid { gap: 30px; grid-template-columns: .9fr 1.1fr; }
+  h1 { font-size: 43px; letter-spacing: -1.6px; }
+  .start-card { padding: 23px; }
+  .start-card h2 { font-size: 24px; }
+  .concern-content { padding: 10px; gap: 7px; }
+  .concern-content > .icon { display: none; }
+  .intro-copy { font-size: 14px; }
+  .header-right, .nav { gap: 23px; }
+  .intro-caption { gap: 10px; flex-wrap: wrap; }
+  .intro-caption i { display: none; }
+  .benefit { padding: 20px; }
+}
+@media (max-width: 820px) {
+  .container { width: calc(100% - 44px); max-width: 630px; }
+  .header-inner { height: 73px; }
+  .header-right { gap: 14px; }
+  .nav { gap: 16px; }
+  .nav a { display: none; }
+  .account-button { padding: 8px 10px; }
+  .preview-tag { display: none; }
+  .hero { padding: 30px 0 38px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 29px; }
+  .intro .eyebrow { margin-bottom: 15px; }
+  h1 { font-size: clamp(35px, 6.3vw, 49px); letter-spacing: -1.45px; max-width: 580px; }
+  h1 .resolve-line { display: inline; }
+  .intro-copy { margin-top: 16px; font-size: 14px; max-width: 570px; line-height: 1.75; }
+  .hero-promise { margin-top: 17px; padding-top: 16px; max-width: none; }
+  .hero-promise p { font-size: 13px; }
+  .intro-caption { display: none; }
+  .mobile-start { display: inline-flex; margin-top: 17px; gap: 7px; }
+  .start-card { padding: 25px; }
+  .start-card h2 { font-size: 25px; max-width: 390px; }
+  .concern-content > .icon { display: block; }
+  .concern-text { font-size: 12px; }
+  .concern-content { min-height: 70px; padding: 12px; }
+  .section { padding: 36px 0; }
+  .section-heading { display: block; margin-bottom: 22px; }
+  .section-heading h2, .how-head h2 { font-size: 28px; letter-spacing: -.65px; }
+  .section-heading > p { margin-top: 13px; max-width: none; }
+  .benefit-grid { grid-template-columns: 1fr; gap: 12px; }
+  .benefit { padding: 20px; display: grid; grid-template-columns: 44px 1fr; column-gap: 15px; }
+  .benefit-top { display: block; grid-row: span 2; margin: 0; }
+  .benefit-num { display: none; }
+  .benefit h3 { font-size: 16px; margin: 0 0 5px; }
+  .benefit p { grid-column: 2; font-size: 12px; }
+  .ai-strip { padding: 17px; align-items: flex-start; gap: 11px; }
+  .ai-strip > .icon { margin-top: 3px; width: 21px; }
+  .ai-strip p { font-size: 11px; }
+  .ai-strip strong { font-size: 12px; }
+  .how-section { padding: 37px 0 35px; }
+  .how-head { display: block; margin-bottom: 25px; }
+  .how-head .text-link { margin-top: 10px; }
+  .process-grid { grid-template-columns: 1fr; gap: 25px; }
+  .process-step { padding-left: 55px; }
+  .step-number { position: absolute; left: 0; top: 0; width: 36px; height: 36px; }
+  .process-step:not(:last-child):after { top: 47px; bottom: -12px; left: 18px; right: auto; height: auto; width: 1px; }
+  .process-step h3 { font-size: 16px; margin-bottom: 6px; }
+  .process-step p { font-size: 12px; max-width: none; }
+  .reassurance { padding: 25px; display: block; margin-top: 30px; }
+  .reassurance p { font-size: 19px; }
+  .reassurance .btn { margin-top: 21px; }
+  .before-grid { grid-template-columns: 1fr; gap: 17px; }
+  .before-section { padding-bottom: 30px; }
+  .footer-main { display: block; padding: 23px 0; }
+  .footer-links { margin-top: 16px; gap: 13px 20px; }
+}
+@media (max-width: 480px) {
+  html { scroll-padding-top: 85px; }
+  .container { width: calc(100% - 36px); }
+  .header-inner { height: 69px; }
+  .brand-symbol { width: 34px; height: 38px; border-radius: 10px; }
+  .brand-symbol img { width: 22px; height: 25px; }
+  .brand { gap: 8px; }
+  .brand-name { font-size: 25px; }
+  .brand-byline { font-size: 8px; margin-top: 4px; letter-spacing: 1.3px; }
+  .nav button { font-size: 11px; }
+  .header-right { gap: 14px; }
+  .account-button { width: 35px; height: 35px; padding: 0; justify-content: center; border-radius: 50%; }
+  .account-button .account-label { display: none; }
+  h1 { font-size: 36px; letter-spacing: -1.45px; line-height: 1.13; }
+  .intro .eyebrow { font-size: 9px; }
+  .intro-copy { font-size: 13px; line-height: 1.8; }
+  .hero-promise { gap: 9px; }
+  .hero-promise p { font-size: 12px; }
+  .promise-symbol { width: 30px; height: 30px; }
+  .hero-grid { gap: 27px; }
+  .start-card { padding: 20px 18px; border-radius: 17px; }
+  .card-heading { margin-bottom: 9px; }
+  .start-card .eyebrow { font-size: 9px; letter-spacing: 1.1px; }
+  .start-card h2 { font-size: 24px; letter-spacing: -.6px; }
+  .start-subtitle { font-size: 11px; margin-bottom: 15px; line-height: 1.7; }
+  .concern-grid { gap: 8px; }
+  .concern-content { padding: 11px 10px; min-height: 85px; align-items: flex-start; gap: 7px; }
+  .concern-content > .icon { display: none; }
+  .concern-text { font-size: 11px; line-height: 1.6; }
+  .choice-dot { margin-top: 3px; }
+  .report-note { padding: 11px; gap: 8px; }
+  .report-note p { font-size: 10px; }
+  .report-note strong { font-size: 11px; }
+  .optional-context summary { font-size: 11px; }
+  .optional-context summary small { font-size: 10px; }
+  .btn { font-size: 12px; min-height: 46px; }
+  .human-link { font-size: 11px; }
+  .section-heading h2, .how-head h2 { font-size: 26px; }
+  .section-heading > p { font-size: 12px; }
+  .benefit { padding: 18px 16px; column-gap: 12px; }
+  .benefit-icon { width: 39px; height: 39px; }
+  .benefit h3 { font-size: 15px; }
+  .benefit p { font-size: 11px; }
+  .reassurance { padding: 24px 21px; }
+  .reassurance p { font-size: 18px; }
+  .before-grid p { font-size: 11px; }
+  .footer-links { gap: 12px 16px; }
+  .footer-links button { font-size: 10px; }
+  .dialog-inner { padding: 23px 20px; }
+  .dialog-head h2 { font-size: 23px; }
+  .dialog-actions .btn { flex: 1; }
+}
+@media (max-width: 350px) {
+  .container { width: calc(100% - 28px); }
+  h1 { font-size: 32px; }
+  .nav button { font-size: 10px; }
+  .header-right { gap: 9px; }
+  .start-card { padding: 19px 14px; }
+  .concern-content { min-height: 88px; padding: 10px 8px; }
+  .concern-text { font-size: 10.5px; }
+  .start-card h2 { font-size: 22px; }
+  .optional-context summary { flex-wrap: wrap; gap: 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *:before, *:after { transition: none !important; animation: none !important; }
+}
+@media print {
+  .site-header { position: static; }
+  .preview-tag, .preview-footer, .nav, .account-button, .human-link, .mobile-start, .footer-links, dialog { display: none !important; }
+  .container { width: 95%; max-width: none; }
+  .hero-grid { grid-template-columns: 1fr 1fr; gap: 25px; }
+  h1 { font-size: 35px; }
+  .start-card { box-shadow: none; break-inside: avoid; }
+  .benefit-grid, .process-grid { grid-template-columns: repeat(3,1fr); }
+  .section { padding: 25px 0; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+  <a class="skip" href="#start">Skip to getting started</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#home" aria-label="Relive by CGreen home">
+        <span class="brand-symbol"><img src="data:image/png;base64,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" alt="CGreen" width="27" height="30"></span>
+        <span><span class="brand-name">Relive</span><span class="brand-byline">BY CGREEN</span></span>
+      </a>
+      <div class="header-right">
+        <span class="preview-tag" title="Interactive design preview. No live services are connected.">Design preview</span>
+        <nav class="nav" aria-label="Main navigation">
+          <a href="#how-it-works">How it works</a>
+          <button type="button" data-modal="help">Get help</button>
+        </nav>
+        <button class="account-button" type="button" data-modal="account" aria-label="My account">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.3"/><path d="M5 20v-2a7 7 0 0 1 14 0v2"/></svg><span class="account-label">My account</span>
+        </button>
+      </div>
+    </div>
+  </header>
+  <main id="home">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="intro">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> DEBT RESOLUTION, WITH YOU AT THE CENTRE</div>
+          <h1 id="hero-title"><span class="headline-part">You want to <span class="resolve-line">resolve your debt.</span></span><em>Let&rsquo;s find a <span class="resolve-line">way forward.</span></em></h1>
+          <p class="intro-copy"><strong>Relive is CGreen&rsquo;s debt-resolution platform.</strong><br>We help you understand your loans and credit-card dues, explore possible repayment or settlement options, and navigate the next steps with your lenders.</p>
+          <div class="hero-promise">
+            <span class="promise-symbol"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m16 8-2.5 5.5L8 16l2.5-5.5L16 8Z"/></svg></span>
+            <p>Start with a clear picture of your debt&mdash;<br><strong>not just your credit score.</strong></p>
+          </div>
+          <div class="intro-caption"><span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg> Clear information</span><i aria-hidden="true"></i><span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg> Practical guidance</span><i aria-hidden="true"></i><span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg> Human support</span></div>
+          <a class="text-link mobile-start" href="#start">Tell us what you need <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-5-5 5 5 5-5"/></svg></a>
+        </div>
+        <section class="start-card" id="start" aria-labelledby="start-title">
+          <div class="card-heading"><div class="eyebrow">YOUR STARTING POINT</div><span class="step-pill">Step 1 of 3</span></div>
+          <h2 id="start-title">Let&rsquo;s understand what<br class="desktop-break"> is weighing on you.</h2>
+          <p class="start-subtitle">Choose your main concern. You do not need to have all the answers.</p>
+          <form id="concern-form" novalidate>
+            <fieldset class="concerns" aria-describedby="concern-error">
+              <legend class="sr-only">What would you like help with? Choose one main concern.</legend>
+              <div class="concern-grid">
+                <label class="concern-choice"><input type="radio" name="concern" value="emi" required><span class="concern-content"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18m-13 4h2m4 0h2m-8 3h2"/></svg><span class="concern-text">My EMIs are becoming difficult to manage</span><span class="choice-dot" aria-hidden="true"></span></span></label>
+                <label class="concern-choice"><input type="radio" name="concern" value="overdue"><span class="concern-content"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="concern-text">I have overdue loans or credit-card dues</span><span class="choice-dot" aria-hidden="true"></span></span></label>
+                <label class="concern-choice"><input type="radio" name="concern" value="settlement"><span class="concern-content"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 4h6m-6 4h6m-6 4h3"/></svg><span class="concern-text">I want to settle or close a loan</span><span class="choice-dot" aria-hidden="true"></span></span></label>
+                <label class="concern-choice"><input type="radio" name="concern" value="lender"><span class="concern-content"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11a8 8 0 0 1-8 8H8l-5 3V6a3 3 0 0 1 3-3h7a8 8 0 0 1 8 8Z"/><path d="M7 9h9m-9 4h6"/></svg><span class="concern-text">I need help discussing options with my lender</span><span class="choice-dot" aria-hidden="true"></span></span></label>
+                <label class="concern-choice"><input type="radio" name="concern" value="report"><span class="concern-content"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9Z"/><path d="M14 3v6h6M8 13h8m-8 4h5"/></svg><span class="concern-text">Something in my credit report looks wrong</span><span class="choice-dot" aria-hidden="true"></span></span></label>
+                <label class="concern-choice"><input type="radio" name="concern" value="unsure"><span class="concern-content"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m16 8-2.5 5.5L8 16l2.5-5.5L16 8Z"/></svg><span class="concern-text">I&rsquo;m not sure where to begin</span><span class="choice-dot" aria-hidden="true"></span></span></label>
+              </div>
+              <p id="concern-error" class="concern-error" role="alert" hidden>Please choose a concern. &ldquo;I&rsquo;m not sure&rdquo; is a good place to start, too.</p>
+            </fieldset>
+            <details class="optional-context">
+              <summary>Anything else we should understand? <small>(Optional)</small></summary>
+              <div class="context-body">
+                <label class="sr-only" for="customer-context">Tell us briefly, in your own words.</label>
+                <textarea id="customer-context" name="context" rows="3" maxlength="800" placeholder="For example: I want to close my debts, but I do not know which lender to approach first."></textarea>
+                <div class="context-caption"><span>Please do not include PAN, account numbers, passwords or OTPs.</span><span id="context-count">0 / 800</span></div>
+              </div>
+            </details>
+            <div class="report-note"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9Z"/><path d="M14 3v6h6M8 13h8m-8 4h5"/></svg><div><strong>Your first step: understand your debt.</strong><p>With your permission, we&rsquo;ll retrieve your credit report and prepare a summary of your reported accounts, amounts and items needing attention.</p></div></div>
+            <button id="get-report" class="btn primary full arrow-between" type="submit"><span>Get my report &amp; summary</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></button>
+            <button class="human-link" type="button" data-modal="help"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-3a8 8 0 0 1 16 0v3M4 13H3v5h4v-5H4Zm16 0h1v5h-4v-5h3Zm0 5v1a2 2 0 0 1-2 2h-5"/></svg> Speak to the Relive team</button>
+          </form>
+        </section>
+      </div>
+    </section>
+    <section class="section benefits-section" aria-labelledby="benefits-title">
+      <div class="container">
+        <div class="section-heading">
+          <div><div class="eyebrow">WHAT YOU GET WITH RELIVE</div><h2 id="benefits-title">More than a credit report.<br>A clearer next step.</h2></div>
+          <p>Understand where you stand, explore your options and move forward with guidance.</p>
+        </div>
+        <div class="benefit-grid">
+          <article class="benefit"><div class="benefit-top"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9Z"/><path d="M14 3v6h6M8 13h8m-8 4h5"/></svg></span><span class="benefit-num">01</span></div><h3>Understand your situation</h3><p>See your reported loans, card dues and overdue accounts in one understandable summary.</p></article>
+          <article class="benefit"><div class="benefit-top"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m16 8-2.5 5.5L8 16l2.5-5.5L16 8Z"/></svg></span><span class="benefit-num">02</span></div><h3>Know what to review first</h3><p>See which accounts need attention, why they matter and what information needs checking.</p></article>
+          <article class="benefit"><div class="benefit-top"><span class="benefit-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 4v2"/></svg></span><span class="benefit-num">03</span></div><h3>Get help moving forward</h3><p>Share what you can manage and explore possible next steps with guidance from the Relive team.</p></article>
+        </div>
+        <div class="ai-strip"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.6 6.4L21 12l-6.4 2.6L12 21l-2.6-6.4L3 12l6.4-2.6L12 3ZM20 2v4m-2-2h4"/></svg><p><strong>AI-assisted analysis, with support from the Relive team.</strong>Your initial assessment explains what the report shows. Your resolution plan also needs your current situation and lender-confirmed information.</p></div>
+      </div>
+    </section>
+    <section class="how-section" id="how-it-works" aria-labelledby="how-title">
+      <div class="container">
+        <div class="how-head"><div><div class="eyebrow">A PRACTICAL PATH FORWARD</div><h2 id="how-title">How Relive works</h2></div><a class="text-link" href="#start">Start with your situation <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a></div>
+        <div class="process-grid">
+          <article class="process-step"><div class="step-number">1</div><h3>Understand your debt</h3><p>Tell us your concern and authorise your credit-report retrieval. Get a clear summary of what is reported.</p></article>
+          <article class="process-step"><div class="step-number">2</div><h3>Find a practical starting point</h3><p>Tell us about your income, essential expenses and repayment capacity so we can assess possible next steps.</p></article>
+          <article class="process-step"><div class="step-number">3</div><h3>Work towards resolution</h3><p>Get guidance on lender discussions, review available terms and track the steps towards resolving your accounts.</p></article>
+        </div>
+        <aside class="reassurance"><div><div class="eyebrow">ONE STEP AT A TIME</div><p>You do not have to decide which lender to pay first today.<br><strong>Start by understanding your situation.</strong></p></div><a class="btn lime" href="#start">Let&rsquo;s get started <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a></aside>
+      </div>
+    </section>
+    <section class="before-section" aria-labelledby="before-title">
+      <div class="container"><h2 class="before-title" id="before-title"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-9v.1"/></svg> Before you begin</h2>
+        <div class="before-grid">
+          <div><h3>Your credit report is a starting point.</h3><p>Recent payments or changes may not yet appear, and reported balances need confirmation before payment.</p></div>
+          <div><h3>Options depend on your circumstances and the lender.</h3><p>Relive does not guarantee a settlement, reduced dues or a credit-score increase. Any proposed arrangement requires the relevant lender&rsquo;s approval.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer><div class="container footer-main"><div class="footer-brand">Relive<span>by CGreen</span></div><nav class="footer-links" aria-label="Information and policies"><button type="button" data-modal="privacy">How we use your information</button><button type="button" data-modal="consent-info">Consent details</button><button type="button" data-modal="fees">Service charges</button><button type="button" data-modal="help">Help</button></nav></div><p class="preview-footer">Interactive design preview &middot; No live report retrieval, AI analysis, verification or support submission. No information is sent from this page.</p></footer>
+  <dialog id="main-dialog" aria-labelledby="dialog-title"><div class="dialog-inner" id="dialog-content"></div></dialog>
+  <noscript><p>Enable JavaScript to try the concern selector, consent flow and help previews. This page is a design prototype.</p></noscript>
+  <script>/**
+ * Relive homepage - local, dependency-free design prototype.
+ * No backend calls, browser storage, identity data or live bureau integrations.
+ * To connect a verified backend, configure onContinueToVerification below.
+ * Never add bureau credentials or an AI API key to client-side code.
+ */
+(function () {
+  'use strict';
+  const ICONS = {"arrow": "<path d=\"M5 12h14m-5-5 5 5-5 5\"/>", "down": "<path d=\"M12 5v14m-5-5 5 5 5-5\"/>", "check": "<path d=\"m5 12 4 4L19 6\"/>", "close": "<path d=\"m6 6 12 12M18 6 6 18\"/>", "info": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 11v5m0-9v.1\"/>", "user": "<circle cx=\"12\" cy=\"8\" r=\"3.3\"/><path d=\"M5 20v-2a7 7 0 0 1 14 0v2\"/>", "calendar": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M16 3v4M8 3v4M3 11h18m-13 4h2m4 0h2m-8 3h2\"/>", "clock": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/>", "receipt": "<path d=\"M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 4h6m-6 4h6m-6 4h3\"/>", "chat": "<path d=\"M21 11a8 8 0 0 1-8 8H8l-5 3V6a3 3 0 0 1 3-3h7a8 8 0 0 1 8 8Z\"/><path d=\"M7 9h9m-9 4h6\"/>", "document": "<path d=\"M14 3H5a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9Z\"/><path d=\"M14 3v6h6M8 13h8m-8 4h5\"/>", "compass": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"m16 8-2.5 5.5L8 16l2.5-5.5L16 8Z\"/>", "headphones": "<path d=\"M4 14v-3a8 8 0 0 1 16 0v3M4 13H3v5h4v-5H4Zm16 0h1v5h-4v-5h3Zm0 5v1a2 2 0 0 1-2 2h-5\"/>", "people": "<circle cx=\"9\" cy=\"8\" r=\"3\"/><path d=\"M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 4v2\"/>", "spark": "<path d=\"m12 3 2.6 6.4L21 12l-6.4 2.6L12 21l-2.6-6.4L3 12l6.4-2.6L12 3ZM20 2v4m-2-2h4\"/>", "shield": "<path d=\"m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z\"/><path d=\"m8 12 3 3 5-6\"/>"};
+  const icon = (name, extra = '') => `<svg class="icon ${extra}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ICONS.info}</svg>`;
+  const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const concernLabels = {
+    emi: 'My EMIs are becoming difficult to manage',
+    overdue: 'I have overdue loans or credit-card dues',
+    settlement: 'I want to settle or close a loan',
+    lender: 'I need help discussing options with my lender',
+    report: 'Something in my credit report looks wrong',
+    unsure: 'I am not sure where to begin'
+  };
+  const state = { concern: '', context: '', reportConsent: false, analysisConsent: false, helpTopic: '', helpMessage: '' };
+  const config = { onContinueToVerification: null };
+  const dialog = document.getElementById('main-dialog');
+  const content = document.getElementById('dialog-content');
+  const form = document.getElementById('concern-form');
+  const context = document.getElementById('customer-context');
+  let returnFocus = null;
+
+  window.ReliveHomepage = Object.freeze({
+    configure(options = {}) {
+      if (Object.prototype.hasOwnProperty.call(options, 'onContinueToVerification')) {
+        if (options.onContinueToVerification !== null && typeof options.onContinueToVerification !== 'function') {
+          throw new TypeError('onContinueToVerification must be a function or null.');
+        }
+        config.onContinueToVerification = options.onContinueToVerification;
+      }
+    },
+    getDraft() { return { concern: state.concern, context: state.context }; }
+  });
+
+  function heading(title, eyebrow = 'RELIVE BY CGREEN') {
+    return `<div class="dialog-head"><div><div class="eyebrow">${eyebrow}</div><h2 id="dialog-title" tabindex="-1">${title}</h2></div><button class="close-button" type="button" data-close aria-label="Close dialog">${icon('close')}</button></div>`;
+  }
+  function openDialog(markup) {
+    const alreadyOpen = dialog.open;
+    if (!alreadyOpen) returnFocus = document.activeElement;
+    content.innerHTML = markup;
+    if (!alreadyOpen) dialog.showModal();
+    document.body.classList.add('modal-open');
+    dialog.scrollTop = 0;
+    const title = document.getElementById('dialog-title');
+    if (title) title.focus({ preventScroll: true });
+  }
+  function closeDialog() { dialog.close(); }
+  dialog.addEventListener('close', () => {
+    document.body.classList.remove('modal-open');
+    if (returnFocus && document.contains(returnFocus)) returnFocus.focus({ preventScroll: true });
+  });
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) {
+      const rect = dialog.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closeDialog();
+    }
+  });
+  document.addEventListener('click', (event) => {
+    const close = event.target.closest('[data-close]');
+    if (close) { closeDialog(); return; }
+    const trigger = event.target.closest('[data-modal]');
+    if (trigger) { showModal(trigger.dataset.modal); return; }
+    const action = event.target.closest('[data-action]');
+    if (!action) return;
+    if (action.dataset.action === 'clear-draft') {
+      form.reset(); state.concern = ''; state.context = ''; state.reportConsent = false; state.analysisConsent = false;
+      state.helpTopic = ''; state.helpMessage = '';
+      document.querySelector('.optional-context').open = false;
+      context.value = ''; document.getElementById('context-count').textContent = '0 / 800';
+      document.getElementById('concern-error').hidden = true;
+      document.querySelectorAll('[name="concern"]').forEach((input) => input.removeAttribute('aria-invalid'));
+      showModal('account');
+    }
+    if (action.dataset.action === 'show-consent') showConsent();
+  });
+  document.querySelectorAll('[name="concern"]').forEach((input) => input.addEventListener('change', () => {
+    state.concern = input.value;
+    document.getElementById('concern-error').hidden = true;
+    document.querySelectorAll('[name="concern"]').forEach((field) => field.removeAttribute('aria-invalid'));
+  }));
+  context.addEventListener('input', () => {
+    state.context = context.value.slice(0, 800);
+    document.getElementById('context-count').textContent = `${state.context.length} / 800`;
+  });
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const selected = form.querySelector('[name="concern"]:checked');
+    if (!selected) {
+      document.getElementById('concern-error').hidden = false;
+      document.querySelectorAll('[name="concern"]').forEach((input) => input.setAttribute('aria-invalid', 'true'));
+      form.querySelector('[name="concern"]').focus();
+      return;
+    }
+    state.concern = selected.value;
+    state.context = context.value.trim().slice(0, 800);
+    state.reportConsent = false; state.analysisConsent = false;
+    showConsent();
+  });
+
+  function showConsent() {
+    openDialog(`${heading('Your report, with your permission.', 'BEFORE WE GET YOUR REPORT')}
+      <p class="dialog-lead">Selecting a concern does not authorise a credit-report request. Please review these separate permissions before continuing.</p>
+      <div class="dialog-panel"><h3>Your selected concern</h3><p>${escapeHTML(concernLabels[state.concern] || 'Not selected')}</p></div>
+      <form id="consent-form">
+        <label class="consent-row"><input id="report-permission" type="checkbox" required ${state.reportConsent ? 'checked' : ''}><span>I authorise CGreen, through its approved bureau provider, to retrieve my credit report for this debt assessment.</span></label>
+        <label class="consent-row"><input id="analysis-permission" type="checkbox" required ${state.analysisConsent ? 'checked' : ''}><span>I agree to my report and the information I share being processed for AI-assisted analysis to prepare my summary and suggested next steps.</span></label>
+        <p class="dialog-note">These permissions do not authorise contacting lenders, accepting offers or making payments on your behalf. Those actions need separate authorisation.</p>
+        <div class="prototype-note"><strong>Illustrative consent only.</strong> No live report is requested in this preview. The production consent must identify the provider, purposes, data-processing arrangements, applicable charges and withdrawal process.</div>
+        <div class="dialog-actions"><button class="btn secondary" type="button" data-close>Go back</button><button id="consent-continue" class="btn primary" type="submit" ${state.reportConsent && state.analysisConsent ? '' : 'disabled'}>Continue to verification ${icon('arrow')}</button></div>
+        <p id="consent-status" class="inline-status" role="status" hidden></p>
+      </form>`);
+    const reportBox = document.getElementById('report-permission');
+    const analysisBox = document.getElementById('analysis-permission');
+    const next = document.getElementById('consent-continue');
+    function update() {
+      state.reportConsent = reportBox.checked; state.analysisConsent = analysisBox.checked;
+      next.disabled = !(reportBox.checked && analysisBox.checked);
+    }
+    reportBox.addEventListener('change', update); analysisBox.addEventListener('change', update);
+    document.getElementById('consent-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!reportBox.checked || !analysisBox.checked) return;
+      const payload = {
+        concern: state.concern,
+        concernLabel: concernLabels[state.concern],
+        context: state.context,
+        permissions: { reportRetrieval: true, aiAnalysis: true, lenderContact: false },
+        consentTextVersion: 'homepage-prototype-v1-NOT-PRODUCTION',
+        capturedAt: new Date().toISOString()
+      };
+      if (config.onContinueToVerification) {
+        next.disabled = true;
+        const previous = next.innerHTML;
+        next.textContent = 'Continuing...';
+        try {
+          await config.onContinueToVerification(payload);
+        } catch (error) {
+          const status = document.getElementById('consent-status');
+          if (status) { status.textContent = 'Unable to continue. No successful report retrieval has been confirmed. Please try again.'; status.hidden = false; }
+        } finally {
+          if (document.contains(next)) { next.disabled = false; next.innerHTML = previous; }
+        }
+      } else { showVerificationPreview(); }
+    });
+  }
+  function showVerificationPreview() {
+    openDialog(`${heading('Next: verify your details.', 'VERIFICATION HANDOFF PREVIEW')}
+      <div class="ready-icon">${icon('shield')}</div>
+      <p class="dialog-lead">Your selected concern can now travel with you to the verification step. A report has <strong>not</strong> been fetched.</p>
+      <div class="dialog-panel"><h3>Your starting point</h3><p>${escapeHTML(concernLabels[state.concern])}</p>${state.context ? `<div class="review-label">Your context</div><p style="white-space:pre-wrap;overflow-wrap:anywhere">${escapeHTML(state.context)}</p>` : ''}</div>
+      <div class="verification-list"><div class="verification-step"><span>1</span>Verify your identity through the approved provider.</div><div class="verification-step"><span>2</span>Retrieve your report after successful verification.</div><div class="verification-step"><span>3</span>Open your debt summary and initial assessment.</div></div>
+      <div class="prototype-note">This homepage preview ends at the verification handoff. No identity details are collected, no consent record is stored and no external service is called. Your developer can connect the existing verification and summary journey here.</div>
+      <div class="dialog-actions"><button class="btn secondary" type="button" data-action="show-consent">Review permissions</button><button class="btn primary" type="button" data-close>Back to homepage</button></div>`);
+  }
+
+  function showModal(type) {
+    if (type === 'help') { showHelp(); return; }
+    const pages = {
+      privacy: `${heading('How we use your information.', 'INFORMATION PREVIEW')}
+        <p class="dialog-lead">Your concern and the context you share are intended to help Relive understand what you need. Report retrieval and AI-assisted analysis require the separate permissions shown in the next step.</p>
+        <div class="dialog-panel"><h3>What happens in this prototype?</h3><p>Nothing is sent to CGreen, a bureau, a lender or an AI provider. Entries exist only in this page&rsquo;s memory and are cleared when the page is reloaded or closed. This prototype does not use cookies, browser storage or analytics.</p></div>
+        <div class="prototype-note">This is not the final privacy notice. Before launch, confirm the named service providers, purposes, retention periods, customer rights, withdrawal process and contact details.</div>
+        <div class="dialog-actions"><button class="btn primary" type="button" data-close>Understood</button></div>`,
+      'consent-info': `${heading('You decide what happens next.', 'CONSENT DETAILS')}
+        <p class="dialog-lead">Choosing a concern is not permission to obtain your report. The next step presents separate, unchecked permissions for report retrieval and AI-assisted analysis.</p>
+        <div class="dialog-panel"><h3>Separate authorisation is needed for</h3><ul><li>Contacting a lender on your behalf.</li><li>Accepting a proposed repayment or settlement arrangement.</li><li>Making or initiating a payment.</li></ul></div>
+        <p class="dialog-note">The permissions in this design preview are illustrative. No live consent record is created.</p>
+        <div class="dialog-actions"><button class="btn primary" type="button" data-close>Understood</button></div>`,
+      fees: `${heading('Know the cost before you commit.', 'SERVICE CHARGES')}
+        <p class="dialog-lead">Service pricing has not been specified for this prototype. No service is described as free and no payment is collected here.</p>
+        <div class="dialog-panel"><h3>Before a paid service begins</h3><p>The live journey must show the applicable report or service charge, taxes, payment terms and cancellation or refund terms for you to review and accept.</p></div>
+        <div class="dialog-actions"><button class="btn secondary" type="button" data-modal="help">Ask about charges</button><button class="btn primary" type="button" data-close>Understood</button></div>`,
+      account: `${heading('Your Relive starting point.', 'MY ACCOUNT - PREVIEW')}
+        <p class="dialog-lead">This is the first-visit homepage for a customer who has signed in. The preview itself is not connected to authentication or a customer account.</p>
+        <div class="dialog-panel"><div class="review-label">Selected concern</div><p>${escapeHTML(concernLabels[state.concern] || 'No concern selected yet.')}</p><div class="review-label">Credit report</div><p>No report has been requested through this page.</p><div class="review-label">Resolution plan</div><p>Not started.</p></div>
+        <p class="dialog-note">In the live journey, returning customers should open their latest summary or next pending action.</p>
+        <div class="dialog-actions"><button class="btn secondary" type="button" data-action="clear-draft">Clear demo inputs</button><button class="btn primary" type="button" data-close>Continue on homepage</button></div>`
+    };
+    if (pages[type]) openDialog(pages[type]);
+  }
+  function showHelp() {
+    const topics = [
+      ['understand', 'Understanding how Relive can help'],
+      ['report', 'My credit report or reported accounts'],
+      ['options', 'Possible repayment or settlement options'],
+      ['other', 'Something else, including service charges']
+    ];
+    openDialog(`${heading('You do not have to work it out alone.', 'SPEAK TO THE RELIVE TEAM')}
+      <p class="dialog-lead">Tell us what you would like to discuss. In this prototype, you can review a request without sending it.</p>
+      <form id="help-form" novalidate><fieldset class="concerns"><legend class="help-label">What would you like help with?</legend><div class="help-topics">${topics.map(([value, label]) => `<label class="help-choice"><input type="radio" name="help-topic" value="${value}" ${state.helpTopic === value ? 'checked' : ''}>${label}</label>`).join('')}</div></fieldset>
+        <label class="help-label" for="help-message">Anything to add? <span style="font-weight:400;color:var(--muted)">(Optional)</span></label><textarea id="help-message" rows="3" maxlength="600" placeholder="Share a brief question. Do not include account numbers or identity details.">${escapeHTML(state.helpMessage)}</textarea>
+        <p id="help-error" class="help-error" role="alert" hidden>Please choose a topic for your request.</p>
+        <div class="dialog-actions"><button class="btn secondary" type="button" data-close>Go back</button><button class="btn primary" type="submit">Preview my help request ${icon('arrow')}</button></div><p class="dialog-note">Preview only. This does not book a call or contact the Relive team.</p></form>`);
+    document.getElementById('help-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const topic = document.querySelector('[name="help-topic"]:checked');
+      if (!topic) { document.getElementById('help-error').hidden = false; document.querySelector('[name="help-topic"]').focus(); return; }
+      state.helpTopic = topic.value;
+      state.helpMessage = document.getElementById('help-message').value.trim().slice(0, 600);
+      const label = topics.find(([value]) => value === state.helpTopic)[1];
+      openDialog(`${heading('Your request preview.', 'NOT SENT')}
+        <div class="dialog-panel"><div class="review-label">Topic</div><div class="review-value">${escapeHTML(label)}</div><div class="review-label">Your message</div><div class="review-value">${escapeHTML(state.helpMessage || 'No additional message.')}</div></div>
+        <p class="dialog-lead">Nothing has been submitted and no callback has been booked. In the live service, a separate confirmation would be shown after the request is successfully sent.</p>
+        <div class="dialog-actions"><button class="btn secondary" type="button" data-modal="help">Edit request</button><button class="btn primary" type="button" data-close>Back to homepage</button></div>`);
+    });
+  }
+})();
+</script>
+</body>
+</html>

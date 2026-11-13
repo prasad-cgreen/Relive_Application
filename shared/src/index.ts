@@ -7,10 +7,12 @@ export const mobileSchema = z
 
 export const requestOtpSchema = z.object({
   mobile: mobileSchema,
+  // One checkbox covers: terms/privacy + OTP, credit-bureau report fetch, and marketing communication.
   consent: z.literal(true, { error: "Consent is required" }),
-  consentVersion: z.string().min(1).default("login-v1"),
-  channel: z.enum(["SMS", "CALL", "WHATSAPP"]).default("SMS"),
+  consentVersion: z.string().min(1).default("relive-consent-v2"),
 });
+
+export const bureauMobileSchema = z.object({ mobile: mobileSchema });
 
 export const verifyOtpSchema = z.object({
   transactionId: z.string().uuid(),
@@ -18,9 +20,10 @@ export const verifyOtpSchema = z.object({
 });
 
 export const manualProfileSchema = z.object({
-  firstName: z.string().trim().min(2).max(80),
-  lastName: z.string().trim().min(2).max(80),
-  email: z.string().email(),
+  // Bureaus match on the full name as on PAN; single-name PANs have no last name.
+  firstName: z.string().trim().min(1, "Enter your first name").max(80),
+  lastName: z.string().trim().max(120).default(""),
+  email: z.string().trim().email().or(z.literal("")).default(""),
   dateOfBirth: z.string().date(),
 });
 
@@ -28,14 +31,21 @@ export const panSchema = z.string().trim().toUpperCase().regex(/^[A-Z]{5}[0-9]{4
 
 export const kycSchema = z.object({ pan: panSchema });
 
-export const creditAuthorizationSchema = z.object({
-  authorized: z.literal(true, { error: "Credit-report authorization is required" }),
-  consentVersion: z.string().min(1).default("experian-v1"),
-});
-
 export const reportRequestSchema = z.object({ idempotencyKey: z.string().uuid() });
 
-export type WorkflowStage = "PROFILE" | "KYC" | "CREDIT_AUTH" | "REPORT" | "DASHBOARD";
+// "Get help" request from the dashboard (a lead for the Relive team).
+export const SUPPORT_TOPICS = ["OPTIONS", "LENDER_DISCUSSION", "NOTICE"] as const;
+export const CONTACT_TIMES = ["Morning", "Afternoon", "Evening", "No preference"] as const;
+export const CONTACT_LANGUAGES = ["English", "Hindi", "Marathi", "Other"] as const;
+export const supportRequestSchema = z.object({
+  topic: z.enum(SUPPORT_TOPICS),
+  account: z.string().trim().max(120).nullable().default(null), // lender + masked number; null = overall situation
+  question: z.string().trim().min(1, "Tell us what you need help with").max(1500),
+  preferredTime: z.enum(CONTACT_TIMES),
+  preferredLanguage: z.enum(CONTACT_LANGUAGES),
+});
+
+export type WorkflowStage = "PROFILE" | "REPORT" | "DASHBOARD";
 
 export type ApiErrorShape = {
   error: { code: string; message: string; retryable?: boolean; details?: unknown };
@@ -43,6 +53,7 @@ export type ApiErrorShape = {
 
 export type WorkflowResponse = {
   stage: WorkflowStage;
+  mobileLast4?: string | null;
   profile?: { firstName: string; lastName: string; email: string; dateOfBirth: string; source: string; verified: boolean } | null;
   kycStatus?: string | null;
   reportStatus?: string | null;

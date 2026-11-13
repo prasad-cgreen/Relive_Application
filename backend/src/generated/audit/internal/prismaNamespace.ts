@@ -398,6 +398,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   AuditLog: 'AuditLog',
+  OnboardingJourney: 'OnboardingJourney',
   ErrorLog: 'ErrorLog'
 } as const
 
@@ -414,7 +415,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "auditLog" | "errorLog"
+    modelProps: "auditLog" | "onboardingJourney" | "errorLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -489,6 +490,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AuditLogCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AuditLogCountAggregateOutputType> | number
+        }
+      }
+    }
+    OnboardingJourney: {
+      payload: Prisma.$OnboardingJourneyPayload<ExtArgs>
+      fields: Prisma.OnboardingJourneyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OnboardingJourneyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnboardingJourneyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OnboardingJourneyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnboardingJourneyPayload>
+        }
+        findFirst: {
+          args: Prisma.OnboardingJourneyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnboardingJourneyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OnboardingJourneyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnboardingJourneyPayload>
+        }
+        findMany: {
+          args: Prisma.OnboardingJourneyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnboardingJourneyPayload>[]
+        }
+        create: {
+          args: Prisma.OnboardingJourneyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnboardingJourneyPayload>
+        }
+        createMany: {
+          args: Prisma.OnboardingJourneyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OnboardingJourneyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnboardingJourneyPayload>[]
+        }
+        delete: {
+          args: Prisma.OnboardingJourneyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnboardingJourneyPayload>
+        }
+        update: {
+          args: Prisma.OnboardingJourneyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnboardingJourneyPayload>
+        }
+        deleteMany: {
+          args: Prisma.OnboardingJourneyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OnboardingJourneyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OnboardingJourneyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnboardingJourneyPayload>[]
+        }
+        upsert: {
+          args: Prisma.OnboardingJourneyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnboardingJourneyPayload>
+        }
+        aggregate: {
+          args: Prisma.OnboardingJourneyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOnboardingJourney>
+        }
+        groupBy: {
+          args: Prisma.OnboardingJourneyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OnboardingJourneyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OnboardingJourneyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OnboardingJourneyCountAggregateOutputType> | number
         }
       }
     }
@@ -619,6 +694,29 @@ export const AuditLogScalarFieldEnum = {
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
+export const OnboardingJourneyScalarFieldEnum = {
+  userRef: 'userRef',
+  mobileLast4: 'mobileLast4',
+  status: 'status',
+  currentStep: 'currentStep',
+  lastEvent: 'lastEvent',
+  lastOutcome: 'lastOutcome',
+  identitySource: 'identitySource',
+  panLast4: 'panLast4',
+  altMobileLast4: 'altMobileLast4',
+  bureau: 'bureau',
+  otpSends: 'otpSends',
+  otpFailures: 'otpFailures',
+  panAttempts: 'panAttempts',
+  reportAttempts: 'reportAttempts',
+  startedAt: 'startedAt',
+  lastActivityAt: 'lastActivityAt',
+  completedAt: 'completedAt'
+} as const
+
+export type OnboardingJourneyScalarFieldEnum = (typeof OnboardingJourneyScalarFieldEnum)[keyof typeof OnboardingJourneyScalarFieldEnum]
+
+
 export const ErrorLogScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -732,6 +830,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -886,6 +998,7 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
   auditLog?: Prisma.AuditLogOmit
+  onboardingJourney?: Prisma.OnboardingJourneyOmit
   errorLog?: Prisma.ErrorLogOmit
 }
 

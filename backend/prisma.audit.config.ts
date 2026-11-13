@@ -1,7 +1,7 @@
 import { defineConfig } from "prisma/config";
 import { config } from "dotenv";
 
-config({ path: "../frontend/.env.local" });
+config({ path: [".env", "../frontend/.env.local"], quiet: true });
 
 function auditUrl() {
   if (process.env.AUDIT_DATABASE_URL_UNPOOLED) return process.env.AUDIT_DATABASE_URL_UNPOOLED;

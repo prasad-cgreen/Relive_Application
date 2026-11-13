@@ -62,3 +62,9 @@ export type CreditReport = Prisma.CreditReportModel
  * 
  */
 export type ApiTransaction = Prisma.ApiTransactionModel
+/**
+ * Model SupportRequest
+ * A "Get help" request from the dashboard: a lead for the Relive team to call back.
+ * The contact number is the user's verified mobile (users.mobile_encrypted).
+ */
+export type SupportRequest = Prisma.SupportRequestModel

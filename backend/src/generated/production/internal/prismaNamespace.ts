@@ -405,7 +405,8 @@ export const ModelName = {
   UserSession: 'UserSession',
   KycVerification: 'KycVerification',
   CreditReport: 'CreditReport',
-  ApiTransaction: 'ApiTransaction'
+  ApiTransaction: 'ApiTransaction',
+  SupportRequest: 'SupportRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -421,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "appStatus" | "user" | "userProfile" | "userConsent" | "otpTransaction" | "userSession" | "kycVerification" | "creditReport" | "apiTransaction"
+    modelProps: "appStatus" | "user" | "userProfile" | "userConsent" | "otpTransaction" | "userSession" | "kycVerification" | "creditReport" | "apiTransaction" | "supportRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1091,6 +1092,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SupportRequest: {
+      payload: Prisma.$SupportRequestPayload<ExtArgs>
+      fields: Prisma.SupportRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SupportRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SupportRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.SupportRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SupportRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestPayload>
+        }
+        findMany: {
+          args: Prisma.SupportRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestPayload>[]
+        }
+        create: {
+          args: Prisma.SupportRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestPayload>
+        }
+        createMany: {
+          args: Prisma.SupportRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SupportRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.SupportRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestPayload>
+        }
+        update: {
+          args: Prisma.SupportRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.SupportRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SupportRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SupportRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.SupportRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.SupportRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSupportRequest>
+        }
+        groupBy: {
+          args: Prisma.SupportRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SupportRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportRequestCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1144,6 +1219,9 @@ export const UserScalarFieldEnum = {
   id: 'id',
   mobileHash: 'mobileHash',
   mobileLast4: 'mobileLast4',
+  mobileEncrypted: 'mobileEncrypted',
+  bureauMobileEncrypted: 'bureauMobileEncrypted',
+  bureauMobileLast4: 'bureauMobileLast4',
   status: 'status',
   failedOtpWindow: 'failedOtpWindow',
   blockedUntil: 'blockedUntil',
@@ -1190,6 +1268,9 @@ export const OtpTransactionScalarFieldEnum = {
   userId: 'userId',
   channel: 'channel',
   otpHash: 'otpHash',
+  providerRef: 'providerRef',
+  purpose: 'purpose',
+  targetMobileEncrypted: 'targetMobileEncrypted',
   status: 'status',
   failedAttempts: 'failedAttempts',
   expiresAt: 'expiresAt',
@@ -1218,6 +1299,7 @@ export const KycVerificationScalarFieldEnum = {
   userId: 'userId',
   panHash: 'panHash',
   panLast4: 'panLast4',
+  panEncrypted: 'panEncrypted',
   status: 'status',
   attempts: 'attempts',
   providerRef: 'providerRef',
@@ -1235,6 +1317,7 @@ export const CreditReportScalarFieldEnum = {
   bureau: 'bureau',
   score: 'score',
   reportJson: 'reportJson',
+  rawResponse: 'rawResponse',
   status: 'status',
   providerRef: 'providerRef',
   idempotencyKey: 'idempotencyKey',
@@ -1260,6 +1343,21 @@ export const ApiTransactionScalarFieldEnum = {
 } as const
 
 export type ApiTransactionScalarFieldEnum = (typeof ApiTransactionScalarFieldEnum)[keyof typeof ApiTransactionScalarFieldEnum]
+
+
+export const SupportRequestScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  topic: 'topic',
+  accountLabel: 'accountLabel',
+  question: 'question',
+  preferredTime: 'preferredTime',
+  preferredLanguage: 'preferredLanguage',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type SupportRequestScalarFieldEnum = (typeof SupportRequestScalarFieldEnum)[keyof typeof SupportRequestScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1436,6 +1534,20 @@ export type ListEnumOtpChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$P
 
 
 /**
+ * Reference to a field of type 'OtpPurpose'
+ */
+export type EnumOtpPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OtpPurpose'>
+    
+
+
+/**
+ * Reference to a field of type 'OtpPurpose[]'
+ */
+export type ListEnumOtpPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OtpPurpose[]'>
+    
+
+
+/**
  * Reference to a field of type 'OtpStatus'
  */
 export type EnumOtpStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OtpStatus'>
@@ -1502,6 +1614,34 @@ export type EnumTransactionStatusFieldRefInput<$PrismaModel> = FieldRefInputType
  * Reference to a field of type 'TransactionStatus[]'
  */
 export type ListEnumTransactionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TransactionStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SupportTopic'
+ */
+export type EnumSupportTopicFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportTopic'>
+    
+
+
+/**
+ * Reference to a field of type 'SupportTopic[]'
+ */
+export type ListEnumSupportTopicFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportTopic[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SupportStatus'
+ */
+export type EnumSupportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'SupportStatus[]'
+ */
+export type ListEnumSupportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportStatus[]'>
     
 
 
@@ -1678,6 +1818,7 @@ export type GlobalOmitConfig = {
   kycVerification?: Prisma.KycVerificationOmit
   creditReport?: Prisma.CreditReportOmit
   apiTransaction?: Prisma.ApiTransactionOmit
+  supportRequest?: Prisma.SupportRequestOmit
 }
 
 /* Types for Logging */

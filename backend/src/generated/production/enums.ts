@@ -27,7 +27,8 @@ export type ProfileSource = (typeof ProfileSource)[keyof typeof ProfileSource]
 
 export const ConsentPurpose = {
   LOGIN: 'LOGIN',
-  CREDIT_REPORT: 'CREDIT_REPORT'
+  CREDIT_REPORT: 'CREDIT_REPORT',
+  MARKETING: 'MARKETING'
 } as const
 
 export type ConsentPurpose = (typeof ConsentPurpose)[keyof typeof ConsentPurpose]
@@ -48,6 +49,14 @@ export const OtpChannel = {
 } as const
 
 export type OtpChannel = (typeof OtpChannel)[keyof typeof OtpChannel]
+
+
+export const OtpPurpose = {
+  LOGIN: 'LOGIN',
+  BUREAU_MOBILE: 'BUREAU_MOBILE'
+} as const
+
+export type OtpPurpose = (typeof OtpPurpose)[keyof typeof OtpPurpose]
 
 
 export const OtpStatus = {
@@ -89,3 +98,21 @@ export const TransactionStatus = {
 } as const
 
 export type TransactionStatus = (typeof TransactionStatus)[keyof typeof TransactionStatus]
+
+
+export const SupportTopic = {
+  OPTIONS: 'OPTIONS',
+  LENDER_DISCUSSION: 'LENDER_DISCUSSION',
+  NOTICE: 'NOTICE'
+} as const
+
+export type SupportTopic = (typeof SupportTopic)[keyof typeof SupportTopic]
+
+
+export const SupportStatus = {
+  NEW: 'NEW',
+  CONTACTED: 'CONTACTED',
+  CLOSED: 'CLOSED'
+} as const
+
+export type SupportStatus = (typeof SupportStatus)[keyof typeof SupportStatus]

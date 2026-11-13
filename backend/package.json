@@ -10,7 +10,8 @@
     "test": "vitest run src",
     "db:generate": "prisma generate --config prisma.production.config.ts && prisma generate --config prisma.audit.config.ts",
     "db:migrate": "prisma migrate deploy --config prisma.production.config.ts && prisma migrate deploy --config prisma.audit.config.ts",
-    "db:seed": "tsx src/database/seed.ts"
+    "db:seed": "tsx src/database/seed.ts",
+    "journey": "tsx src/database/journey.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
@@ -24,6 +25,7 @@
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.2",
     "helmet": "^8.3.0",
+    "nodemailer": "^10.5.0",
     "zod": "4.6.7"
   },
   "devDependencies": {
@@ -31,6 +33,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.6",
+    "@types/nodemailer": "^8.0.2",
     "@types/supertest": "^7.2.1",
     "prisma": "^7.10.1",
     "supertest": "^7.3.1",

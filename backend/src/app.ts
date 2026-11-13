@@ -5,22 +5,26 @@ import express, { type NextFunction, type Request, type Response } from "express
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import {
-  creditAuthorizationSchema, kycSchema, manualProfileSchema, requestOtpSchema,
-  reportRequestSchema, verifyOtpSchema,
+  bureauMobileSchema, kycSchema, manualProfileSchema, requestOtpSchema,
+  reportRequestSchema, supportRequestSchema, verifyOtpSchema,
 } from "@relive/shared";
 import { z, ZodError } from "zod";
 import { env } from "./config/env.js";
 import { production } from "./database/clients.js";
 import { requireAuth } from "./middleware/auth.js";
-import { hashMobile, hashOtp, hashPan, hashToken, newToken, secureEqual } from "./lib/crypto.js";
+import { decrypt, encrypt, hashMobile, hashOtp, hashPan, hashToken, newToken, secureEqual } from "./lib/crypto.js";
 import { HttpError, ProviderError } from "./lib/errors.js";
-import { writeAudit } from "./services/audit.js";
+import { stepForStage, trackJourney, writeAudit } from "./services/audit.js";
 import { providers, type MockScenario } from "./services/providers.js";
 import { getWorkflow } from "./services/workflow.js";
 import { getCreditOverview } from "./services/credit-score.js";
+import { emailLead } from "./services/lead-email.js";
+import { echoedRequestIdentity, extractReportIdentity, matchReportIdentity } from "./services/report-identity.js";
 
 const app = express();
 app.disable("x-powered-by");
+// ponytail: assumes exactly one reverse proxy in production; set to the real hop count if that changes
+if (env.NODE_ENV === "production") app.set("trust proxy", 1);
 app.use(helmet());
 app.use(cors({ origin: env.FRONTEND_ORIGIN.split(",").map((v) => v.trim()), credentials: true }));
 app.use(express.json({ limit: "32kb" }));
@@ -31,10 +35,12 @@ app.use((req, res, next) => {
   next();
 });
 
-const authLimiter = rateLimit({ windowMs: 10 * 60_000, limit: 20, standardHeaders: "draft-8", legacyHeaders: false });
-const sensitiveLimiter = rateLimit({ windowMs: 10 * 60_000, limit: 30, standardHeaders: "draft-8", legacyHeaders: false });
+// Per-IP limits. Skipped under the test runner (one IP for every test); per-user OTP/PAN/report limits still apply.
+const skipInTests = () => env.NODE_ENV === "test";
+const authLimiter = rateLimit({ windowMs: 10 * 60_000, limit: 20, standardHeaders: "draft-8", legacyHeaders: false, skip: skipInTests });
+const sensitiveLimiter = rateLimit({ windowMs: 10 * 60_000, limit: 30, standardHeaders: "draft-8", legacyHeaders: false, skip: skipInTests });
 
-const scenarios = z.enum(["success", "business_failure", "technical_failure", "timeout", "invalid_response"]);
+const scenarios = z.enum(["success", "business_failure", "technical_failure", "timeout", "invalid_response", "no_record"]);
 function scenario(req: Request): MockScenario {
   if (env.NODE_ENV === "production") return "success";
   return scenarios.catch("success").parse(req.header("x-relive-mock-scenario"));
@@ -47,88 +53,187 @@ function userContext(req: Request) {
 
 app.get("/health", async (_req, res) => {
   await Promise.all([production.$queryRaw`SELECT 1`, import("./database/clients.js").then(({ audit }) => audit.$queryRaw`SELECT 1`)]);
-  res.json({ status: "ok", services: { api: "ok", productionDatabase: "ok", auditDatabase: "ok" }, mode: env.PROVIDER_MODE });
+  res.json({ status: "ok", services: { api: "ok", productionDatabase: "ok", auditDatabase: "ok" }, providers: { otp: env.OTP_PROVIDER, pan: env.PAN_PROVIDER, bureau: env.BUREAU_PROVIDER } });
 });
+
+const OTP_TTL_MS = 5 * 60_000;
+const OTP_RESEND_AFTER_MS = 10_000;
+const OTP_MAX_FAILED_ATTEMPTS = 3; // counted per user, so resending does not reset them
+const OTP_MAX_SENDS = 5; // per OTP_SEND_WINDOW_MS per user
+const OTP_SEND_WINDOW_MS = 30 * 60_000;
+const LOCKOUT_MS = 15 * 60_000;
+const SESSION_TTL_MS = 8 * 60 * 60_000;
+
+const secondsUntil = (date: Date) => Math.max(1, Math.ceil((date.getTime() - Date.now()) / 1000));
+
+function assertNotLocked(user: { status: string; blockedUntil: Date | null }) {
+  if (user.status === "BLOCKED") throw new HttpError(403, "ACCOUNT_BLOCKED", "This account is blocked. Please contact support");
+  if (user.blockedUntil && user.blockedUntil > new Date()) {
+    throw new HttpError(429, "OTP_ATTEMPTS_EXCEEDED", "Too many attempts. Please try again later", true, { retryAfterSeconds: secondsUntil(user.blockedUntil) });
+  }
+}
+
+async function assertCanSendOtp(userId: string) {
+  const [last, recentSends] = await Promise.all([
+    production.otpTransaction.findFirst({ where: { userId }, orderBy: { createdAt: "desc" } }),
+    production.otpTransaction.count({ where: { userId, createdAt: { gt: new Date(Date.now() - OTP_SEND_WINDOW_MS) } } }),
+  ]);
+  if (last && last.resendAfter > new Date()) {
+    throw new HttpError(429, "RESEND_TOO_SOON", "Please wait before requesting another OTP", true, { retryAfterSeconds: secondsUntil(last.resendAfter) });
+  }
+  if (recentSends >= OTP_MAX_SENDS) {
+    throw new HttpError(429, "OTP_SEND_LIMIT", "Too many OTP requests. Please try again in 30 minutes", true);
+  }
+}
+
+/** Sends an OTP to `mobile` (login number or an alternate bureau number). Cooldown and limits are shared per user. */
+async function issueOtp(req: Request, user: { id: string }, mobile: string, purpose: "LOGIN" | "BUREAU_MOBILE") {
+  await assertCanSendOtp(user.id);
+  const otpStep = purpose === "LOGIN" ? "OTP" : "ALT_MOBILE";
+  const transactionId = randomUUID();
+  let sent: { providerRef: string | null };
+  try {
+    sent = await providers.sendOtp(user.id, mobile, scenario(req));
+  } catch (error) {
+    await trackJourney({
+      userRef: user.id, eventType: "OTP_SEND_FAILED", step: otpStep, outcome: error instanceof ProviderError ? error.code : "UNKNOWN",
+      requestId: req.requestId, transactionId, metadata: { purpose, mobileLast4: mobile.slice(-4) },
+    });
+    throw error;
+  }
+  const now = Date.now();
+  await production.$transaction([
+    // A new OTP supersedes any earlier one still pending.
+    production.otpTransaction.updateMany({ where: { userId: user.id, status: "PENDING" }, data: { status: "EXPIRED" } }),
+    production.otpTransaction.create({ data: {
+      id: transactionId, userId: user.id, channel: "SMS", status: "PENDING", purpose,
+      targetMobileEncrypted: purpose === "BUREAU_MOBILE" ? encrypt(mobile) : null,
+      providerRef: sent.providerRef, otpHash: sent.providerRef ? null : hashOtp(transactionId, env.OTP_MOCK_CODE),
+      expiresAt: new Date(now + OTP_TTL_MS), resendAfter: new Date(now + OTP_RESEND_AFTER_MS),
+    }}),
+  ]);
+  await trackJourney({
+    userRef: user.id, eventType: "OTP_SENT", step: otpStep, outcome: "SUCCESS", requestId: req.requestId, transactionId,
+    metadata: { purpose, mobileLast4: mobile.slice(-4), provider: sent.providerRef ? "INDICONNECT" : "MOCK" }, increment: ["otpSends"],
+  });
+  return {
+    transactionId,
+    mobileLast4: mobile.slice(-4),
+    expiresInSeconds: OTP_TTL_MS / 1000,
+    resendAfterSeconds: OTP_RESEND_AFTER_MS / 1000,
+    ...(env.NODE_ENV !== "production" && !sent.providerRef && { devOtp: env.OTP_MOCK_CODE }),
+  };
+}
+
+/**
+ * Verifies an OTP and marks it used. Wrong attempts count per user across purposes and resends;
+ * 3 wrong -> 15-minute lockout. `ownerId` pins the OTP to the signed-in user for non-login purposes.
+ */
+async function consumeOtp(req: Request, data: { transactionId: string; otp: string }, purpose: "LOGIN" | "BUREAU_MOBILE", ownerId?: string) {
+  const transaction = await production.otpTransaction.findUnique({ where: { id: data.transactionId }, include: { user: true } });
+  if (!transaction || transaction.purpose !== purpose || (ownerId && transaction.userId !== ownerId)) {
+    throw new HttpError(400, "OTP_TRANSACTION_NOT_FOUND", "OTP request was not found. Request a new OTP");
+  }
+  assertNotLocked(transaction.user);
+  if (transaction.status === "USED" || transaction.status === "VERIFIED") throw new HttpError(409, "OTP_ALREADY_USED", "This OTP has already been used. Request a new OTP");
+  if (transaction.status === "BLOCKED") throw new HttpError(429, "OTP_ATTEMPTS_EXCEEDED", "Too many attempts. Please try again later");
+  if (transaction.status === "EXPIRED" || transaction.expiresAt <= new Date()) {
+    if (transaction.status === "PENDING") await production.otpTransaction.update({ where: { id: transaction.id }, data: { status: "EXPIRED" } });
+    throw new HttpError(410, "OTP_EXPIRED", "This OTP has expired. Request a new OTP", true);
+  }
+
+  let valid: boolean;
+  if (transaction.providerRef) {
+    try {
+      await providers.verifyOtp(transaction.userId, transaction.providerRef, data.otp);
+      valid = true;
+    } catch (error) {
+      // Only a definite "wrong OTP" counts as an attempt; outages surface as 503/504 and are retryable.
+      if (!(error instanceof ProviderError && error.kind === "BUSINESS_FAILURE")) throw error;
+      valid = false;
+    }
+  } else {
+    valid = transaction.otpHash !== null && secureEqual(transaction.otpHash, hashOtp(transaction.id, data.otp));
+  }
+
+  if (!valid) {
+    // ponytail: failedOtpWindow only resets on success or lockout, add a last-failure timestamp if stale failures should expire
+    const [, user] = await production.$transaction([
+      production.otpTransaction.update({ where: { id: transaction.id }, data: { failedAttempts: { increment: 1 } } }),
+      production.user.update({ where: { id: transaction.userId }, data: { failedOtpWindow: { increment: 1 } } }),
+    ]);
+    const locked = user.failedOtpWindow >= OTP_MAX_FAILED_ATTEMPTS;
+    if (locked) {
+      await production.$transaction([
+        production.user.update({ where: { id: user.id }, data: { failedOtpWindow: 0, blockedUntil: new Date(Date.now() + LOCKOUT_MS) } }),
+        production.otpTransaction.updateMany({ where: { userId: user.id, status: "PENDING" }, data: { status: "BLOCKED" } }),
+      ]);
+    }
+    await trackJourney({
+      userRef: user.id, eventType: locked ? "OTP_LOCKED" : "OTP_INVALID", step: locked && purpose === "LOGIN" ? "MOBILE" : purpose === "LOGIN" ? "OTP" : "ALT_MOBILE",
+      outcome: locked ? "OTP_ATTEMPTS_EXCEEDED" : "INVALID_OTP", requestId: req.requestId, transactionId: transaction.id,
+      metadata: { purpose, failedAttempts: user.failedOtpWindow }, increment: ["otpFailures"],
+    });
+    if (locked) throw new HttpError(429, "OTP_ATTEMPTS_EXCEEDED", "Too many incorrect attempts. Please try again in 15 minutes", false, { retryAfterSeconds: LOCKOUT_MS / 1000 });
+    const attemptsRemaining = OTP_MAX_FAILED_ATTEMPTS - user.failedOtpWindow;
+    throw new HttpError(400, "INVALID_OTP", `Invalid OTP. ${attemptsRemaining} attempt${attemptsRemaining === 1 ? "" : "s"} left`, false, { attemptsRemaining });
+  }
+
+  // Conditional update makes the OTP single-use even under concurrent requests.
+  const claimed = await production.otpTransaction.updateMany({ where: { id: transaction.id, status: "PENDING" }, data: { status: "USED", verifiedAt: new Date() } });
+  if (claimed.count !== 1) throw new HttpError(409, "OTP_ALREADY_USED", "This OTP has already been used. Request a new OTP");
+  await production.user.update({ where: { id: transaction.userId }, data: { failedOtpWindow: 0, blockedUntil: null } });
+  return transaction;
+}
 
 app.post("/api/v1/auth/request-otp", authLimiter, async (req, res) => {
   const data = requestOtpSchema.parse(req.body);
-  const user = await production.user.findUnique({ where: { mobileHash: hashMobile(data.mobile) } });
-  if (!user) throw new HttpError(404, "MOBILE_NOT_REGISTERED", "Mobile number is not registered");
-  if (user.status === "BLOCKED" || (user.blockedUntil && user.blockedUntil > new Date())) {
-    throw new HttpError(429, "OTP_TEMPORARILY_BLOCKED", "OTP requests are temporarily blocked. Please try later", true);
-  }
-  const last = await production.otpTransaction.findFirst({ where: { userId: user.id }, orderBy: { createdAt: "desc" } });
-  if (last?.resendAfter && last.resendAfter > new Date()) {
-    throw new HttpError(429, "RESEND_TOO_SOON", "Please wait before requesting another OTP", true, { retryAfterSeconds: Math.ceil((last.resendAfter.getTime() - Date.now()) / 1000) });
-  }
-  const transactionId = randomUUID();
-  await providers.sendOtp(user.id, scenario(req));
-  const now = Date.now();
-  await production.$transaction([
-    production.userConsent.create({ data: {
-      userId: user.id, purpose: "LOGIN", version: data.consentVersion, status: "GRANTED",
-      ipAddress: req.ip, userAgent: req.header("user-agent"),
-    }}),
-    production.otpTransaction.create({ data: {
-      id: transactionId, userId: user.id, channel: data.channel,
-      otpHash: hashOtp(transactionId, env.OTP_MOCK_CODE), status: "PENDING",
-      expiresAt: new Date(now + 5 * 60_000), resendAfter: new Date(now + 10_000),
-    }}),
-  ]);
-  await writeAudit({ eventType: "OTP_REQUESTED", userRef: user.id, transactionId, status: "SUCCESS", requestId: req.requestId, metadata: { channel: data.channel, consentVersion: data.consentVersion } });
-  res.status(201).json({ transactionId, expiresInSeconds: 300, resendAfterSeconds: 10, ...(env.NODE_ENV !== "production" && { devOtp: env.OTP_MOCK_CODE }) });
+  const mobileHash = hashMobile(data.mobile);
+  // New numbers are allowed: the "existing user?" decision happens after OTP verification.
+  const user = await production.user.upsert({ where: { mobileHash }, update: { mobileEncrypted: encrypt(data.mobile) }, create: { mobileHash, mobileLast4: data.mobile.slice(-4), mobileEncrypted: encrypt(data.mobile) } });
+  assertNotLocked(user);
+
+  await assertCanSendOtp(user.id);
+
+  // The single checkbox is recorded per purpose, before the OTP leaves (consent is what authorises sending it).
+  const purposes = ["LOGIN", "CREDIT_REPORT", "MARKETING"] as const;
+  await production.userConsent.createMany({ data: purposes.map((purpose) => ({
+    userId: user.id, purpose, version: data.consentVersion, status: "GRANTED" as const,
+    ipAddress: req.ip, userAgent: req.header("user-agent"),
+  }))});
+  await trackJourney({
+    userRef: user.id, eventType: "CONSENT_GRANTED", step: "MOBILE", outcome: "SUCCESS", requestId: req.requestId,
+    metadata: { purposes: [...purposes], version: data.consentVersion, ipAddress: req.ip ?? null, userAgent: req.header("user-agent") ?? null },
+    set: { mobileLast4: data.mobile.slice(-4) },
+  });
+
+  res.status(201).json(await issueOtp(req, user, data.mobile, "LOGIN"));
 });
 
 app.post("/api/v1/auth/verify-otp", authLimiter, async (req, res) => {
-  const data = verifyOtpSchema.parse(req.body);
-  const transaction = await production.otpTransaction.findUnique({ where: { id: data.transactionId }, include: { user: true } });
-  if (!transaction) throw new HttpError(400, "OTP_TRANSACTION_NOT_FOUND", "OTP request was not found");
-  if (["VERIFIED", "USED"].includes(transaction.status)) throw new HttpError(409, "OTP_ALREADY_USED", "This OTP has already been used");
-  if (transaction.status === "BLOCKED") throw new HttpError(429, "OTP_ATTEMPTS_EXCEEDED", "You have exceeded the maximum number of OTP attempts");
-  if (transaction.expiresAt <= new Date()) {
-    await production.otpTransaction.update({ where: { id: transaction.id }, data: { status: "EXPIRED" } });
-    throw new HttpError(410, "OTP_EXPIRED", "OTP has expired. Request a new OTP", true);
-  }
-  if (!secureEqual(transaction.otpHash, hashOtp(transaction.id, data.otp))) {
-    const attempts = transaction.failedAttempts + 1;
-    const blocked = attempts >= 3;
-    await production.$transaction([
-      production.otpTransaction.update({ where: { id: transaction.id }, data: { failedAttempts: attempts, status: blocked ? "BLOCKED" : "PENDING" } }),
-      ...(blocked ? [production.user.update({ where: { id: transaction.userId }, data: { blockedUntil: new Date(Date.now() + 15 * 60_000) } })] : []),
-    ]);
-    await writeAudit({ eventType: "OTP_VERIFICATION", userRef: transaction.userId, transactionId: transaction.id, status: blocked ? "BLOCKED" : "FAILED", requestId: req.requestId, metadata: { attempts } });
-    throw new HttpError(blocked ? 429 : 400, blocked ? "OTP_ATTEMPTS_EXCEEDED" : "INVALID_OTP", blocked ? "You have exceeded the maximum number of OTP attempts" : "Invalid OTP");
-  }
+  const transaction = await consumeOtp(req, verifyOtpSchema.parse(req.body), "LOGIN");
+
   const token = newToken();
-  await production.$transaction([
-    production.otpTransaction.update({ where: { id: transaction.id }, data: { status: "USED", verifiedAt: new Date() } }),
-    production.user.update({ where: { id: transaction.userId }, data: { failedOtpWindow: 0, blockedUntil: null } }),
-    production.userSession.create({ data: { userId: transaction.userId, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 8 * 60 * 60_000) } }),
-  ]);
-  res.cookie("relive_session", token, { httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax", maxAge: 8 * 60 * 60_000, path: "/" });
-  await writeAudit({ eventType: "LOGIN", userRef: transaction.userId, transactionId: transaction.id, status: "SUCCESS", requestId: req.requestId });
-  res.json(await getWorkflow(transaction.userId));
+  await production.userSession.create({ data: { userId: transaction.userId, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + SESSION_TTL_MS) } });
+  res.cookie("relive_session", token, { httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax", maxAge: SESSION_TTL_MS, path: "/" });
+  const workflow = await getWorkflow(transaction.userId);
+  await trackJourney({
+    userRef: transaction.userId, eventType: "LOGIN", step: stepForStage(workflow.stage), outcome: "SUCCESS",
+    requestId: req.requestId, transactionId: transaction.id, metadata: { stage: workflow.stage, existingUser: workflow.stage === "DASHBOARD" },
+  });
+  res.json(workflow);
 });
 
 app.post("/api/v1/auth/logout", requireAuth, async (req, res) => {
   const token = req.cookies?.relive_session as string;
   await production.userSession.updateMany({ where: { tokenHash: hashToken(token) }, data: { revokedAt: new Date() } });
   res.clearCookie("relive_session", { path: "/" });
+  await writeAudit({ eventType: "LOGOUT", userRef: req.userId, status: "SUCCESS", requestId: req.requestId });
   res.status(204).end();
 });
 
 app.get("/api/v1/workflow", requireAuth, async (req, res) => res.json(await getWorkflow(userContext(req))));
 app.get("/api/v1/credit/overview", requireAuth, async (req, res) => res.json(await getCreditOverview(userContext(req))));
-
-app.post("/api/v1/profile/nsdl", requireAuth, sensitiveLimiter, async (req, res) => {
-  const userId = userContext(req);
-  const existing = await production.userProfile.findUnique({ where: { userId } });
-  if (existing) return res.json(await getWorkflow(userId));
-  const details = await providers.nsdl(userId, scenario(req));
-  await production.userProfile.create({ data: { userId, ...details, dateOfBirth: new Date(details.dateOfBirth), source: "NSDL", verified: true } });
-  await writeAudit({ eventType: "PROFILE_RETRIEVED", userRef: userId, status: "SUCCESS", requestId: req.requestId, metadata: { source: "NSDL" } });
-  res.json(await getWorkflow(userId));
-});
 
 app.post("/api/v1/profile/manual", requireAuth, sensitiveLimiter, async (req, res) => {
   const userId = userContext(req);
@@ -138,36 +243,79 @@ app.post("/api/v1/profile/manual", requireAuth, sensitiveLimiter, async (req, re
     create: { userId, ...data, dateOfBirth: new Date(data.dateOfBirth), source: "MANUAL_UNVERIFIED", verified: false },
     update: { ...data, dateOfBirth: new Date(data.dateOfBirth), source: "MANUAL_UNVERIFIED", verified: false },
   });
-  await writeAudit({ eventType: "PROFILE_SAVED", userRef: userId, status: "SUCCESS", requestId: req.requestId, metadata: { source: profile.source, verified: false } });
+  await trackJourney({
+    userRef: userId, eventType: "DETAILS_SAVED", step: "REPORT", outcome: "SUCCESS", requestId: req.requestId,
+    metadata: { source: profile.source, hasEmail: Boolean(profile.email) }, set: { identitySource: "MANUAL" },
+  });
   res.json(await getWorkflow(userId));
 });
 
 app.post("/api/v1/kyc/verify", requireAuth, sensitiveLimiter, async (req, res) => {
   const userId = userContext(req);
   const { pan } = kycSchema.parse(req.body);
-  const profile = await production.userProfile.findUnique({ where: { userId } });
-  if (!profile) throw new HttpError(409, "PROFILE_REQUIRED", "Complete your profile before KYC");
+  const panHash = hashPan(pan);
+  const [linkedElsewhere, recentAttempts] = await Promise.all([
+    production.kycVerification.findFirst({ where: { panHash, status: "VERIFIED", userId: { not: userId } } }),
+    production.kycVerification.count({ where: { userId, createdAt: { gt: new Date(Date.now() - DAY_MS) } } }),
+  ]);
+  if (linkedElsewhere) {
+    throw new HttpError(409, "PAN_ALREADY_LINKED", "This PAN is already registered with another mobile number. Log in with that number, or contact support");
+  }
+  if (recentAttempts >= PAN_ATTEMPTS_PER_DAY) {
+    throw new HttpError(429, "PAN_ATTEMPT_LIMIT", "Too many PAN attempts today. Continue by entering your name as on PAN", false);
+  }
+
+  let details;
   try {
-    const result = await providers.kyc(userId, pan, scenario(req));
-    await production.kycVerification.create({ data: { userId, panHash: hashPan(pan), panLast4: pan.slice(-4), status: "VERIFIED", providerRef: result.providerRef, verifiedAt: new Date() } });
-    await writeAudit({ eventType: "KYC_VERIFICATION", userRef: userId, status: "SUCCESS", requestId: req.requestId });
-    res.json(await getWorkflow(userId));
+    details = await providers.panDetails(userId, pan, scenario(req));
   } catch (error) {
     const reason = error instanceof ProviderError ? error.code : "KYC_ERROR";
-    await production.kycVerification.create({ data: { userId, panHash: hashPan(pan), panLast4: pan.slice(-4), status: reason === "IDENTITY_MISMATCH" ? "MANUAL_REVIEW" : "FAILED", failureReason: reason } });
+    await production.kycVerification.create({ data: { userId, panHash, panLast4: pan.slice(-4), status: "FAILED", failureReason: reason } });
+    await trackJourney({
+      userRef: userId, eventType: "PAN_FAILED", step: "PAN", outcome: reason, requestId: req.requestId,
+      metadata: { panLast4: pan.slice(-4), provider: env.PAN_PROVIDER }, increment: ["panAttempts"],
+    });
     throw error;
   }
-});
-
-app.post("/api/v1/credit/authorize", requireAuth, sensitiveLimiter, async (req, res) => {
-  const userId = userContext(req);
-  const data = creditAuthorizationSchema.parse(req.body);
-  const kyc = await production.kycVerification.findFirst({ where: { userId, status: "VERIFIED" }, orderBy: { createdAt: "desc" } });
-  if (!kyc) throw new HttpError(409, "KYC_REQUIRED", "Successful KYC is required before authorization");
-  await production.userConsent.create({ data: { userId, purpose: "CREDIT_REPORT", version: data.consentVersion, status: "GRANTED", ipAddress: req.ip, userAgent: req.header("user-agent") } });
-  await writeAudit({ eventType: "CREDIT_AUTHORIZATION", userRef: userId, status: "GRANTED", requestId: req.requestId, metadata: { version: data.consentVersion } });
+  // The PAN record is the verified identity: it fills a new profile or replaces manual details.
+  const { providerRef, email, phoneLast4, ...identity } = details;
+  const user = await production.user.findUniqueOrThrow({ where: { id: userId }, select: { mobileLast4: true, bureauMobileLast4: true } });
+  // Anyone can type any PAN: when the PAN record names a mobile that isn't one this user proved by OTP,
+  // don't reveal or adopt that identity (name, DOB, email); a person reviews it instead.
+  if (phoneLast4 && phoneLast4 !== user.mobileLast4 && phoneLast4 !== user.bureauMobileLast4) {
+    await production.kycVerification.create({ data: { userId, panHash, panLast4: pan.slice(-4), status: "MANUAL_REVIEW", providerRef, failureReason: "PAN_MOBILE_MISMATCH" } });
+    await trackJourney({
+      userRef: userId, eventType: "PAN_MOBILE_MISMATCH", step: "PAN", outcome: "MANUAL_REVIEW", requestId: req.requestId,
+      metadata: { panLast4: pan.slice(-4), provider: env.PAN_PROVIDER }, increment: ["panAttempts"],
+    });
+    throw new HttpError(409, "PAN_MOBILE_MISMATCH",
+      "This PAN is registered with a different mobile number, so we couldn't verify it here. Log in with that number, or continue by entering your details", false);
+  }
+  const fields = { ...identity, dateOfBirth: new Date(identity.dateOfBirth), source: "NSDL" as const, verified: true };
+  await production.$transaction([
+    production.userProfile.upsert({
+      where: { userId },
+      create: { userId, ...fields, email },
+      update: { ...fields, ...(email && { email }) },
+    }),
+    production.kycVerification.create({ data: { userId, panHash, panLast4: pan.slice(-4), panEncrypted: encrypt(pan), status: "VERIFIED", providerRef, verifiedAt: new Date() } }),
+  ]);
+  await trackJourney({
+    userRef: userId, eventType: "PAN_VERIFIED", step: "REPORT", outcome: "SUCCESS", requestId: req.requestId,
+    // A mismatching PAN mobile is rejected above; null = the PAN record had no mobile to compare.
+    metadata: { panLast4: pan.slice(-4), provider: env.PAN_PROVIDER, panMobileMatchesLogin: phoneLast4 ? phoneLast4 === user.mobileLast4 : null },
+    increment: ["panAttempts"],
+    set: { identitySource: "PAN", panLast4: pan.slice(-4) },
+  });
   res.json(await getWorkflow(userId));
 });
+
+// ponytail: in-memory lock, single API instance only; use a DB advisory lock if the API is scaled out
+const reportsInFlight = new Set<string>();
+const REPORT_TTL_MS = 30 * 24 * 60 * 60_000;
+const DAY_MS = 24 * 60 * 60_000;
+const PAN_ATTEMPTS_PER_DAY = 5; // PAN lookups are billed
+const REPORT_ATTEMPTS_PER_DAY = 3; // each attempt = up to two billed bureau pulls
 
 app.post("/api/v1/credit/report", requireAuth, sensitiveLimiter, async (req, res) => {
   const userId = userContext(req);
@@ -177,20 +325,203 @@ app.post("/api/v1/credit/report", requireAuth, sensitiveLimiter, async (req, res
     if (duplicate.userId !== userId) throw new HttpError(409, "IDEMPOTENCY_CONFLICT", "This request key is already in use");
     return res.json(await getWorkflow(userId));
   }
-  const [kyc, authorization] = await Promise.all([
-    production.kycVerification.findFirst({ where: { userId, status: "VERIFIED" }, orderBy: { createdAt: "desc" } }),
+  const [user, profile, authorization, current] = await Promise.all([
+    production.user.findUniqueOrThrow({ where: { id: userId } }),
+    production.userProfile.findUnique({ where: { userId } }),
     production.userConsent.findFirst({ where: { userId, purpose: "CREDIT_REPORT", status: "GRANTED" }, orderBy: { grantedAt: "desc" } }),
+    production.creditReport.findFirst({ where: { userId, status: "CURRENT", expiresAt: { gt: new Date() } } }),
   ]);
-  if (!kyc) throw new HttpError(409, "KYC_REQUIRED", "Successful KYC is required before requesting a report");
-  if (!authorization) throw new HttpError(409, "CREDIT_AUTHORIZATION_REQUIRED", "Credit-report authorization is required");
-  const report = await providers.experian(userId, idempotencyKey, scenario(req));
-  await production.creditReport.create({ data: {
-    userId, bureau: "EXPERIAN", score: report.score, reportJson: report,
-    providerRef: report.providerRef, idempotencyKey, status: "CURRENT",
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60_000),
-  }});
-  await writeAudit({ eventType: "CREDIT_REPORT_RETRIEVED", userRef: userId, transactionId: idempotencyKey, status: "SUCCESS", requestId: req.requestId, metadata: { bureau: "EXPERIAN" } });
+  // Bureau pulls are billed: a current report is reused until it expires.
+  if (current) return res.json(await getWorkflow(userId));
+  if (!profile) throw new HttpError(409, "PROFILE_REQUIRED", "Complete your profile before requesting a report");
+  // Granted with the signup checkbox; older accounts re-consent by logging in again.
+  if (!authorization) throw new HttpError(409, "CONSENT_REQUIRED", "Please log out and log in again to give consent for fetching your credit report");
+  const attemptsToday = await production.apiTransaction.count({
+    where: { userId, operation: "CREDIT_REPORT_EXPERIAN", createdAt: { gt: new Date(Date.now() - DAY_MS) } },
+  });
+  if (attemptsToday >= REPORT_ATTEMPTS_PER_DAY) {
+    throw new HttpError(429, "REPORT_ATTEMPT_LIMIT", "You've reached today's limit for fetching your credit report. Please try again tomorrow", false);
+  }
+  // Missing or unreadable (e.g. DATA_ENCRYPTION_KEY rotated): the next login re-saves it.
+  let mobile: string;
+  try {
+    // An OTP-verified alternate number (the one the bureaus have) wins over the login number.
+    mobile = decrypt(user.bureauMobileEncrypted ?? user.mobileEncrypted ?? "");
+  } catch {
+    throw new HttpError(409, "MOBILE_REVERIFY_REQUIRED", "Please log out and log in again to fetch your report", false);
+  }
+  if (reportsInFlight.has(userId)) throw new HttpError(409, "REPORT_IN_PROGRESS", "Your report is already being fetched. Please wait", true);
+
+  // PAN-verified users: send the verified PAN + DOB too, so the bureau matches on identity, not just name + mobile.
+  // Manual (unverified) details are never sent as identity: they could be someone else's.
+  const verifiedKyc = await production.kycVerification.findFirst({ where: { userId, status: "VERIFIED" }, orderBy: { createdAt: "desc" } });
+  let verifiedPan: string | undefined;
+  try {
+    verifiedPan = verifiedKyc?.panEncrypted ? decrypt(verifiedKyc.panEncrypted) : undefined;
+  } catch {
+    verifiedPan = undefined; // unreadable (key rotated): fall back to name + mobile; the identity check still applies
+  }
+  const input = {
+    name: `${profile.firstName} ${profile.lastName}`.trim(),
+    mobile,
+    ...(verifiedPan && profile.verified && { pan: verifiedPan, dob: profile.dateOfBirth.toISOString().slice(0, 10) }),
+  };
+  reportsInFlight.add(userId);
+  try {
+    // Experian first; CRIF only when Experian fails for any reason.
+    const failures: ProviderError[] = [];
+    let pull;
+    for (const bureau of ["EXPERIAN", "CRIF"] as const) {
+      try {
+        pull = await providers.bureau(bureau, userId, input, idempotencyKey, scenario(req));
+        break;
+      } catch (error) {
+        if (!(error instanceof ProviderError)) throw error;
+        failures.push(error);
+        await trackJourney({
+          userRef: userId, eventType: "BUREAU_FAILED", step: "REPORT", outcome: error.code, requestId: req.requestId, transactionId: idempotencyKey,
+          metadata: { bureau, kind: error.kind, mobileLast4: mobile.slice(-4), usingAlternateMobile: Boolean(user.bureauMobileEncrypted) },
+        });
+      }
+    }
+    if (!pull) {
+      // Only when BOTH bureaus answered "no record" can we tell the user to fix their details.
+      // Any outage/timeout means we don't know yet, so the safe answer is "try again".
+      const noRecord = failures.every((failure) => failure.kind === "BUSINESS_FAILURE");
+      await trackJourney({
+        userRef: userId, eventType: noRecord ? "REPORT_NO_RECORD" : "REPORT_UNAVAILABLE", step: "REPORT",
+        outcome: noRecord ? "NO_CREDIT_RECORD" : "REPORT_UNAVAILABLE", requestId: req.requestId, transactionId: idempotencyKey,
+        metadata: { mobileLast4: mobile.slice(-4), usingAlternateMobile: Boolean(user.bureauMobileEncrypted) }, increment: ["reportAttempts"],
+      });
+      if (noRecord) {
+        throw new HttpError(422, "NO_CREDIT_RECORD",
+          `We couldn't find a credit record for "${input.name}" with the mobile number ending ${mobile.slice(-4)}. Bureaus match on the number you gave your bank or lender, so try that number, or check your name matches your PAN`,
+          false, { mobileLast4: mobile.slice(-4), triedAlternate: Boolean(user.bureauMobileEncrypted) });
+      }
+      throw new HttpError(503, "REPORT_UNAVAILABLE", "Credit bureaus aren't responding right now. Please try again in a few minutes", true);
+    }
+    // The pull is keyed on name + mobile only: never show a report whose PAN / DOB isn't this user's
+    // (shared phone, recycled number, SIM swap). Mock reports carry no identity and aren't real people.
+    if (!(pull.raw as { mock?: boolean } | null)?.mock) {
+      const verdict = matchReportIdentity(
+        extractReportIdentity(pull.raw),
+        { verifiedPanHash: verifiedKyc?.panHash ?? null, dateOfBirth: profile.dateOfBirth.toISOString().slice(0, 10) },
+        hashPan,
+      );
+      if (verdict !== "MATCH") {
+        // Not stored: the report may be someone else's. The billed call itself is already in apiTransaction.
+        await trackJourney({
+          userRef: userId, eventType: "REPORT_IDENTITY_MISMATCH", step: "REPORT", outcome: verdict, requestId: req.requestId, transactionId: idempotencyKey,
+          metadata: { bureau: pull.bureau, panVerified: Boolean(verifiedKyc), mobileLast4: mobile.slice(-4), usingAlternateMobile: Boolean(user.bureauMobileEncrypted) },
+          increment: ["reportAttempts"],
+        });
+        throw new HttpError(422, "REPORT_IDENTITY_MISMATCH",
+          verifiedKyc
+            ? "The credit report we received doesn't match your verified PAN, so we can't show it. If this mobile number was recently assigned to you, use the number registered with your bank"
+            : "The credit report we received doesn't match your date of birth, so we can't show it. Check your date of birth, or verify your PAN in your profile",
+          false);
+      }
+    }
+    await production.creditReport.create({ data: {
+      userId, bureau: pull.bureau, score: pull.report.score, reportJson: pull.report, rawResponse: pull.raw as object,
+      providerRef: pull.providerRef, idempotencyKey, status: "CURRENT", expiresAt: new Date(Date.now() + REPORT_TTL_MS),
+    }});
+    await trackJourney({
+      userRef: userId, eventType: "REPORT_FETCHED", step: "DASHBOARD", outcome: "SUCCESS", requestId: req.requestId, transactionId: idempotencyKey,
+      metadata: {
+        bureau: pull.bureau, score: pull.report.score, crifFallback: failures.length > 0, mobileLast4: mobile.slice(-4),
+        // Sent PAN/DOB vs what the bureau echoes back: false/false while sent=true means IndiConnect dropped them.
+        identitySent: Boolean(input.pan), ...(input.pan && { identityReceived: echoedRequestIdentity(pull.raw) }),
+      },
+      increment: ["reportAttempts"], set: { status: "COMPLETED", bureau: pull.bureau },
+    });
+    res.json(await getWorkflow(userId));
+  } finally {
+    reportsInFlight.delete(userId);
+  }
+});
+
+// ---- "Get help" from the dashboard: stored as a lead; the team calls back on the verified login number ----
+app.post("/api/v1/support-requests", requireAuth, sensitiveLimiter, async (req, res) => {
+  const userId = userContext(req);
+  const data = supportRequestSchema.parse(req.body);
+  const request = await production.supportRequest.create({
+    data: {
+      userId, topic: data.topic, accountLabel: data.account, question: data.question,
+      preferredTime: data.preferredTime, preferredLanguage: data.preferredLanguage,
+    },
+  });
+  // The question can hold personal details, so the audit log only records that a request was made.
+  await writeAudit({ eventType: "SUPPORT_REQUESTED", userRef: userId, status: "SUCCESS", requestId: req.requestId, metadata: { supportRequestId: request.id, topic: data.topic } });
+  res.status(201).json({ id: request.id });
+  // Sent after replying: a slow or failing mail server must not hold up or fail the user's request.
+  emailLead(request.id).catch((error: unknown) =>
+    writeAudit({
+      eventType: "SUPPORT_EMAIL_FAILED", userRef: userId, status: "FAILURE", requestId: req.requestId,
+      metadata: { supportRequestId: request.id, reason: String(error instanceof Error ? error.message : error).slice(0, 300) },
+    }).catch(() => undefined),
+  );
+});
+
+// ---- No record on the login number: try the number the bureaus may have on file ----
+
+app.post("/api/v1/credit/bureau-mobile/request-otp", requireAuth, authLimiter, async (req, res) => {
+  const userId = userContext(req);
+  const { mobile } = bureauMobileSchema.parse(req.body);
+  const user = await production.user.findUniqueOrThrow({ where: { id: userId } });
+  assertNotLocked(user);
+  if (hashMobile(mobile) === user.mobileHash) {
+    throw new HttpError(400, "SAME_MOBILE", "That's the number you logged in with. Enter the other number registered with your bank or lender");
+  }
+  res.status(201).json(await issueOtp(req, user, mobile, "BUREAU_MOBILE"));
+});
+
+app.post("/api/v1/credit/bureau-mobile/verify", requireAuth, authLimiter, async (req, res) => {
+  const userId = userContext(req);
+  const transaction = await consumeOtp(req, verifyOtpSchema.parse(req.body), "BUREAU_MOBILE", userId);
+  const mobile = decrypt(transaction.targetMobileEncrypted!);
+  await production.user.update({ where: { id: userId }, data: { bureauMobileEncrypted: transaction.targetMobileEncrypted, bureauMobileLast4: mobile.slice(-4) } });
+  await trackJourney({
+    userRef: userId, eventType: "ALT_MOBILE_VERIFIED", step: "REPORT", outcome: "SUCCESS", requestId: req.requestId,
+    transactionId: transaction.id, set: { altMobileLast4: mobile.slice(-4) },
+  });
   res.json(await getWorkflow(userId));
+});
+
+// ---- Both bureaus confirmed "no record" and the user has no other number: genuinely new to credit ----
+
+app.post("/api/v1/credit/no-history", requireAuth, sensitiveLimiter, async (req, res) => {
+  const userId = userContext(req);
+  const since = new Date(Date.now() - DAY_MS);
+  const [experian, crif] = await Promise.all(["CREDIT_REPORT_EXPERIAN", "CREDIT_REPORT_CRIF"].map((operation) =>
+    production.apiTransaction.findFirst({ where: { userId, operation, createdAt: { gt: since } }, orderBy: { createdAt: "desc" } })));
+  // Only allowed right after both bureaus said "no record" (not after an outage).
+  if (experian?.status !== "BUSINESS_FAILURE" || crif?.status !== "BUSINESS_FAILURE") {
+    throw new HttpError(409, "NO_RECORD_UNCONFIRMED", "Please fetch your credit report first", false);
+  }
+  const existing = await production.creditReport.findFirst({ where: { userId } });
+  if (!existing) {
+    await production.creditReport.create({ data: {
+      userId, bureau: "NONE", score: 0, reportJson: { noRecord: true }, status: "NO_RECORD",
+      idempotencyKey: randomUUID(), expiresAt: new Date(Date.now() + REPORT_TTL_MS),
+    }});
+    await trackJourney({
+      userRef: userId, eventType: "NO_CREDIT_HISTORY_CONFIRMED", step: "DASHBOARD", outcome: "SUCCESS", requestId: req.requestId,
+      set: { status: "NO_CREDIT_HISTORY" },
+    });
+  }
+  res.json(await getWorkflow(userId));
+});
+
+// The bureau's own PDF of the latest report (link comes from the stored IndiConnect response).
+app.get("/api/v1/credit/report-pdf", requireAuth, sensitiveLimiter, async (req, res) => {
+  const userId = userContext(req);
+  const report = await production.creditReport.findFirst({ where: { userId, status: "CURRENT" }, orderBy: { retrievedAt: "desc" } });
+  const raw = report?.rawResponse as { experian_report_link?: unknown; credit_report_link?: unknown } | null | undefined;
+  const url = [raw?.experian_report_link, raw?.credit_report_link].find((link): link is string => typeof link === "string" && /^https:\/\//.test(link));
+  if (!url) throw new HttpError(404, "REPORT_PDF_UNAVAILABLE", "The bureau did not provide a PDF for this report");
+  await writeAudit({ eventType: "REPORT_PDF_OPENED", userRef: userId, status: "SUCCESS", requestId: req.requestId, metadata: { bureau: report!.bureau } });
+  res.json({ url });
 });
 
 app.get("/api/v1/dashboard", requireAuth, async (req, res) => {

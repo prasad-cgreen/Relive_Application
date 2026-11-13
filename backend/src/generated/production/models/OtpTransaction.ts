@@ -39,6 +39,9 @@ export type OtpTransactionMinAggregateOutputType = {
   userId: string | null
   channel: $Enums.OtpChannel | null
   otpHash: string | null
+  providerRef: string | null
+  purpose: $Enums.OtpPurpose | null
+  targetMobileEncrypted: string | null
   status: $Enums.OtpStatus | null
   failedAttempts: number | null
   expiresAt: Date | null
@@ -52,6 +55,9 @@ export type OtpTransactionMaxAggregateOutputType = {
   userId: string | null
   channel: $Enums.OtpChannel | null
   otpHash: string | null
+  providerRef: string | null
+  purpose: $Enums.OtpPurpose | null
+  targetMobileEncrypted: string | null
   status: $Enums.OtpStatus | null
   failedAttempts: number | null
   expiresAt: Date | null
@@ -65,6 +71,9 @@ export type OtpTransactionCountAggregateOutputType = {
   userId: number
   channel: number
   otpHash: number
+  providerRef: number
+  purpose: number
+  targetMobileEncrypted: number
   status: number
   failedAttempts: number
   expiresAt: number
@@ -88,6 +97,9 @@ export type OtpTransactionMinAggregateInputType = {
   userId?: true
   channel?: true
   otpHash?: true
+  providerRef?: true
+  purpose?: true
+  targetMobileEncrypted?: true
   status?: true
   failedAttempts?: true
   expiresAt?: true
@@ -101,6 +113,9 @@ export type OtpTransactionMaxAggregateInputType = {
   userId?: true
   channel?: true
   otpHash?: true
+  providerRef?: true
+  purpose?: true
+  targetMobileEncrypted?: true
   status?: true
   failedAttempts?: true
   expiresAt?: true
@@ -114,6 +129,9 @@ export type OtpTransactionCountAggregateInputType = {
   userId?: true
   channel?: true
   otpHash?: true
+  providerRef?: true
+  purpose?: true
+  targetMobileEncrypted?: true
   status?: true
   failedAttempts?: true
   expiresAt?: true
@@ -213,7 +231,10 @@ export type OtpTransactionGroupByOutputType = {
   id: string
   userId: string
   channel: $Enums.OtpChannel
-  otpHash: string
+  otpHash: string | null
+  providerRef: string | null
+  purpose: $Enums.OtpPurpose
+  targetMobileEncrypted: string | null
   status: $Enums.OtpStatus
   failedAttempts: number
   expiresAt: Date
@@ -249,7 +270,10 @@ export type OtpTransactionWhereInput = {
   id?: Prisma.UuidFilter<"OtpTransaction"> | string
   userId?: Prisma.UuidFilter<"OtpTransaction"> | string
   channel?: Prisma.EnumOtpChannelFilter<"OtpTransaction"> | $Enums.OtpChannel
-  otpHash?: Prisma.StringFilter<"OtpTransaction"> | string
+  otpHash?: Prisma.StringNullableFilter<"OtpTransaction"> | string | null
+  providerRef?: Prisma.StringNullableFilter<"OtpTransaction"> | string | null
+  purpose?: Prisma.EnumOtpPurposeFilter<"OtpTransaction"> | $Enums.OtpPurpose
+  targetMobileEncrypted?: Prisma.StringNullableFilter<"OtpTransaction"> | string | null
   status?: Prisma.EnumOtpStatusFilter<"OtpTransaction"> | $Enums.OtpStatus
   failedAttempts?: Prisma.IntFilter<"OtpTransaction"> | number
   expiresAt?: Prisma.DateTimeFilter<"OtpTransaction"> | Date | string
@@ -263,7 +287,10 @@ export type OtpTransactionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   channel?: Prisma.SortOrder
-  otpHash?: Prisma.SortOrder
+  otpHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  providerRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  purpose?: Prisma.SortOrder
+  targetMobileEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   failedAttempts?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -280,7 +307,10 @@ export type OtpTransactionWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.OtpTransactionWhereInput | Prisma.OtpTransactionWhereInput[]
   userId?: Prisma.UuidFilter<"OtpTransaction"> | string
   channel?: Prisma.EnumOtpChannelFilter<"OtpTransaction"> | $Enums.OtpChannel
-  otpHash?: Prisma.StringFilter<"OtpTransaction"> | string
+  otpHash?: Prisma.StringNullableFilter<"OtpTransaction"> | string | null
+  providerRef?: Prisma.StringNullableFilter<"OtpTransaction"> | string | null
+  purpose?: Prisma.EnumOtpPurposeFilter<"OtpTransaction"> | $Enums.OtpPurpose
+  targetMobileEncrypted?: Prisma.StringNullableFilter<"OtpTransaction"> | string | null
   status?: Prisma.EnumOtpStatusFilter<"OtpTransaction"> | $Enums.OtpStatus
   failedAttempts?: Prisma.IntFilter<"OtpTransaction"> | number
   expiresAt?: Prisma.DateTimeFilter<"OtpTransaction"> | Date | string
@@ -294,7 +324,10 @@ export type OtpTransactionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   channel?: Prisma.SortOrder
-  otpHash?: Prisma.SortOrder
+  otpHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  providerRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  purpose?: Prisma.SortOrder
+  targetMobileEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   failedAttempts?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -315,7 +348,10 @@ export type OtpTransactionScalarWhereWithAggregatesInput = {
   id?: Prisma.UuidWithAggregatesFilter<"OtpTransaction"> | string
   userId?: Prisma.UuidWithAggregatesFilter<"OtpTransaction"> | string
   channel?: Prisma.EnumOtpChannelWithAggregatesFilter<"OtpTransaction"> | $Enums.OtpChannel
-  otpHash?: Prisma.StringWithAggregatesFilter<"OtpTransaction"> | string
+  otpHash?: Prisma.StringNullableWithAggregatesFilter<"OtpTransaction"> | string | null
+  providerRef?: Prisma.StringNullableWithAggregatesFilter<"OtpTransaction"> | string | null
+  purpose?: Prisma.EnumOtpPurposeWithAggregatesFilter<"OtpTransaction"> | $Enums.OtpPurpose
+  targetMobileEncrypted?: Prisma.StringNullableWithAggregatesFilter<"OtpTransaction"> | string | null
   status?: Prisma.EnumOtpStatusWithAggregatesFilter<"OtpTransaction"> | $Enums.OtpStatus
   failedAttempts?: Prisma.IntWithAggregatesFilter<"OtpTransaction"> | number
   expiresAt?: Prisma.DateTimeWithAggregatesFilter<"OtpTransaction"> | Date | string
@@ -327,7 +363,10 @@ export type OtpTransactionScalarWhereWithAggregatesInput = {
 export type OtpTransactionCreateInput = {
   id?: string
   channel: $Enums.OtpChannel
-  otpHash: string
+  otpHash?: string | null
+  providerRef?: string | null
+  purpose?: $Enums.OtpPurpose
+  targetMobileEncrypted?: string | null
   status?: $Enums.OtpStatus
   failedAttempts?: number
   expiresAt: Date | string
@@ -341,7 +380,10 @@ export type OtpTransactionUncheckedCreateInput = {
   id?: string
   userId: string
   channel: $Enums.OtpChannel
-  otpHash: string
+  otpHash?: string | null
+  providerRef?: string | null
+  purpose?: $Enums.OtpPurpose
+  targetMobileEncrypted?: string | null
   status?: $Enums.OtpStatus
   failedAttempts?: number
   expiresAt: Date | string
@@ -353,7 +395,10 @@ export type OtpTransactionUncheckedCreateInput = {
 export type OtpTransactionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channel?: Prisma.EnumOtpChannelFieldUpdateOperationsInput | $Enums.OtpChannel
-  otpHash?: Prisma.StringFieldUpdateOperationsInput | string
+  otpHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.EnumOtpPurposeFieldUpdateOperationsInput | $Enums.OtpPurpose
+  targetMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOtpStatusFieldUpdateOperationsInput | $Enums.OtpStatus
   failedAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -367,7 +412,10 @@ export type OtpTransactionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   channel?: Prisma.EnumOtpChannelFieldUpdateOperationsInput | $Enums.OtpChannel
-  otpHash?: Prisma.StringFieldUpdateOperationsInput | string
+  otpHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.EnumOtpPurposeFieldUpdateOperationsInput | $Enums.OtpPurpose
+  targetMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOtpStatusFieldUpdateOperationsInput | $Enums.OtpStatus
   failedAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -380,7 +428,10 @@ export type OtpTransactionCreateManyInput = {
   id?: string
   userId: string
   channel: $Enums.OtpChannel
-  otpHash: string
+  otpHash?: string | null
+  providerRef?: string | null
+  purpose?: $Enums.OtpPurpose
+  targetMobileEncrypted?: string | null
   status?: $Enums.OtpStatus
   failedAttempts?: number
   expiresAt: Date | string
@@ -392,7 +443,10 @@ export type OtpTransactionCreateManyInput = {
 export type OtpTransactionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channel?: Prisma.EnumOtpChannelFieldUpdateOperationsInput | $Enums.OtpChannel
-  otpHash?: Prisma.StringFieldUpdateOperationsInput | string
+  otpHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.EnumOtpPurposeFieldUpdateOperationsInput | $Enums.OtpPurpose
+  targetMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOtpStatusFieldUpdateOperationsInput | $Enums.OtpStatus
   failedAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -405,7 +459,10 @@ export type OtpTransactionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   channel?: Prisma.EnumOtpChannelFieldUpdateOperationsInput | $Enums.OtpChannel
-  otpHash?: Prisma.StringFieldUpdateOperationsInput | string
+  otpHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.EnumOtpPurposeFieldUpdateOperationsInput | $Enums.OtpPurpose
+  targetMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOtpStatusFieldUpdateOperationsInput | $Enums.OtpStatus
   failedAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -429,6 +486,9 @@ export type OtpTransactionCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   channel?: Prisma.SortOrder
   otpHash?: Prisma.SortOrder
+  providerRef?: Prisma.SortOrder
+  purpose?: Prisma.SortOrder
+  targetMobileEncrypted?: Prisma.SortOrder
   status?: Prisma.SortOrder
   failedAttempts?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -446,6 +506,9 @@ export type OtpTransactionMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   channel?: Prisma.SortOrder
   otpHash?: Prisma.SortOrder
+  providerRef?: Prisma.SortOrder
+  purpose?: Prisma.SortOrder
+  targetMobileEncrypted?: Prisma.SortOrder
   status?: Prisma.SortOrder
   failedAttempts?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -459,6 +522,9 @@ export type OtpTransactionMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   channel?: Prisma.SortOrder
   otpHash?: Prisma.SortOrder
+  providerRef?: Prisma.SortOrder
+  purpose?: Prisma.SortOrder
+  targetMobileEncrypted?: Prisma.SortOrder
   status?: Prisma.SortOrder
   failedAttempts?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -517,6 +583,10 @@ export type EnumOtpChannelFieldUpdateOperationsInput = {
   set?: $Enums.OtpChannel
 }
 
+export type EnumOtpPurposeFieldUpdateOperationsInput = {
+  set?: $Enums.OtpPurpose
+}
+
 export type EnumOtpStatusFieldUpdateOperationsInput = {
   set?: $Enums.OtpStatus
 }
@@ -524,7 +594,10 @@ export type EnumOtpStatusFieldUpdateOperationsInput = {
 export type OtpTransactionCreateWithoutUserInput = {
   id?: string
   channel: $Enums.OtpChannel
-  otpHash: string
+  otpHash?: string | null
+  providerRef?: string | null
+  purpose?: $Enums.OtpPurpose
+  targetMobileEncrypted?: string | null
   status?: $Enums.OtpStatus
   failedAttempts?: number
   expiresAt: Date | string
@@ -536,7 +609,10 @@ export type OtpTransactionCreateWithoutUserInput = {
 export type OtpTransactionUncheckedCreateWithoutUserInput = {
   id?: string
   channel: $Enums.OtpChannel
-  otpHash: string
+  otpHash?: string | null
+  providerRef?: string | null
+  purpose?: $Enums.OtpPurpose
+  targetMobileEncrypted?: string | null
   status?: $Enums.OtpStatus
   failedAttempts?: number
   expiresAt: Date | string
@@ -578,7 +654,10 @@ export type OtpTransactionScalarWhereInput = {
   id?: Prisma.UuidFilter<"OtpTransaction"> | string
   userId?: Prisma.UuidFilter<"OtpTransaction"> | string
   channel?: Prisma.EnumOtpChannelFilter<"OtpTransaction"> | $Enums.OtpChannel
-  otpHash?: Prisma.StringFilter<"OtpTransaction"> | string
+  otpHash?: Prisma.StringNullableFilter<"OtpTransaction"> | string | null
+  providerRef?: Prisma.StringNullableFilter<"OtpTransaction"> | string | null
+  purpose?: Prisma.EnumOtpPurposeFilter<"OtpTransaction"> | $Enums.OtpPurpose
+  targetMobileEncrypted?: Prisma.StringNullableFilter<"OtpTransaction"> | string | null
   status?: Prisma.EnumOtpStatusFilter<"OtpTransaction"> | $Enums.OtpStatus
   failedAttempts?: Prisma.IntFilter<"OtpTransaction"> | number
   expiresAt?: Prisma.DateTimeFilter<"OtpTransaction"> | Date | string
@@ -590,7 +669,10 @@ export type OtpTransactionScalarWhereInput = {
 export type OtpTransactionCreateManyUserInput = {
   id?: string
   channel: $Enums.OtpChannel
-  otpHash: string
+  otpHash?: string | null
+  providerRef?: string | null
+  purpose?: $Enums.OtpPurpose
+  targetMobileEncrypted?: string | null
   status?: $Enums.OtpStatus
   failedAttempts?: number
   expiresAt: Date | string
@@ -602,7 +684,10 @@ export type OtpTransactionCreateManyUserInput = {
 export type OtpTransactionUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channel?: Prisma.EnumOtpChannelFieldUpdateOperationsInput | $Enums.OtpChannel
-  otpHash?: Prisma.StringFieldUpdateOperationsInput | string
+  otpHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.EnumOtpPurposeFieldUpdateOperationsInput | $Enums.OtpPurpose
+  targetMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOtpStatusFieldUpdateOperationsInput | $Enums.OtpStatus
   failedAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -614,7 +699,10 @@ export type OtpTransactionUpdateWithoutUserInput = {
 export type OtpTransactionUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channel?: Prisma.EnumOtpChannelFieldUpdateOperationsInput | $Enums.OtpChannel
-  otpHash?: Prisma.StringFieldUpdateOperationsInput | string
+  otpHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.EnumOtpPurposeFieldUpdateOperationsInput | $Enums.OtpPurpose
+  targetMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOtpStatusFieldUpdateOperationsInput | $Enums.OtpStatus
   failedAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -626,7 +714,10 @@ export type OtpTransactionUncheckedUpdateWithoutUserInput = {
 export type OtpTransactionUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channel?: Prisma.EnumOtpChannelFieldUpdateOperationsInput | $Enums.OtpChannel
-  otpHash?: Prisma.StringFieldUpdateOperationsInput | string
+  otpHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.EnumOtpPurposeFieldUpdateOperationsInput | $Enums.OtpPurpose
+  targetMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOtpStatusFieldUpdateOperationsInput | $Enums.OtpStatus
   failedAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -642,6 +733,9 @@ export type OtpTransactionSelect<ExtArgs extends runtime.Types.Extensions.Intern
   userId?: boolean
   channel?: boolean
   otpHash?: boolean
+  providerRef?: boolean
+  purpose?: boolean
+  targetMobileEncrypted?: boolean
   status?: boolean
   failedAttempts?: boolean
   expiresAt?: boolean
@@ -656,6 +750,9 @@ export type OtpTransactionSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   userId?: boolean
   channel?: boolean
   otpHash?: boolean
+  providerRef?: boolean
+  purpose?: boolean
+  targetMobileEncrypted?: boolean
   status?: boolean
   failedAttempts?: boolean
   expiresAt?: boolean
@@ -670,6 +767,9 @@ export type OtpTransactionSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   userId?: boolean
   channel?: boolean
   otpHash?: boolean
+  providerRef?: boolean
+  purpose?: boolean
+  targetMobileEncrypted?: boolean
   status?: boolean
   failedAttempts?: boolean
   expiresAt?: boolean
@@ -684,6 +784,9 @@ export type OtpTransactionSelectScalar = {
   userId?: boolean
   channel?: boolean
   otpHash?: boolean
+  providerRef?: boolean
+  purpose?: boolean
+  targetMobileEncrypted?: boolean
   status?: boolean
   failedAttempts?: boolean
   expiresAt?: boolean
@@ -692,7 +795,7 @@ export type OtpTransactionSelectScalar = {
   createdAt?: boolean
 }
 
-export type OtpTransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "channel" | "otpHash" | "status" | "failedAttempts" | "expiresAt" | "resendAfter" | "verifiedAt" | "createdAt", ExtArgs["result"]["otpTransaction"]>
+export type OtpTransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "channel" | "otpHash" | "providerRef" | "purpose" | "targetMobileEncrypted" | "status" | "failedAttempts" | "expiresAt" | "resendAfter" | "verifiedAt" | "createdAt", ExtArgs["result"]["otpTransaction"]>
 export type OtpTransactionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -712,7 +815,10 @@ export type $OtpTransactionPayload<ExtArgs extends runtime.Types.Extensions.Inte
     id: string
     userId: string
     channel: $Enums.OtpChannel
-    otpHash: string
+    otpHash: string | null
+    providerRef: string | null
+    purpose: $Enums.OtpPurpose
+    targetMobileEncrypted: string | null
     status: $Enums.OtpStatus
     failedAttempts: number
     expiresAt: Date
@@ -1147,6 +1253,9 @@ export interface OtpTransactionFieldRefs {
   readonly userId: Prisma.FieldRef<"OtpTransaction", 'String'>
   readonly channel: Prisma.FieldRef<"OtpTransaction", 'OtpChannel'>
   readonly otpHash: Prisma.FieldRef<"OtpTransaction", 'String'>
+  readonly providerRef: Prisma.FieldRef<"OtpTransaction", 'String'>
+  readonly purpose: Prisma.FieldRef<"OtpTransaction", 'OtpPurpose'>
+  readonly targetMobileEncrypted: Prisma.FieldRef<"OtpTransaction", 'String'>
   readonly status: Prisma.FieldRef<"OtpTransaction", 'OtpStatus'>
   readonly failedAttempts: Prisma.FieldRef<"OtpTransaction", 'Int'>
   readonly expiresAt: Prisma.FieldRef<"OtpTransaction", 'DateTime'>

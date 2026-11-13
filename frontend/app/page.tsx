@@ -2,118 +2,69 @@
 
 import {
   ArrowRight,
-  Award,
   BadgeCheck,
   Check,
   ChevronRight,
-  CreditCard,
-  Eye,
-  FileCheck2,
   FileSearch,
   Fingerprint,
-  Gauge,
-  HelpCircle,
-  History,
+  Info,
   LockKeyhole,
   Menu,
-  Percent,
-  RefreshCw,
   ShieldCheck,
   Sparkles,
-  TrendingUp,
   X,
-  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { CreditScoreGauge } from "../components/credit-score-gauge";
 import { ThemeToggle } from "../components/theme-toggle";
-import { api, apiMessage } from "../lib/api";
+import { OnboardingFlow, type Workflow } from "../components/onboarding-flow";
+import { api, apiErrorCode, apiMessage, apiRetryAfter } from "../lib/api";
 
-type LoginStep = "mobile" | "otp" | "success";
+type LoginStep = "mobile" | "otp" | "onboarding";
 
-const pillars = [
-  {
-    title: "Payment History",
-    weight: "35% Weight",
-    text: "Consistent on-time repayments across credit cards and loans form the largest single foundation of your score.",
-    icon: History,
-    tone: "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/50",
-  },
-  {
-    title: "Credit Utilization",
-    weight: "30% Weight",
-    text: "Keeping revolving credit balances under 30% of total available limits signals low financial distress.",
-    icon: Percent,
-    tone: "bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/50",
-  },
-  {
-    title: "Credit Age",
-    weight: "15% Weight",
-    text: "Older accounts demonstrate an established track record and strengthen lender underwriting confidence.",
-    icon: Gauge,
-    tone: "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/50",
-  },
-  {
-    title: "Credit Mix & Inquiries",
-    weight: "20% Weight",
-    text: "A balanced ratio of secured vs unsecured borrowing with minimal hard inquiries protects score momentum.",
-    icon: Sparkles,
-    tone: "bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/50",
-  },
+// Bump when the consent text below changes: the backend stores which version each user agreed to.
+const CONSENT_VERSION = "relive-consent-v2";
+
+const concerns = [
+  "I am struggling with overdue payments",
+  "I want to explore closing my debts",
+  "My monthly repayments are too high",
+  "Something in my report looks wrong",
+  "I need help speaking to my lenders",
+  "I am not sure where to start",
 ];
 
 const steps = [
   {
-    number: "01",
-    title: "Secure OTP Authentication",
-    text: "Enter your registered mobile number and confirm a one-time passcode. No passwords or sensitive tokens stored.",
-    icon: Fingerprint,
+    title: "Tell us what is weighing on you",
+    text: "Choose your main concern, then verify your mobile number and PAN. It takes about three minutes.",
   },
   {
-    number: "02",
-    title: "Instant Identity Verification",
-    text: "Safe PAN and demographic verification directly against NSDL records with explicit, auditable user consent.",
-    icon: ShieldCheck,
+    title: "See your debt clearly",
+    text: "We fetch your credit report with a soft enquiry, so your score is not affected, and arrange your accounts by what needs attention first.",
   },
   {
-    number: "03",
-    title: "Experian Bureau Insights",
-    text: "Unlock your verified credit rate, open credit accounts, on-time history, and customized improvement paths.",
-    icon: FileSearch,
+    title: "Get help moving forward",
+    text: "Request a call from the Relive team about any account, and prepare for the conversation with your lender.",
   },
 ];
 
-const features = [
-  {
-    title: "Real-Time Experian Bureau Sync",
-    desc: "Direct integration with authorized bureau networks ensures your score and account status are always exact.",
-    icon: RefreshCw,
-  },
-  {
-    title: "Negative Account & Dispute Radar",
-    desc: "Instantly detect inaccuracies, late payment flags, or fraudulent inquiries with one-click dispute assistance.",
-    icon: Eye,
-  },
-  {
-    title: "Personalized Score Simulator",
-    desc: "Actionable recommendations guide you on which card balances to pay down first for maximum score impact.",
-    icon: TrendingUp,
-  },
-  {
-    title: "Zero Impact on Your Credit Score",
-    desc: "All score pulls generated through Relive are classified as soft checks and will never lower your score.",
-    icon: Award,
-  },
+const trust = ["No impact on your credit score", "About three minutes", "Real people to help"];
+
+const privacyPoints = [
+  { icon: LockKeyhole, title: "Encrypted end to end", text: "Your data is encrypted in transit and at rest." },
+  { icon: ShieldCheck, title: "Your consent, every time", text: "We only fetch your report with your explicit, time-stamped consent." },
+  { icon: BadgeCheck, title: "Never sold", text: "We do not sell your data to telemarketers or lenders." },
+  { icon: FileSearch, title: "Full audit trail", text: "Every access to your report is logged." },
 ];
 
 function Brand() {
   return (
-    <Link href="/" className="inline-flex items-center gap-2.5" aria-label="Relive home">
-      <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-lime-500 text-[#07130c] shadow-md shadow-emerald-500/20">
-        <span className="text-xl font-black">◈</span>
-      </div>
-      <span className="text-xl font-bold tracking-tight text-[#0c1a13] dark:text-white">relive</span>
+    <Link href="/" className="inline-flex items-center" aria-label="Relive home">
+      {/* eslint-disable-next-line @next/next/no-img-element -- static SVG, nothing for next/image to optimise */}
+      <img src="/relive-logo.svg" alt="Relive" width={112} height={32} className="h-7 w-auto sm:h-8 dark:hidden" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/relive-logo-light.svg" alt="Relive" width={112} height={32} className="hidden h-7 w-auto sm:h-8 dark:block" />
     </Link>
   );
 }
@@ -124,6 +75,7 @@ export default function Home() {
   const [step, setStep] = useState<LoginStep>("mobile");
   const [mobile, setMobile] = useState("");
   const [consent, setConsent] = useState(false);
+  const [consentExpanded, setConsentExpanded] = useState(false);
   const [mobileError, setMobileError] = useState("");
   const [consentError, setConsentError] = useState("");
   const [otp, setOtp] = useState("");
@@ -132,6 +84,10 @@ export default function Home() {
   const [transactionId, setTransactionId] = useState("");
   const [devOtp, setDevOtp] = useState("");
   const [busy, setBusy] = useState(false);
+  const [workflow, setWorkflow] = useState<Workflow | null>(null);
+  // ponytail: landing-form answers stay client-side; send them with the OTP/workflow call once the backend has a field for them.
+  const [concern, setConcern] = useState("");
+  const [concernDetails, setConcernDetails] = useState("");
 
   useEffect(() => {
     if (!loginOpen) return;
@@ -150,10 +106,42 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [loginOpen, seconds, step]);
 
-  const openLogin = () => {
-    setLoginOpen(true);
-    setMenuOpen(false);
+  const goToPortal = () => window.location.assign("/portal");
+
+  // Signed-in users skip the mobile step: straight to the dashboard, or back into onboarding.
+  const resumeSession = async () => {
+    try {
+      const { data } = await api.get<Workflow>("/workflow");
+      if (data.stage === "DASHBOARD") return goToPortal();
+      setWorkflow(data);
+      setStep("onboarding");
+      setLoginOpen(true);
+      return true;
+    } catch {
+      return false; // not signed in
+    }
   };
+
+  const openLogin = () => {
+    setMenuOpen(false);
+    void resumeSession().then((resumed) => resumed || setLoginOpen(true));
+  };
+
+  // /portal sends users with unfinished onboarding here as /?onboarding=1
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("login")) {
+      void Promise.resolve().then(() => setLoginOpen(true)); // after "Use a different number"
+      return;
+    }
+    if (!params.has("onboarding")) return;
+    api.get<Workflow>("/workflow").then(({ data }) => {
+      if (data.stage === "DASHBOARD") return goToPortal();
+      setWorkflow(data);
+      setStep("onboarding");
+      setLoginOpen(true);
+    }, () => undefined); // not signed in: stay on the landing page
+  }, []);
 
   const closeLogin = () => {
     setLoginOpen(false);
@@ -164,17 +152,26 @@ export default function Home() {
     }, 200);
   };
 
-  const requestOtp = async (channel: "SMS" | "CALL" | "WHATSAPP" = "SMS") => {
-    const response = await api.post("/auth/request-otp", {
-      mobile,
-      consent: true,
-      consentVersion: "login-v1",
-      channel,
-    });
+  const requestOtp = async (number: string) => {
+    const response = await api.post("/auth/request-otp", { mobile: number, consent: true, consentVersion: CONSENT_VERSION });
     setTransactionId(response.data.transactionId);
     setDevOtp(response.data.devOtp ?? "");
     setSeconds(response.data.resendAfterSeconds ?? 10);
     setStep("otp");
+  };
+
+  // Lockout sends the user back to the mobile step (per the login flow); other errors stay inline.
+  const handleOtpError = (error: unknown, showError: (message: string) => void) => {
+    const code = apiErrorCode(error);
+    if (code === "OTP_ATTEMPTS_EXCEEDED") {
+      setStep("mobile");
+      setOtp("");
+      setMobileError(apiMessage(error));
+      return;
+    }
+    if (code === "RESEND_TOO_SOON") setSeconds(apiRetryAfter(error) ?? 10);
+    if (code === "OTP_EXPIRED" || code === "OTP_ALREADY_USED" || code === "OTP_TRANSACTION_NOT_FOUND") setSeconds(0);
+    showError(apiMessage(error));
   };
 
   const submitMobile = async (event: FormEvent) => {
@@ -188,9 +185,9 @@ export default function Home() {
     setMobile(normalized);
     setBusy(true);
     try {
-      await requestOtp();
+      await requestOtp(normalized);
     } catch (error) {
-      setMobileError(apiMessage(error));
+      handleOtpError(error, setMobileError);
     } finally {
       setBusy(false);
     }
@@ -202,24 +199,27 @@ export default function Home() {
     setOtpError("");
     setBusy(true);
     try {
-      await api.post("/auth/verify-otp", { transactionId, otp });
-      window.location.assign("/portal");
+      const { data } = await api.post<Workflow>("/auth/verify-otp", { transactionId, otp });
+      if (data.stage === "DASHBOARD") return goToPortal(); // existing user with a current report
+      setWorkflow(data);
+      setStep("onboarding");
+      setBusy(false);
     } catch (error) {
-      setOtpError(apiMessage(error));
-    } finally {
+      setOtp("");
+      handleOtpError(error, setOtpError);
       setBusy(false);
     }
   };
 
-  const resendOtp = async (channel: "SMS" | "CALL" | "WHATSAPP") => {
-    if (seconds > 0) return;
+  const resendOtp = async () => {
+    if (seconds > 0 || busy) return;
     setBusy(true);
     setOtp("");
     setOtpError("");
     try {
-      await requestOtp(channel);
+      await requestOtp(mobile);
     } catch (error) {
-      setOtpError(apiMessage(error));
+      handleOtpError(error, setOtpError);
     } finally {
       setBusy(false);
     }
@@ -229,20 +229,14 @@ export default function Home() {
     <main className="min-h-screen overflow-hidden bg-[#f8faf9] text-[#0c1a13] transition-colors dark:bg-[#070e0a] dark:text-[#f0fdf4]">
       {/* Navigation Bar */}
       <header className="sticky top-0 z-40 border-b border-[#e5ede7] bg-white/90 backdrop-blur-md dark:border-[#14261c] dark:bg-[#070e0a]/90">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-8 md:h-20">
           <Brand />
 
-          <nav className="hidden items-center gap-8 text-xs font-semibold text-[#5a7063] md:flex dark:text-[#90a89b]" aria-label="Main navigation">
-            <a href="#how-it-works" className="transition hover:text-emerald-600 dark:hover:text-emerald-400">
-              How It Works
+          <nav className="hidden items-center gap-8 text-sm font-medium text-[#4f6358] md:flex dark:text-[#90a89b]" aria-label="Main navigation">
+            <a href="#how-it-works" className="transition hover:text-[#216b49] dark:hover:text-emerald-400">
+              How it works
             </a>
-            <a href="#health-factors" className="transition hover:text-emerald-600 dark:hover:text-emerald-400">
-              Credit Factors
-            </a>
-            <a href="#features" className="transition hover:text-emerald-600 dark:hover:text-emerald-400">
-              Features
-            </a>
-            <a href="#security" className="transition hover:text-emerald-600 dark:hover:text-emerald-400">
+            <a href="#security" className="transition hover:text-[#216b49] dark:hover:text-emerald-400">
               Security
             </a>
           </nav>
@@ -251,24 +245,24 @@ export default function Home() {
             <ThemeToggle />
             <button
               onClick={openLogin}
-              className="rounded-xl border border-[#d2ded6] px-5 py-2.5 text-xs font-bold text-[#0c1a13] transition hover:bg-[#f1f6f3] dark:border-[#1a3827] dark:text-white dark:hover:bg-[#0e2116]"
+              className="h-10 rounded-xl border border-[#d2ded6] px-4 text-sm font-semibold text-[#183b2f] transition hover:bg-[#f1f6f3] dark:border-[#1a3827] dark:text-white dark:hover:bg-[#0e2116]"
             >
-              Log In
+              Log in
             </button>
-            <button
-              onClick={openLogin}
-              className="group inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm shadow-emerald-600/30 transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
+            <a
+              href="#start"
+              className="group inline-flex h-10 items-center gap-2 rounded-xl bg-[#216b49] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#155438] dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
             >
-              Check Free Score
-              <ArrowRight className="size-3.5 transition group-hover:translate-x-0.5" />
-            </button>
+              Get started
+              <ArrowRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden="true" />
+            </a>
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
             <ThemeToggle />
             <button
               onClick={() => setMenuOpen((value) => !value)}
-              className="grid size-10 place-items-center rounded-xl border border-[#d2ded6] text-[#4d6356] dark:border-[#1a3827] dark:text-[#a0b8ab]"
+              className="grid size-9 place-items-center rounded-xl border border-[#d2ded6] text-[#4d6356] dark:border-[#1a3827] dark:text-[#a0b8ab]"
               aria-label="Toggle navigation"
               aria-expanded={menuOpen}
             >
@@ -279,323 +273,257 @@ export default function Home() {
 
         {/* Mobile Navigation Drawer */}
         {menuOpen && (
-          <div className="border-t border-[#e2ebe4] bg-white px-5 py-5 md:hidden dark:border-[#14261c] dark:bg-[#070e0a]">
-            <nav className="mx-auto flex max-w-7xl flex-col gap-4 text-xs font-semibold text-[#5a7063] dark:text-[#90a89b]">
-              <a href="#how-it-works" onClick={() => setMenuOpen(false)}>
-                How It Works
-              </a>
-              <a href="#health-factors" onClick={() => setMenuOpen(false)}>
-                Credit Factors
-              </a>
-              <a href="#features" onClick={() => setMenuOpen(false)}>
-                Features
-              </a>
-              <a href="#security" onClick={() => setMenuOpen(false)}>
-                Security
+          <div className="animate-in fade-in slide-in-from-top-2 duration-200 border-t border-[#e2ebe4] bg-white px-5 pb-5 pt-2 shadow-lg shadow-black/5 md:hidden dark:border-[#14261c] dark:bg-[#070e0a]">
+            <nav className="mx-auto flex max-w-7xl flex-col text-sm font-medium text-[#35483d] dark:text-[#c3d6cb]">
+              {[
+                ["#how-it-works", "How it works"],
+                ["#security", "Security"],
+              ].map(([href, label]) => (
+                <a
+                  key={href}
+                  href={href}
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center justify-between border-b border-[#eef3f0] py-3.5 dark:border-[#14261c]"
+                >
+                  {label}
+                  <ChevronRight className="size-4 text-[#9aaba1]" aria-hidden="true" />
+                </a>
+              ))}
+              <a
+                href="#start"
+                onClick={() => setMenuOpen(false)}
+                className="mt-4 grid h-12 w-full place-items-center rounded-xl bg-[#216b49] text-sm font-semibold text-white transition hover:bg-[#155438] dark:bg-emerald-500 dark:text-[#07130c]"
+              >
+                Get started
               </a>
               <button
                 onClick={openLogin}
-                className="mt-2 w-full rounded-xl bg-emerald-600 py-3 font-bold text-white dark:bg-emerald-500 dark:text-[#07130c]"
+                className="mt-2.5 h-12 w-full rounded-xl border border-[#d2ded6] text-sm font-semibold text-[#183b2f] transition hover:bg-[#f1f6f3] dark:border-[#1a3827] dark:text-white"
               >
-                Log In Securely
+                Log in
               </button>
             </nav>
           </div>
         )}
       </header>
 
-      {/* Hero Section with DisputeFox Style Score Card Preview */}
-      <section className="relative pt-12 pb-20 sm:pt-20 sm:pb-32 overflow-hidden">
+      {/* Hero: intro + concern form */}
+      {/* Fills exactly one screen below the 5rem header on desktop */}
+      <section className="relative overflow-hidden py-8 lg:flex lg:min-h-[calc(100svh-5rem)] lg:items-center lg:py-6">
         {/* Glow ambient background accents */}
         <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 size-[650px] rounded-full bg-emerald-400/10 blur-[120px] dark:bg-emerald-500/10" />
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 sm:px-8 lg:grid-cols-[1.1fr_0.9fr]">
-          <div>
-            {/* Pill badge */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/80 px-3.5 py-1.5 text-xs font-bold text-emerald-800 shadow-2xs dark:border-emerald-800/40 dark:bg-emerald-950/40 dark:text-emerald-300">
-              <Sparkles className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>Free Official Experian & RBI-Compliant Credit Check</span>
-            </div>
-
-            <h1 className="max-w-2xl text-[clamp(2.5rem,5.5vw,4.5rem)] font-extrabold leading-[1.02] tracking-tight text-[#0c1a13] dark:text-white">
-              Master your credit. <br />
-              <span className="text-emerald-600 dark:text-emerald-400">Shape what’s next.</span>
+        <div className="relative mx-auto grid w-full max-w-7xl items-center gap-8 px-4 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
+          {/* Intro */}
+          <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 lg:pr-4">
+            <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[1.5px] text-emerald-700 dark:text-emerald-400">
+              <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+              A fresh start begins with clarity
+            </p>
+            <h1 className="mt-4 max-w-xl text-[clamp(2rem,3.4vw,3rem)] font-bold leading-[1.1] tracking-[-0.03em] text-[#183b2f] dark:text-white">
+              Let’s understand{" "}
+              <span className="block text-emerald-700 dark:text-emerald-400">what is weighing on you.</span>
             </h1>
-
-            <p className="mt-6 max-w-xl text-base sm:text-lg leading-relaxed text-[#597063] dark:text-[#8ba295]">
-              Relive combines certified credit bureau insights with proactive dispute tools, repayment matrixes, and actionable recommendations—free forever.
+            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#4f6358] dark:text-[#8ba295]">
+              Your credit report is the starting point. We will turn the details into a clear picture of your debt and the next steps worth exploring.
             </p>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button
-                onClick={openLogin}
-                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-7 py-4 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:-translate-y-0.5 hover:bg-emerald-700 dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
-              >
-                <span>Check Your Credit Score</span>
-                <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
-              </button>
-              <a
-                href="#how-it-works"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#d2ded6] bg-white px-6 py-4 text-xs sm:text-sm font-bold text-[#0c1a13] transition hover:bg-[#f1f6f3] dark:border-[#1a3827] dark:bg-[#0c1a12] dark:text-white dark:hover:bg-[#12241a]"
-              >
-                <span>Explore Features</span>
-                <ChevronRight className="size-4" />
-              </a>
-            </div>
-
-            {/* Micro Trust Indicators */}
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-[#62776b] dark:text-[#8ba295]">
-              <span className="inline-flex items-center gap-1.5">
-                <Check className="size-4 text-emerald-600 dark:text-emerald-400 stroke-[3]" />
-                Zero Impact on Score
+            <div className="mt-6 flex max-w-md items-start gap-3 border-t border-[#dce5d8] pt-5 dark:border-[#1a3827]">
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#e6efdc] text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                <ShieldCheck className="size-4.5" aria-hidden="true" />
               </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Check className="size-4 text-emerald-600 dark:text-emerald-400 stroke-[3]" />
-                256-Bit Bank Grade Encryption
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Check className="size-4 text-emerald-600 dark:text-emerald-400 stroke-[3]" />
-                RBI & NSDL Verified
-              </span>
-            </div>
-          </div>
-
-          {/* DisputeFox Interactive Score Card Preview */}
-          <div className="relative mx-auto w-full max-w-[500px]">
-            <div className="relative rounded-3xl border border-[#dce6df] bg-white p-6 sm:p-7 shadow-2xl dark:border-[#162a1f] dark:bg-[#0c1a12]">
-              {/* Header inside preview */}
-              <div className="flex items-center justify-between border-b border-[#eef3f0] pb-4 dark:border-[#16291e]">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                    Live Member Snapshot
-                  </p>
-                  <p className="text-sm font-bold text-[#0c1a13] dark:text-white">
-                    Hello, Alex <span className="text-xs">🙂</span>
-                  </p>
-                </div>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                  <span className="size-1.5 rounded-full bg-emerald-500 animate-ping" />
-                  Verified Active
-                </span>
-              </div>
-
-              {/* DisputeFox Rainbow Arc Gauge */}
-              <div className="mt-4">
-                <CreditScoreGauge
-                  score={803}
-                  min={300}
-                  max={850}
-                  category={{ label: "Excellent", color: "#22c55e" }}
-                  bureau="Experian"
-                  delta={6}
-                />
-              </div>
-
-              {/* Factors Mini Preview */}
-              <div className="mt-6 grid grid-cols-2 gap-3 border-t border-[#eef3f0] pt-4 dark:border-[#16291e]">
-                <div className="rounded-xl border border-emerald-100 bg-[#f0fdf4] p-3 dark:border-emerald-900/40 dark:bg-[#081e13]">
-                  <div className="flex justify-between items-center text-[10px] font-semibold text-emerald-800 dark:text-emerald-300">
-                    <span>Payment History</span>
-                    <span className="rounded-full bg-emerald-200/80 px-1.5 py-0.2 text-[9px] font-bold">100%</span>
-                  </div>
-                  <p className="mt-1 text-xs font-bold text-[#0c1a13] dark:text-white">All on time</p>
-                </div>
-
-                <div className="rounded-xl border border-sky-100 bg-[#f0f9ff] p-3 dark:border-sky-900/40 dark:bg-[#081b24]">
-                  <div className="flex justify-between items-center text-[10px] font-semibold text-sky-800 dark:text-sky-300">
-                    <span>Credit Card Use</span>
-                    <span className="rounded-full bg-sky-200/80 px-1.5 py-0.2 text-[9px] font-bold">2%</span>
-                  </div>
-                  <p className="mt-1 text-xs font-bold text-[#0c1a13] dark:text-white">Optimal balance</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Credit Score & Financial Health Introduction (The 4 Pillars) */}
-      <section id="health-factors" className="border-t border-[#e5ece7] bg-white py-20 dark:border-[#14261c] dark:bg-[#070e0a]">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8">
-          <div className="max-w-2xl">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              Credit Score Intelligence
-            </span>
-            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-[#0c1a13] sm:text-4xl dark:text-white">
-              The 4 Pillars of Financial Health
-            </h2>
-            <p className="mt-3 text-sm sm:text-base text-[#5c7366] dark:text-[#8ba295]">
-              Learn exactly how bureau algorithms grade your creditworthiness so you can take strategic steps to reach the 800+ tier.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {pillars.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-[#e1e9e4] bg-[#f8faf9] p-6 shadow-xs transition-all hover:-translate-y-1 hover:border-emerald-300 dark:border-[#162a1f] dark:bg-[#0c1a12] dark:hover:border-emerald-700"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className={`grid size-11 place-items-center rounded-xl border ${item.tone}`}>
-                      <Icon className="size-5" />
-                    </span>
-                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                      {item.weight}
-                    </span>
-                  </div>
-                  <h3 className="mt-5 text-base font-bold text-[#0c1a13] dark:text-white">{item.title}</h3>
-                  <p className="mt-2 text-xs leading-relaxed text-[#5c7366] dark:text-[#8ba295]">{item.text}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* How the Application Works (3-Step Flow) */}
-      <section id="how-it-works" className="border-t border-[#e5ece7] bg-[#f8faf9] py-20 dark:border-[#14261c] dark:bg-[#09150f]">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8">
-          <div className="max-w-2xl">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              Transparent & Deliberate
-            </span>
-            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-[#0c1a13] sm:text-4xl dark:text-white">
-              How Relive Works
-            </h2>
-            <p className="mt-3 text-sm sm:text-base text-[#5c7366] dark:text-[#8ba295]">
-              No passwords, no unwanted agent calls, and zero hidden credit card signups. A seamless 3-minute flow.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {steps.map((st) => {
-              const Icon = st.icon;
-              return (
-                <div
-                  key={st.number}
-                  className="rounded-2xl border border-[#e1e9e4] bg-white p-7 shadow-xs dark:border-[#162a1f] dark:bg-[#0c1a12]"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="grid size-12 place-items-center rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                      <Icon className="size-6" />
-                    </span>
-                    <span className="text-sm font-extrabold text-[#92a89c] dark:text-[#688274]">{st.number}</span>
-                  </div>
-                  <h3 className="mt-6 text-base font-bold text-[#0c1a13] dark:text-white">{st.title}</h3>
-                  <p className="mt-2 text-xs leading-relaxed text-[#5c7366] dark:text-[#8ba295]">{st.text}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Features & Benefits */}
-      <section id="features" className="border-t border-[#e5ece7] bg-white py-20 dark:border-[#14261c] dark:bg-[#070e0a]">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8">
-          <div className="text-center max-w-2xl mx-auto">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              Enterprise Grade FinTech
-            </span>
-            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-[#0c1a13] sm:text-4xl dark:text-white">
-              Built for Complete Credit Clarity
-            </h2>
-          </div>
-
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {features.map((feat) => {
-              const Icon = feat.icon;
-              return (
-                <div
-                  key={feat.title}
-                  className="rounded-2xl border border-[#e1e9e4] bg-[#f8faf9] p-6 dark:border-[#162a1f] dark:bg-[#0c1a12]"
-                >
-                  <span className="grid size-10 place-items-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                    <Icon className="size-5" />
-                  </span>
-                  <h3 className="mt-4 text-sm font-bold text-[#0c1a13] dark:text-white">{feat.title}</h3>
-                  <p className="mt-2 text-xs leading-relaxed text-[#5c7366] dark:text-[#8ba295]">{feat.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Security & Privacy Banner */}
-      <section id="security" className="py-20 px-5 sm:px-8">
-        <div className="mx-auto max-w-7xl rounded-3xl bg-[#07130c] p-8 sm:p-12 text-white">
-          <div className="grid items-center gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-            <div>
-              <span className="grid size-12 place-items-center rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                <LockKeyhole className="size-6" />
-              </span>
-              <h2 className="mt-6 text-2xl sm:text-3xl font-bold tracking-tight">
-                Your Financial Privacy is Non-Negotiable
-              </h2>
-              <p className="mt-3 text-xs sm:text-sm leading-relaxed text-[#8ca898]">
-                We do not sell user data to telemarketers or third-party lenders. All credit pulls require explicit, time-stamped digital consent and are encrypted with SHA-256 and AES-256 bit algorithms.
+              <p className="text-sm leading-relaxed text-[#183b2f] dark:text-[#c3d6cb]">
+                Start with a clear picture of your debt —<br />
+                <strong className="font-semibold">not just your credit score.</strong>
               </p>
             </div>
-
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-              {[
-                "256-Bit Bank-Grade Data Transit",
-                "Explicit Consent Architecture",
-                "Soft Inquiries with 0 Score Penalty",
-                "Full Audit Trail & Cryptographic Logs",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-950/30 px-4 py-3 text-xs font-semibold text-[#d4e8dd]"
-                >
-                  <ShieldCheck className="size-4.5 text-emerald-400 shrink-0" />
-                  <span>{item}</span>
-                </div>
+            <ul className="mt-5 flex max-w-md flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-[#4f6358] dark:text-[#a0b8ab]">
+              {trust.map((item) => (
+                <li key={item} className="inline-flex items-center gap-1.5">
+                  <Check className="size-3.5 stroke-[3] text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                  {item}
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
-        </div>
-      </section>
 
-      {/* Final Call to Action */}
-      <section className="border-t border-[#e5ece7] bg-emerald-500/10 py-16 text-center dark:border-[#14261c] dark:bg-emerald-950/20">
-        <div className="mx-auto max-w-3xl px-5">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0c1a13] dark:text-white">
-            Ready to Take Control of Your Financial Future?
-          </h2>
-          <p className="mt-2 text-xs sm:text-sm text-[#5c7366] dark:text-[#8ba295]">
-            Get your comprehensive credit analysis in less than 2 minutes. Free forever.
-          </p>
-          <button
-            onClick={openLogin}
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-7 py-3.5 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
+          {/* Concern form: every field optional; submitting starts the normal login/signup flow */}
+          <form
+            id="start"
+            onSubmit={(e) => {
+              e.preventDefault();
+              openLogin();
+            }}
+            className="animate-in fade-in slide-in-from-bottom-3 fill-mode-both delay-150 duration-500 relative scroll-mt-24 rounded-[22px] border border-[#d9e3d3] bg-white p-5 shadow-[0_10px_35px_rgba(28,62,44,0.06)] sm:px-6 sm:py-5 dark:border-[#162a1f] dark:bg-[#0c1a12]"
           >
-            <span>Get Started Now</span>
-            <ArrowRight className="size-4" />
-          </button>
+            <span className="absolute -top-px left-7 h-[3px] w-12 rounded-full bg-[#8db66b]" aria-hidden="true" />
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-emerald-700 dark:text-emerald-400">Your starting point</p>
+              <span className="rounded-full border border-[#e7ecdf] bg-[#f2f5ee] px-2.5 py-0.5 text-[10px] text-[#63776b] dark:border-[#1a3827] dark:bg-[#07120b] dark:text-[#8ba295]">
+                Step 1 of 3
+              </span>
+            </div>
+
+            <fieldset className="mt-3">
+              <legend className="text-[17px] font-semibold tracking-tight text-[#183b2f] dark:text-white">What brings you to Relive today?</legend>
+              <p className="mt-0.5 text-xs text-[#63776b] dark:text-[#8ba295]">Choose what fits best. You do not need to have all the answers.</p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {concerns.map((option) => (
+                  <label
+                    key={option}
+                    className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[10px] border border-[#e0e7dc] px-3 py-2 text-xs font-medium leading-snug text-[#465a50] transition hover:border-[#b8cdb0] hover:bg-[#f7faf3] has-[:checked]:border-[#709e60] has-[:checked]:bg-[#edf5e7] has-[:checked]:text-[#183b2f] dark:border-[#1a3827] dark:text-[#c3d6cb] dark:hover:bg-[#0e2116] dark:has-[:checked]:border-emerald-500 dark:has-[:checked]:bg-emerald-950/40"
+                  >
+                    <input
+                      type="radio"
+                      name="concern"
+                      value={option}
+                      checked={concern === option}
+                      onChange={() => setConcern(option)}
+                      className="size-4 shrink-0 accent-emerald-700"
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <label htmlFor="concern-details" className="mt-3.5 block text-xs font-semibold text-[#183b2f] dark:text-white">
+              Tell us in your own words <span className="ml-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">Optional</span>
+            </label>
+            <textarea
+              id="concern-details"
+              rows={2}
+              value={concernDetails}
+              onChange={(e) => setConcernDetails(e.target.value)}
+              placeholder="For example: I want to close my debts, but I do not know which lender to approach first."
+              maxLength={800}
+              className="mt-1.5 block w-full resize-y rounded-[10px] border border-[#dce5d8] bg-white px-3.5 py-2.5 text-xs leading-relaxed outline-none transition placeholder:text-[#a3b8ad] focus:border-emerald-500 focus:ring-3 focus:ring-emerald-100 dark:border-[#1e3829] dark:bg-[#07120b] dark:text-white dark:focus:ring-emerald-950"
+            />
+
+            <div className="mt-4 grid gap-2">
+              <button
+                type="submit"
+                className="group inline-flex h-11 w-full items-center justify-between rounded-[10px] bg-[#216b49] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#155438] dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
+              >
+                Get my credit report
+                <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
+              </button>
+              <Link
+                href="/privacy"
+                className="inline-flex items-center justify-center gap-1.5 text-xs text-[#465a50] underline-offset-4 hover:underline dark:text-[#a0b8ab]"
+              >
+                How my information is used
+                <Info className="size-3.5" aria-hidden="true" />
+              </Link>
+            </div>
+          </form>
         </div>
       </section>
 
-      {/* Professional Footer */}
-      <footer className="border-t border-[#e5ece7] bg-white py-12 dark:border-[#14261c] dark:bg-[#070e0a]">
-        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 sm:px-8 md:flex-row md:items-center md:justify-between">
-          <div>
-            <Brand />
-            <p className="mt-2 text-xs text-[#6e8577] dark:text-[#8ba295]">
-              Empowering consumers with transparent credit score monitoring and dispute intelligence.
+      {/* How it works */}
+      <section id="how-it-works" className="scroll-mt-20 border-t border-[#e5ece7] bg-white py-14 sm:py-20 dark:border-[#14261c] dark:bg-[#09150f]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8">
+          <div className="reveal max-w-2xl">
+            <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[1.5px] text-emerald-700 dark:text-emerald-400">
+              <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+              A practical path forward
+            </p>
+            <h2 className="mt-3 text-[28px] font-bold leading-tight tracking-[-0.02em] text-[#183b2f] sm:text-4xl dark:text-white">How Relive works</h2>
+            <p className="mt-3 text-sm leading-relaxed text-[#4f6358] sm:text-base dark:text-[#8ba295]">
+              From the first worry to a clear next step. No passwords, no unwanted agent calls, no hidden sign-ups.
             </p>
           </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-medium text-[#6e8577] dark:text-[#8ba295]">
-            <Link href="/privacy" className="hover:text-emerald-600 dark:hover:text-emerald-400">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="hover:text-emerald-600 dark:hover:text-emerald-400">
-              Terms of Service
-            </Link>
-            <span>© 2026 Relive Inc. All rights reserved.</span>
+
+          {/* Numbered steps joined by a line: down the left on phones, across on larger screens */}
+          <ol className="mt-10 grid gap-8 sm:mt-12 md:grid-cols-3 md:gap-8">
+            {steps.map((step, i) => (
+              <li
+                key={step.title}
+                className="reveal relative pl-14 not-last:after:absolute not-last:after:-bottom-6 not-last:after:left-5 not-last:after:top-12 not-last:after:w-px not-last:after:bg-[#d5e2cd] md:pl-0 md:not-last:after:-right-4 md:not-last:after:bottom-auto md:not-last:after:left-14 md:not-last:after:top-5 md:not-last:after:h-px md:not-last:after:w-auto dark:not-last:after:bg-[#1a3827]"
+              >
+                <span className="absolute left-0 top-0 grid size-10 place-items-center rounded-full border border-[#cbdcc1] bg-[#edf3e6] text-sm font-semibold text-[#216b49] md:static dark:border-[#1e3829] dark:bg-emerald-950 dark:text-emerald-300">
+                  {i + 1}
+                </span>
+                <h3 className="text-base font-semibold text-[#183b2f] md:mt-5 dark:text-white">{step.title}</h3>
+                <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-[#5c7366] dark:text-[#8ba295]">{step.text}</p>
+              </li>
+            ))}
+          </ol>
+
+          <aside className="reveal mt-12 flex flex-col gap-5 rounded-2xl bg-[#163e2d] p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8 dark:bg-[#0c1a12] dark:ring-1 dark:ring-[#1a3827]">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#c4dba6]">One step at a time</p>
+              <p className="mt-2 max-w-2xl text-lg leading-snug text-[#f0f7e9] sm:text-xl">
+                You do not have to decide which lender to pay first today. <strong className="font-semibold text-[#d5e9b9]">Start by understanding your situation.</strong>
+              </p>
+            </div>
+            <a
+              href="#start"
+              className="group inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#d5e9b9] px-5 text-sm font-semibold text-[#193e29] transition hover:bg-[#e3f1ce]"
+            >
+              Let&rsquo;s get started
+              <ArrowRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden="true" />
+            </a>
+          </aside>
+        </div>
+      </section>
+
+      {/* Security & privacy */}
+      <section id="security" className="scroll-mt-20 border-t border-[#e5ece7] py-14 sm:py-20 dark:border-[#14261c]">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16">
+          <div className="reveal">
+            <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[1.5px] text-emerald-700 dark:text-emerald-400">
+              <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+              Security &amp; privacy
+            </p>
+            <h2 className="mt-3 text-balance text-[28px] font-bold leading-tight tracking-[-0.02em] text-[#183b2f] sm:text-4xl dark:text-white">
+              Your financial privacy is non-negotiable
+            </h2>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-[#4f6358] sm:text-base dark:text-[#8ba295]">
+              Debt is personal. Your report and what you tell us are used only to help you, and only with your permission.
+            </p>
+          </div>
+
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {privacyPoints.map(({ icon: Icon, title, text }) => (
+              <li key={title} className="reveal flex gap-3.5 rounded-2xl border border-[#e1e9e4] bg-white p-4 sm:p-5 dark:border-[#162a1f] dark:bg-[#0c1a12]">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#e9f1e2] text-[#216b49] dark:bg-emerald-950 dark:text-emerald-300">
+                  <Icon className="size-5" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-[#183b2f] dark:text-white">{title}</h3>
+                  <p className="mt-1 text-[13px] leading-relaxed text-[#5c7366] dark:text-[#8ba295]">{text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-[#e5ece7] bg-white dark:border-[#14261c] dark:bg-[#070e0a]">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="max-w-sm">
+              <Brand />
+              <p className="mt-3 text-sm leading-relaxed text-[#5c7366] dark:text-[#8ba295]">
+                Relive helps you understand your debt and find a practical way forward.
+              </p>
+              <a href="mailto:relive@cgreen.in" className="mt-2 inline-block text-sm font-medium text-[#216b49] hover:underline dark:text-emerald-400">
+                relive@cgreen.in
+              </a>
+            </div>
+            <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-2.5 text-sm text-[#4f6358] sm:flex sm:gap-8 dark:text-[#a0b8ab]">
+              <a href="#how-it-works" className="hover:text-[#216b49] dark:hover:text-emerald-400">How it works</a>
+              <a href="#security" className="hover:text-[#216b49] dark:hover:text-emerald-400">Security</a>
+              <Link href="/privacy" className="hover:text-[#216b49] dark:hover:text-emerald-400">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-[#216b49] dark:hover:text-emerald-400">Terms of Service</Link>
+            </nav>
+          </div>
+          <div className="mt-8 flex flex-col gap-3 border-t border-[#eef3f0] pt-6 text-xs text-[#6e8577] md:flex-row md:justify-between dark:border-[#14261c] dark:text-[#8ba295]">
+            <p>© 2026 Relive Inc. All rights reserved.</p>
+            <p className="max-w-xl md:text-right">
+              Relive does not guarantee a settlement, reduced dues or a score increase. Any arrangement needs your lender&rsquo;s approval.
+            </p>
           </div>
         </div>
       </footer>
@@ -603,52 +531,53 @@ export default function Home() {
       {/* Auth / OTP Modal */}
       {loginOpen && (
         <div
-          className="fixed inset-0 z-50 grid place-items-end bg-black/60 p-0 backdrop-blur-xs sm:place-items-center sm:p-5"
+          className="animate-in fade-in duration-200 fixed inset-0 z-50 grid place-items-end bg-black/60 p-0 backdrop-blur-xs sm:place-items-center sm:p-5"
           onMouseDown={(e) => e.target === e.currentTarget && closeLogin()}
         >
           <section
             role="dialog"
             aria-modal="true"
             aria-labelledby="login-title"
-            className="w-full max-w-[440px] rounded-t-[26px] bg-white p-6 shadow-2xl sm:rounded-[26px] sm:p-8 dark:bg-[#0c1a12] dark:border dark:border-[#162a1f]"
+            className="animate-in slide-in-from-bottom-10 duration-300 sm:fade-in sm:zoom-in-95 sm:slide-in-from-bottom-0 relative w-full max-w-[440px] rounded-t-[26px] bg-white p-6 shadow-2xl sm:rounded-[26px] sm:p-8 dark:bg-[#0c1a12] dark:border dark:border-[#162a1f]"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div>
+            {/* Close button sits in the corner, so every step uses the full dialog width */}
+            <button
+              type="button"
+              onClick={closeLogin}
+              className="absolute right-4 top-4 grid size-8 place-items-center rounded-lg text-[#687e71] hover:bg-black/5 sm:right-6 sm:top-6 dark:text-[#8ba295] dark:hover:bg-white/5"
+              aria-label="Close dialog"
+            >
+              <X className="size-4" />
+            </button>
+            {step === "onboarding" && workflow ? (
+              <OnboardingFlow initial={workflow} onComplete={goToPortal} />
+            ) : (
+              <div className="pr-10">
                 <span className="mb-4 grid size-11 place-items-center rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                  {step === "success" ? (
-                    <BadgeCheck className="size-5" />
-                  ) : step === "otp" ? (
+                  {step === "otp" ? (
                     <Fingerprint className="size-5" />
                   ) : (
                     <LockKeyhole className="size-5" />
                   )}
                 </span>
-                <h2 id="login-title" className="text-xl font-bold tracking-tight text-[#0c1a13] dark:text-white">
-                  {step === "mobile" ? "Welcome to Relive" : step === "otp" ? "Verify It’s You" : "Authentication Success"}
+                {/* Journey: 1 verify mobile (this screen + OTP), 2 PAN, 3 credit report (OnboardingFlow) */}
+                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Step 1 of 3</p>
+                <h2 id="login-title" className="mt-1 text-xl font-bold tracking-tight text-[#0c1a13] dark:text-white">
+                  {step === "mobile" ? "Welcome to Relive" : "Verify It’s You"}
                 </h2>
                 <p className="mt-1 text-xs text-[#5c7366] dark:text-[#8ba295]">
                   {step === "mobile"
-                    ? "Enter your registered mobile number to access your credit score."
-                    : step === "otp"
-                    ? `Enter the 6-digit OTP sent to +91 ••••••${mobile.slice(-4)}`
-                    : "Redirecting to your dashboard..."}
+                    ? "Enter the mobile number linked to your PAN. New here? We'll set you up."
+                    : `Enter the 6-digit OTP sent to +91 ••••••${mobile.slice(-4)}`}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={closeLogin}
-                className="grid size-8 place-items-center rounded-lg text-[#687e71] hover:bg-black/5 dark:text-[#8ba295] dark:hover:bg-white/5"
-                aria-label="Close dialog"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
+            )}
 
             {/* Mobile Input Form */}
             {step === "mobile" && (
               <form onSubmit={submitMobile} className="mt-6" noValidate>
                 <label htmlFor="mobile" className="text-xs font-bold text-[#35483d] dark:text-[#a0b8ab]">
-                  Registered Mobile Number
+                  Mobile number (as linked to your PAN)
                 </label>
                 <div
                   className={`mt-1.5 flex h-12 items-center rounded-xl border bg-white transition focus-within:ring-3 dark:bg-[#07120b] ${
@@ -678,43 +607,77 @@ export default function Home() {
                 </div>
                 {mobileError && <p className="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">{mobileError}</p>}
 
-                {/* Consent checkbox */}
-                <label className="mt-4 flex cursor-pointer items-start gap-2.5 rounded-xl border border-[#e5ede8] bg-[#f8faf9] p-3 dark:border-[#162a1f] dark:bg-[#08150f]">
-                  <input
-                    type="checkbox"
-                    checked={consent}
-                    onChange={(e) => {
-                      setConsent(e.target.checked);
-                      setConsentError("");
-                    }}
-                    className="mt-0.5 size-4 accent-emerald-600"
-                  />
-                  <span className="text-[11px] leading-relaxed text-[#55695d] dark:text-[#8ba295]">
-                    I agree to Relive’s{" "}
-                    <Link href="/terms" target="_blank" className="font-bold text-emerald-600 hover:underline dark:text-emerald-400">
-                      Terms
-                    </Link>{" "}
-                    and{" "}
-                    <Link href="/privacy" target="_blank" className="font-bold text-emerald-600 hover:underline dark:text-emerald-400">
-                      Privacy Policy
-                    </Link>{" "}
-                    for authentication.
-                  </span>
-                </label>
+                {/* Consent: one checkbox, short summary; full purposes behind "View details" */}
+                <div
+                  className={`mt-4 rounded-xl border bg-[#f8faf9] dark:bg-[#08150f] ${
+                    consentError ? "border-red-300 dark:border-red-800" : "border-[#e5ede8] dark:border-[#162a1f]"
+                  }`}
+                >
+                  <label className="flex cursor-pointer items-start gap-3 p-3.5">
+                    <input
+                      type="checkbox"
+                      checked={consent}
+                      onChange={(e) => {
+                        setConsent(e.target.checked);
+                        setConsentError("");
+                      }}
+                      aria-describedby="consent-details"
+                      className="mt-0.5 size-4 shrink-0 cursor-pointer rounded accent-emerald-600"
+                    />
+                    <span className="text-xs leading-5 text-[#3f5447] dark:text-[#a0b8ab]">
+                      I agree to the{" "}
+                      <Link href="/terms" target="_blank" className="font-semibold text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">
+                        Terms of Use
+                      </Link>{" "}
+                      and{" "}
+                      <Link href="/privacy" target="_blank" className="font-semibold text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">
+                        Privacy Policy
+                      </Link>
+                      , and consent to Relive fetching my credit report and contacting me.
+                    </span>
+                  </label>
+
+                  {consentExpanded && (
+                    <ul id="consent-details" className="mx-3.5 grid gap-2.5 border-t border-[#e5ede8] py-3 text-[11px] leading-4 text-[#55695d] dark:border-[#162a1f] dark:text-[#8ba295]">
+                      {(
+                        [
+                          [Fingerprint, "Verification", "Verify my mobile number with a one-time password (OTP)."],
+                          [FileSearch, "Credit report", "Fetch my credit report from Experian and CRIF High Mark using my PAN, name and mobile number, and store it securely to show my score and insights."],
+                          [Sparkles, "Communication", "Contact me by SMS, WhatsApp, email and phone about my credit health and relevant offers."],
+                        ] as const
+                      ).map(([Icon, title, text]) => (
+                        <li key={title} className="flex gap-2.5">
+                          <Icon className="mt-0.5 size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                          <span>
+                            <span className="font-semibold text-[#2d4236] dark:text-[#c3d6cb]">{title}.</span> {text}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <button
+                    type="button"
+                    aria-expanded={consentExpanded}
+                    aria-controls="consent-details"
+                    onClick={() => setConsentExpanded((value) => !value)}
+                    className="flex w-full items-center gap-1 border-t border-[#e5ede8] px-3.5 py-2 text-[11px] font-semibold text-emerald-700 hover:bg-[#f1f6f3] focus-visible:outline-2 focus-visible:outline-emerald-500 dark:border-[#162a1f] dark:text-emerald-400 dark:hover:bg-[#0c1d14] rounded-b-xl"
+                  >
+                    {consentExpanded ? "Hide details" : "View details"}
+                    <ChevronRight className={`size-3.5 transition-transform ${consentExpanded ? "-rotate-90" : "rotate-90"}`} aria-hidden="true" />
+                  </button>
+                </div>
                 {consentError && <p className="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">{consentError}</p>}
 
                 <button
                   type="submit"
                   disabled={busy}
-                  className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-60 dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
+                  className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#216b49] text-sm font-semibold text-white transition hover:bg-[#155438] disabled:opacity-60 dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
                 >
                   {busy ? "Sending OTP..." : "Continue"}
                   {!busy && <ArrowRight className="size-4" />}
                 </button>
 
-                <p className="mt-3 text-center text-[10px] text-[#71867a] dark:text-[#8ba295]">
-                  Demo registered account: <strong className="text-[#0c1a13] dark:text-white">9876543210</strong>
-                </p>
               </form>
             )}
 
@@ -753,31 +716,27 @@ export default function Home() {
                   >
                     Change number
                   </button>
-                  <span className="text-[#71867a] dark:text-[#8ba295]">
-                    {seconds > 0 ? `Resend in 00:${String(seconds).padStart(2, "0")}` : "Resend OTP via:"}
-                  </span>
+                  {seconds > 0 ? (
+                    <span className="text-[#71867a] dark:text-[#8ba295]" aria-live="polite">
+                      Resend in 00:{String(seconds).padStart(2, "0")}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void resendOtp()}
+                      className="font-bold text-emerald-700 hover:underline disabled:opacity-60 dark:text-emerald-300"
+                    >
+                      Resend OTP
+                    </button>
+                  )}
                 </div>
 
-                {seconds <= 0 && (
-                  <div className="mt-3 grid grid-cols-3 gap-2">
-                    {(["SMS", "CALL", "WHATSAPP"] as const).map((ch) => (
-                      <button
-                        key={ch}
-                        type="button"
-                        disabled={busy}
-                        onClick={() => resendOtp(ch)}
-                        className="rounded-lg border border-[#d8e3dc] py-1.5 text-[11px] font-bold text-emerald-700 hover:bg-emerald-50 dark:border-[#1d3829] dark:text-emerald-300 dark:hover:bg-[#12241a]"
-                      >
-                        {ch === "WHATSAPP" ? "WhatsApp" : ch === "CALL" ? "Call" : "SMS"}
-                      </button>
-                    ))}
-                  </div>
-                )}
 
                 <button
                   type="submit"
                   disabled={busy}
-                  className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-60 dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
+                  className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#216b49] text-sm font-semibold text-white transition hover:bg-[#155438] disabled:opacity-60 dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
                 >
                   {busy ? "Verifying..." : "Verify & Access Report"}
                   {!busy && <ArrowRight className="size-4" />}

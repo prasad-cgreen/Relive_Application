@@ -1,7 +1,7 @@
 import { defineConfig, env } from "prisma/config";
 import { config } from "dotenv";
 
-config({ path: "../frontend/.env.local" });
+config({ path: [".env", "../frontend/.env.local"], quiet: true });
 
 export default defineConfig({
   schema: "prisma/production/schema.prisma",

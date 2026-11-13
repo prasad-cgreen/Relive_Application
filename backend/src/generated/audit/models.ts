@@ -9,5 +9,6 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/AuditLog.js'
+export type * from './models/OnboardingJourney.js'
 export type * from './models/ErrorLog.js'
 export type * from './commonInputTypes.js'

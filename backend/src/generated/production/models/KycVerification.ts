@@ -39,6 +39,7 @@ export type KycVerificationMinAggregateOutputType = {
   userId: string | null
   panHash: string | null
   panLast4: string | null
+  panEncrypted: string | null
   status: $Enums.KycStatus | null
   attempts: number | null
   providerRef: string | null
@@ -52,6 +53,7 @@ export type KycVerificationMaxAggregateOutputType = {
   userId: string | null
   panHash: string | null
   panLast4: string | null
+  panEncrypted: string | null
   status: $Enums.KycStatus | null
   attempts: number | null
   providerRef: string | null
@@ -65,6 +67,7 @@ export type KycVerificationCountAggregateOutputType = {
   userId: number
   panHash: number
   panLast4: number
+  panEncrypted: number
   status: number
   attempts: number
   providerRef: number
@@ -88,6 +91,7 @@ export type KycVerificationMinAggregateInputType = {
   userId?: true
   panHash?: true
   panLast4?: true
+  panEncrypted?: true
   status?: true
   attempts?: true
   providerRef?: true
@@ -101,6 +105,7 @@ export type KycVerificationMaxAggregateInputType = {
   userId?: true
   panHash?: true
   panLast4?: true
+  panEncrypted?: true
   status?: true
   attempts?: true
   providerRef?: true
@@ -114,6 +119,7 @@ export type KycVerificationCountAggregateInputType = {
   userId?: true
   panHash?: true
   panLast4?: true
+  panEncrypted?: true
   status?: true
   attempts?: true
   providerRef?: true
@@ -214,6 +220,7 @@ export type KycVerificationGroupByOutputType = {
   userId: string
   panHash: string
   panLast4: string
+  panEncrypted: string | null
   status: $Enums.KycStatus
   attempts: number
   providerRef: string | null
@@ -250,6 +257,7 @@ export type KycVerificationWhereInput = {
   userId?: Prisma.UuidFilter<"KycVerification"> | string
   panHash?: Prisma.StringFilter<"KycVerification"> | string
   panLast4?: Prisma.StringFilter<"KycVerification"> | string
+  panEncrypted?: Prisma.StringNullableFilter<"KycVerification"> | string | null
   status?: Prisma.EnumKycStatusFilter<"KycVerification"> | $Enums.KycStatus
   attempts?: Prisma.IntFilter<"KycVerification"> | number
   providerRef?: Prisma.StringNullableFilter<"KycVerification"> | string | null
@@ -264,6 +272,7 @@ export type KycVerificationOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   panHash?: Prisma.SortOrder
   panLast4?: Prisma.SortOrder
+  panEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
   providerRef?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -281,6 +290,7 @@ export type KycVerificationWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.UuidFilter<"KycVerification"> | string
   panHash?: Prisma.StringFilter<"KycVerification"> | string
   panLast4?: Prisma.StringFilter<"KycVerification"> | string
+  panEncrypted?: Prisma.StringNullableFilter<"KycVerification"> | string | null
   status?: Prisma.EnumKycStatusFilter<"KycVerification"> | $Enums.KycStatus
   attempts?: Prisma.IntFilter<"KycVerification"> | number
   providerRef?: Prisma.StringNullableFilter<"KycVerification"> | string | null
@@ -295,6 +305,7 @@ export type KycVerificationOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   panHash?: Prisma.SortOrder
   panLast4?: Prisma.SortOrder
+  panEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
   providerRef?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -316,6 +327,7 @@ export type KycVerificationScalarWhereWithAggregatesInput = {
   userId?: Prisma.UuidWithAggregatesFilter<"KycVerification"> | string
   panHash?: Prisma.StringWithAggregatesFilter<"KycVerification"> | string
   panLast4?: Prisma.StringWithAggregatesFilter<"KycVerification"> | string
+  panEncrypted?: Prisma.StringNullableWithAggregatesFilter<"KycVerification"> | string | null
   status?: Prisma.EnumKycStatusWithAggregatesFilter<"KycVerification"> | $Enums.KycStatus
   attempts?: Prisma.IntWithAggregatesFilter<"KycVerification"> | number
   providerRef?: Prisma.StringNullableWithAggregatesFilter<"KycVerification"> | string | null
@@ -328,6 +340,7 @@ export type KycVerificationCreateInput = {
   id?: string
   panHash: string
   panLast4: string
+  panEncrypted?: string | null
   status: $Enums.KycStatus
   attempts?: number
   providerRef?: string | null
@@ -342,6 +355,7 @@ export type KycVerificationUncheckedCreateInput = {
   userId: string
   panHash: string
   panLast4: string
+  panEncrypted?: string | null
   status: $Enums.KycStatus
   attempts?: number
   providerRef?: string | null
@@ -354,6 +368,7 @@ export type KycVerificationUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   panHash?: Prisma.StringFieldUpdateOperationsInput | string
   panLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  panEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -368,6 +383,7 @@ export type KycVerificationUncheckedUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   panHash?: Prisma.StringFieldUpdateOperationsInput | string
   panLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  panEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -381,6 +397,7 @@ export type KycVerificationCreateManyInput = {
   userId: string
   panHash: string
   panLast4: string
+  panEncrypted?: string | null
   status: $Enums.KycStatus
   attempts?: number
   providerRef?: string | null
@@ -393,6 +410,7 @@ export type KycVerificationUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   panHash?: Prisma.StringFieldUpdateOperationsInput | string
   panLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  panEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -406,6 +424,7 @@ export type KycVerificationUncheckedUpdateManyInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   panHash?: Prisma.StringFieldUpdateOperationsInput | string
   panLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  panEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -429,6 +448,7 @@ export type KycVerificationCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   panHash?: Prisma.SortOrder
   panLast4?: Prisma.SortOrder
+  panEncrypted?: Prisma.SortOrder
   status?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
   providerRef?: Prisma.SortOrder
@@ -446,6 +466,7 @@ export type KycVerificationMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   panHash?: Prisma.SortOrder
   panLast4?: Prisma.SortOrder
+  panEncrypted?: Prisma.SortOrder
   status?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
   providerRef?: Prisma.SortOrder
@@ -459,6 +480,7 @@ export type KycVerificationMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   panHash?: Prisma.SortOrder
   panLast4?: Prisma.SortOrder
+  panEncrypted?: Prisma.SortOrder
   status?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
   providerRef?: Prisma.SortOrder
@@ -521,6 +543,7 @@ export type KycVerificationCreateWithoutUserInput = {
   id?: string
   panHash: string
   panLast4: string
+  panEncrypted?: string | null
   status: $Enums.KycStatus
   attempts?: number
   providerRef?: string | null
@@ -533,6 +556,7 @@ export type KycVerificationUncheckedCreateWithoutUserInput = {
   id?: string
   panHash: string
   panLast4: string
+  panEncrypted?: string | null
   status: $Enums.KycStatus
   attempts?: number
   providerRef?: string | null
@@ -575,6 +599,7 @@ export type KycVerificationScalarWhereInput = {
   userId?: Prisma.UuidFilter<"KycVerification"> | string
   panHash?: Prisma.StringFilter<"KycVerification"> | string
   panLast4?: Prisma.StringFilter<"KycVerification"> | string
+  panEncrypted?: Prisma.StringNullableFilter<"KycVerification"> | string | null
   status?: Prisma.EnumKycStatusFilter<"KycVerification"> | $Enums.KycStatus
   attempts?: Prisma.IntFilter<"KycVerification"> | number
   providerRef?: Prisma.StringNullableFilter<"KycVerification"> | string | null
@@ -587,6 +612,7 @@ export type KycVerificationCreateManyUserInput = {
   id?: string
   panHash: string
   panLast4: string
+  panEncrypted?: string | null
   status: $Enums.KycStatus
   attempts?: number
   providerRef?: string | null
@@ -599,6 +625,7 @@ export type KycVerificationUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   panHash?: Prisma.StringFieldUpdateOperationsInput | string
   panLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  panEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -611,6 +638,7 @@ export type KycVerificationUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   panHash?: Prisma.StringFieldUpdateOperationsInput | string
   panLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  panEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -623,6 +651,7 @@ export type KycVerificationUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   panHash?: Prisma.StringFieldUpdateOperationsInput | string
   panLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  panEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -638,6 +667,7 @@ export type KycVerificationSelect<ExtArgs extends runtime.Types.Extensions.Inter
   userId?: boolean
   panHash?: boolean
   panLast4?: boolean
+  panEncrypted?: boolean
   status?: boolean
   attempts?: boolean
   providerRef?: boolean
@@ -652,6 +682,7 @@ export type KycVerificationSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   userId?: boolean
   panHash?: boolean
   panLast4?: boolean
+  panEncrypted?: boolean
   status?: boolean
   attempts?: boolean
   providerRef?: boolean
@@ -666,6 +697,7 @@ export type KycVerificationSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   userId?: boolean
   panHash?: boolean
   panLast4?: boolean
+  panEncrypted?: boolean
   status?: boolean
   attempts?: boolean
   providerRef?: boolean
@@ -680,6 +712,7 @@ export type KycVerificationSelectScalar = {
   userId?: boolean
   panHash?: boolean
   panLast4?: boolean
+  panEncrypted?: boolean
   status?: boolean
   attempts?: boolean
   providerRef?: boolean
@@ -688,7 +721,7 @@ export type KycVerificationSelectScalar = {
   verifiedAt?: boolean
 }
 
-export type KycVerificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "panHash" | "panLast4" | "status" | "attempts" | "providerRef" | "failureReason" | "createdAt" | "verifiedAt", ExtArgs["result"]["kycVerification"]>
+export type KycVerificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "panHash" | "panLast4" | "panEncrypted" | "status" | "attempts" | "providerRef" | "failureReason" | "createdAt" | "verifiedAt", ExtArgs["result"]["kycVerification"]>
 export type KycVerificationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -709,6 +742,7 @@ export type $KycVerificationPayload<ExtArgs extends runtime.Types.Extensions.Int
     userId: string
     panHash: string
     panLast4: string
+    panEncrypted: string | null
     status: $Enums.KycStatus
     attempts: number
     providerRef: string | null
@@ -1143,6 +1177,7 @@ export interface KycVerificationFieldRefs {
   readonly userId: Prisma.FieldRef<"KycVerification", 'String'>
   readonly panHash: Prisma.FieldRef<"KycVerification", 'String'>
   readonly panLast4: Prisma.FieldRef<"KycVerification", 'String'>
+  readonly panEncrypted: Prisma.FieldRef<"KycVerification", 'String'>
   readonly status: Prisma.FieldRef<"KycVerification", 'KycStatus'>
   readonly attempts: Prisma.FieldRef<"KycVerification", 'Int'>
   readonly providerRef: Prisma.FieldRef<"KycVerification", 'String'>

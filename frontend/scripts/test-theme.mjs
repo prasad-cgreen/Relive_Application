@@ -81,12 +81,12 @@ try {
   assert(dialogBackground.includes("13, 13, 15"), "Login modal did not inherit dark theme");
   await page.keyboard.press("Escape");
 
-  const otpResponse = await context.request.post("http://127.0.0.1:4000/api/v1/auth/request-otp", {
+  const otpResponse = await context.request.post("http://127.0.0.1:4100/api/v1/auth/request-otp", {
     data: { mobile: "9876543210", consent: true, consentVersion: "login-v1", channel: "SMS" },
   });
   assert(otpResponse.ok(), `OTP setup failed: ${otpResponse.status()}`);
   const otp = await otpResponse.json();
-  const verifyResponse = await context.request.post("http://127.0.0.1:4000/api/v1/auth/verify-otp", {
+  const verifyResponse = await context.request.post("http://127.0.0.1:4100/api/v1/auth/verify-otp", {
     data: { transactionId: otp.transactionId, otp: otp.devOtp },
   });
   assert(verifyResponse.ok(), `OTP verification failed: ${verifyResponse.status()}`);

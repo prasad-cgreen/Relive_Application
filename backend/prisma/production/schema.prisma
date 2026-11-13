@@ -20,6 +20,7 @@ enum ProfileSource {
 enum ConsentPurpose {
   LOGIN
   CREDIT_REPORT
+  MARKETING
 }
 
 enum ConsentStatus {
@@ -31,6 +32,11 @@ enum OtpChannel {
   SMS
   CALL
   WHATSAPP
+}
+
+enum OtpPurpose {
+  LOGIN
+  BUREAU_MOBILE // OTP to an alternate number the bureaus may have on file
 }
 
 enum OtpStatus {
@@ -74,6 +80,9 @@ model User {
   id              String   @id @default(uuid()) @db.Uuid
   mobileHash      String   @unique @map("mobile_hash")
   mobileLast4     String   @map("mobile_last4")
+  mobileEncrypted String?  @map("mobile_encrypted") // AES-256-GCM; bureau APIs need the raw number
+  bureauMobileEncrypted String? @map("bureau_mobile_encrypted") // OTP-verified alternate number used for bureau pulls
+  bureauMobileLast4     String? @map("bureau_mobile_last4")
   status          UserStatus @default(ACTIVE)
   failedOtpWindow Int      @default(0) @map("failed_otp_window")
   blockedUntil    DateTime? @map("blocked_until")
@@ -86,6 +95,7 @@ model User {
   kycs            KycVerification[]
   reports         CreditReport[]
   transactions    ApiTransaction[]
+  supportRequests SupportRequest[]
   @@map("users")
 }
 
@@ -123,7 +133,10 @@ model OtpTransaction {
   id             String @id @default(uuid()) @db.Uuid
   userId         String @map("user_id") @db.Uuid
   channel        OtpChannel
-  otpHash        String @map("otp_hash")
+  otpHash        String? @map("otp_hash")
+  providerRef    String? @map("provider_ref")
+  purpose        OtpPurpose @default(LOGIN)
+  targetMobileEncrypted String? @map("target_mobile_encrypted") // set for BUREAU_MOBILE
   status         OtpStatus @default(PENDING)
   failedAttempts Int @default(0) @map("failed_attempts")
   expiresAt      DateTime @map("expires_at")
@@ -152,6 +165,7 @@ model KycVerification {
   userId        String @map("user_id") @db.Uuid
   panHash       String @map("pan_hash")
   panLast4      String @map("pan_last4")
+  panEncrypted  String? @map("pan_encrypted") // AES-256-GCM, VERIFIED rows only: bureau pulls send the verified PAN
   status        KycStatus
   attempts      Int @default(1)
   providerRef   String? @map("provider_ref")
@@ -169,6 +183,7 @@ model CreditReport {
   bureau         String @default("EXPERIAN")
   score          Int
   reportJson     Json @map("report_json")
+  rawResponse    Json? @map("raw_response") // full bureau payload, never sent to the browser
   status         ReportStatus @default(CURRENT)
   providerRef    String? @map("provider_ref")
   idempotencyKey String @unique @map("idempotency_key") @db.Uuid
@@ -194,4 +209,33 @@ model ApiTransaction {
   user           User? @relation(fields: [userId], references: [id], onDelete: SetNull)
   @@index([provider, operation, createdAt])
   @@map("api_transactions")
+}
+
+enum SupportTopic {
+  OPTIONS
+  LENDER_DISCUSSION
+  NOTICE
+}
+
+enum SupportStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+/// A "Get help" request from the dashboard: a lead for the Relive team to call back.
+/// The contact number is the user's verified mobile (users.mobile_encrypted).
+model SupportRequest {
+  id                String        @id @default(uuid()) @db.Uuid
+  userId            String        @map("user_id") @db.Uuid
+  topic             SupportTopic
+  accountLabel      String?       @map("account_label") // lender + masked number, e.g. "ICICI Bank · •••• 5295"; null = overall situation
+  question          String
+  preferredTime     String        @map("preferred_time")
+  preferredLanguage String        @map("preferred_language")
+  status            SupportStatus @default(NEW)
+  createdAt         DateTime      @default(now()) @map("created_at")
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([status, createdAt])
+  @@map("support_requests")
 }

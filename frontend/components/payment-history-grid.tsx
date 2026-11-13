@@ -1,231 +1,165 @@
 "use client";
 
-import { Check, ShieldCheck, X } from "lucide-react";
+import { Check, X } from "lucide-react";
+
+export type HistoryMonth = { month: string; status: "ontime" | "late"; daysPastDue: number };
 
 interface PaymentHistoryGridProps {
-  onTimePercent?: number;
-  totalBalance?: number;
-  highestBalance?: number;
-  accountName?: string;
-  accountNumber?: string;
-  accountType?: string;
-  status?: string;
-  openedDate?: string;
-  lastPaymentDate?: string;
+  history: HistoryMonth[]; // from the bureau report, newest first; worst status per month across accounts
+  onTimePercent: number;
+  totalBalance: number;
+  highestCredit: number | null;
+  openAccounts: number;
+  closedAccounts: number;
+  bureauLabel: string;
+  title?: string; // e.g. a single account's lender; defaults to all accounts
+  subtitle?: string;
+  /** Inside another panel (an expanded account): no card border or padding of its own. */
+  embedded?: boolean;
 }
 
 const MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
-const MONTH_NAMES = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-];
-
-const YEARS = [2026, 2025, 2024, 2023, 2022];
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const rupees = (value: number) => `₹${value.toLocaleString("en-IN")}`;
 
 export function PaymentHistoryGrid({
-  onTimePercent = 98,
-  totalBalance = 0,
-  highestBalance = 162000,
-  accountName = "Demo Lender",
-  accountNumber = "•••• 4028",
-  accountType = "Credit Account",
-  status = "Current",
-  openedDate = "Jan 12, 2022",
-  lastPaymentDate = "Recent",
+  history,
+  onTimePercent,
+  totalBalance,
+  highestCredit,
+  openAccounts,
+  closedAccounts,
+  bureauLabel,
+  title = "All accounts",
+  subtitle,
+  embedded = false,
 }: PaymentHistoryGridProps) {
-  // Generate realistic on-time status matrix based on actual on-time percentage
-  const getMonthStatus = (year: number, monthIdx: number) => {
-    // Current year: future months are empty
-    const currentMonth = 10; // November
-    if (year === 2026 && monthIdx > currentMonth) return "future";
-    if (year === 2022 && monthIdx < 2) return "inactive"; // opened early 2022
-
-    // Slight variation if onTimePercent < 100
-    if (onTimePercent < 95 && year === 2024 && monthIdx === 3) return "late";
-    if (onTimePercent < 90 && year === 2023 && monthIdx === 7) return "late";
-
-    return "ontime";
-  };
+  const byMonth = new Map(history.map((entry) => [entry.month, entry]));
+  // Most recent 5 years that have any reported month.
+  const years = [...new Set(history.map((entry) => Number(entry.month.slice(0, 4))))].sort((a, b) => b - a).slice(0, 5);
+  const worst = history.reduce((max, entry) => Math.max(max, entry.daysPastDue), 0);
+  const latest = history[0];
+  const late = history.filter((entry) => entry.status === "late");
+  const lateCounts = [late.filter((m) => m.daysPastDue <= 30).length, late.filter((m) => m.daysPastDue > 30 && m.daysPastDue <= 60).length, late.filter((m) => m.daysPastDue > 60).length];
 
   return (
-    <div className="rounded-2xl border border-[#e1e9e4] bg-white p-5 shadow-xs dark:border-[#162a1f] dark:bg-[#0c1a12]">
-      {/* Account Header Strip */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#eef3f0] pb-4 dark:border-[#16291e]">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-[#0c1a13] dark:text-white">
-              {accountName}
-            </span>
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-              {status}
-            </span>
-          </div>
+    <div className={embedded ? "" : "rounded-2xl border border-[#e1e9e4] bg-white p-4 shadow-xs sm:p-6 dark:border-[#162a1f] dark:bg-[#0c1a12]"}>
+      {/* Embedded, the row/card right above already shows this; kept on tablets, where the table hides Limit and Opened */}
+      <div className={`flex flex-wrap items-center justify-between gap-3 border-b border-[#eef3f0] pb-4 dark:border-[#16291e] ${embedded ? "max-md:hidden lg:hidden" : ""}`}>
+        <div className="min-w-0">
+          <span className="text-base font-semibold text-[#0c1a13] dark:text-white">{title}</span>
           <p className="mt-0.5 text-xs text-[#63786d] dark:text-[#8ba295]">
-            {accountType} • Acct {accountNumber} • Opened {openedDate}
+            {subtitle ?? `${openAccounts} active • ${closedAccounts} closed`} • Reported by {bureauLabel}
           </p>
         </div>
-
-        <div className="flex items-center gap-4 text-right">
+        <div className="flex items-center gap-5 sm:text-right">
           <div>
-            <p className="text-[10px] font-medium text-[#768a80] uppercase tracking-wider dark:text-[#8ba295]">
-              Balance
-            </p>
-            <p className="text-sm font-bold text-[#0c1a13] dark:text-white">
-              ₹{totalBalance.toLocaleString("en-IN")}
-            </p>
+            <p className="text-[11px] text-[#768a80] dark:text-[#8ba295]">Outstanding</p>
+            <p className="text-sm font-semibold tabular-nums text-[#0c1a13] dark:text-white">{rupees(totalBalance)}</p>
           </div>
           <div>
-            <p className="text-[10px] font-medium text-[#768a80] uppercase tracking-wider dark:text-[#8ba295]">
-              Highest Balance
-            </p>
-            <p className="text-sm font-bold text-[#0c1a13] dark:text-white">
-              ₹{highestBalance.toLocaleString("en-IN")}
-            </p>
+            <p className="text-[11px] text-[#768a80] dark:text-[#8ba295]">Highest credit</p>
+            <p className="text-sm font-semibold tabular-nums text-[#0c1a13] dark:text-white">{highestCredit == null ? "—" : rupees(highestCredit)}</p>
           </div>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
-        {/* Left Column: Payment History Matrix (DisputeFox Style) */}
+      <div className={`grid gap-6 lg:grid-cols-[1.3fr_0.9fr] ${embedded ? "md:mt-5 lg:mt-0" : "mt-5"}`}>
         <div>
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-[#0c1a13] uppercase tracking-wider dark:text-white">
-              Payment History
-            </h3>
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              {onTimePercent}% on time
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-[#63786d] dark:text-[#8ba295]">
-            You have made {onTimePercent}% of payments for this account on time.
-          </p>
-
-          {/* Matrix Table */}
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full border-collapse text-center">
-              <thead>
-                <tr>
-                  <th className="w-12 text-left text-[11px] font-semibold text-[#8ca095] dark:text-[#6a8275]">
-                    Year
-                  </th>
-                  {MONTHS.map((m, idx) => (
-                    <th
-                      key={idx}
-                      className="px-1 pb-2 text-[10px] font-bold text-[#8ca095] dark:text-[#7f998c]"
-                    >
-                      {m}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="space-y-1.5">
-                {YEARS.map((year) => (
-                  <tr key={year} className="group hover:bg-[#f6f9f7] dark:hover:bg-[#11241a]">
-                    <td className="py-1 text-left text-xs font-bold text-[#44574d] dark:text-[#9bb2a6]">
-                      {year}
-                    </td>
-                    {MONTHS.map((_, mIdx) => {
-                      const state = getMonthStatus(year, mIdx);
-                      return (
-                        <td key={mIdx} className="py-1 px-1">
-                          {state === "ontime" ? (
-                            <span
-                              title={`${MONTH_NAMES[mIdx]} ${year}: Paid as Agreed`}
-                              className="inline-flex size-5 items-center justify-center rounded-full bg-emerald-500 text-white shadow-2xs hover:scale-110 transition-transform"
-                            >
-                              <Check className="size-3 stroke-[3]" />
-                            </span>
-                          ) : state === "late" ? (
-                            <span
-                              title={`${MONTH_NAMES[mIdx]} ${year}: Late Payment Reported`}
-                              className="inline-flex size-5 items-center justify-center rounded-full bg-rose-500 text-white shadow-2xs hover:scale-110 transition-transform"
-                            >
-                              <X className="size-3 stroke-[3]" />
-                            </span>
-                          ) : (
-                            <span
-                              title={`${MONTH_NAMES[mIdx]} ${year}: No reporting required`}
-                              className="inline-block size-2 rounded-full bg-[#d6ded9] dark:bg-[#203629]"
-                            />
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <h3 className="text-sm font-semibold text-[#0c1a13] dark:text-white">Payment history</h3>
+            {history.length > 0 && (
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{onTimePercent}% on time</span>
+            )}
           </div>
 
-          {/* Legend */}
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-[11px] text-[#6b8074] dark:text-[#8ba295]">
-            <div className="flex items-center gap-1.5">
-              <span className="size-3.5 rounded-full bg-emerald-500 flex items-center justify-center text-white">
-                <Check className="size-2.5" />
-              </span>
-              <span>Paid on time</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="size-3.5 rounded-full bg-rose-500 flex items-center justify-center text-white">
-                <X className="size-2.5" />
-              </span>
-              <span>Past due</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-[#d6ded9] dark:bg-[#203629]" />
-              <span>No record/Future</span>
-            </div>
-          </div>
+          {history.length === 0 ? (
+            <p className="mt-4 rounded-xl border border-dashed border-[#dbe5df] p-6 text-center text-xs text-[#63786d] dark:border-[#1d3427] dark:text-[#8ba295]">
+              Your credit report doesn’t include month-by-month payment history yet.
+            </p>
+          ) : (
+            <>
+              <p className="mt-1 text-xs text-[#63786d] dark:text-[#8ba295]">
+                {title === "All accounts" ? "Each month shows the worst status reported across your accounts." : "Status reported by the lender each month."}
+              </p>
+              <div className="-mx-1 mt-4 overflow-x-auto">
+                <table className="w-full min-w-[280px] border-collapse text-center">
+                  <thead>
+                    <tr>
+                      <th className="w-10 pl-1 text-left sm:w-12 text-[11px] font-semibold text-[#8ca095] dark:text-[#6a8275]">Year</th>
+                      {MONTHS.map((letter, index) => (
+                        <th key={index} className="px-0.5 pb-2 sm:px-1 text-[10px] font-bold text-[#8ca095] dark:text-[#7f998c]">
+                          {letter}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {years.map((year) => (
+                      <tr key={year} className="hover:bg-[#f3f8ee] dark:hover:bg-[#11241a]">
+                        <td className="py-1 pl-1 text-left text-[11px] font-semibold tabular-nums sm:text-xs text-[#44574d] dark:text-[#9bb2a6]">{year}</td>
+                        {MONTHS.map((_, index) => {
+                          const entry = byMonth.get(`${year}-${String(index + 1).padStart(2, "0")}`);
+                          const label = `${MONTH_NAMES[index]} ${year}`;
+                          return (
+                            <td key={index} className="px-0.5 py-1 sm:px-1">
+                              {!entry ? (
+                                <span title={`${label}: not reported`} className="inline-block size-2 rounded-full bg-[#d6ded9] dark:bg-[#203629]" />
+                              ) : entry.status === "ontime" ? (
+                                <span title={`${label}: paid on time`} className="inline-flex size-4 items-center justify-center rounded-full bg-emerald-500 sm:size-5 text-white">
+                                  <Check className="size-2.5 stroke-[3] sm:size-3" />
+                                </span>
+                              ) : (
+                                <span title={`${label}: ${entry.daysPastDue} days past due`} className="inline-flex size-4 items-center justify-center rounded-full bg-rose-500 sm:size-5 text-white">
+                                  <X className="size-2.5 stroke-[3] sm:size-3" />
+                                </span>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4 flex flex-wrap items-center gap-4 text-[11px] text-[#6b8074] dark:text-[#8ba295]">
+                <span className="flex items-center gap-1.5">
+                  <span className="flex size-3.5 items-center justify-center rounded-full bg-emerald-500 text-white"><Check className="size-2.5" /></span>
+                  Paid on time
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="flex size-3.5 items-center justify-center rounded-full bg-rose-500 text-white"><X className="size-2.5" /></span>
+                  Past due
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-full bg-[#d6ded9] dark:bg-[#203629]" />
+                  Not reported
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Right Column: DisputeFox Account Details Sidebar Box */}
-        <div className="flex flex-col justify-between rounded-xl border border-[#e5ece8] bg-[#f8faf9] p-4 dark:border-[#193023] dark:bg-[#08120d]">
-          <h4 className="text-xs font-bold text-[#0c1a13] uppercase tracking-wider dark:text-white">
-            Account Details
-          </h4>
-
-          <div className="mt-3 space-y-2 text-xs">
-            <div className="flex justify-between border-b border-[#ebf0ed] pb-1.5 dark:border-[#15281d]">
-              <span className="text-[#687e72] dark:text-[#87a092]">Last Payment</span>
-              <span className="font-semibold text-[#0c1a13] dark:text-white">{lastPaymentDate}</span>
-            </div>
-            <div className="flex justify-between border-b border-[#ebf0ed] pb-1.5 dark:border-[#15281d]">
-              <span className="text-[#687e72] dark:text-[#87a092]">Current Status</span>
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400">As Agreed</span>
-            </div>
-            <div className="flex justify-between border-b border-[#ebf0ed] pb-1.5 dark:border-[#15281d]">
-              <span className="text-[#687e72] dark:text-[#87a092]">Worst Status</span>
-              <span className="font-semibold text-[#0c1a13] dark:text-white">None</span>
-            </div>
-            <div className="flex justify-between border-b border-[#ebf0ed] pb-1.5 dark:border-[#15281d]">
-              <span className="text-[#687e72] dark:text-[#87a092]">Account Type</span>
-              <span className="font-semibold text-[#0c1a13] dark:text-white">{accountType}</span>
-            </div>
-            <div className="flex justify-between border-b border-[#ebf0ed] pb-1.5 dark:border-[#15281d]">
-              <span className="text-[#687e72] dark:text-[#87a092]">Responsibility</span>
-              <span className="font-semibold text-[#0c1a13] dark:text-white">Individual</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#687e72] dark:text-[#87a092]">30/60/90 Days Late</span>
-              <span className="font-semibold text-[#0c1a13] dark:text-white">00 / 00 / 00</span>
-            </div>
-          </div>
-
-          {/* Action CTA matching DisputeFox */}
-          <div className="mt-4 pt-3 border-t border-[#e2eae5] dark:border-[#193023]">
-            <button
-              type="button"
-              onClick={() => {
-                alert("Account verification confirmed. No discrepancies reported.");
-              }}
-              className="w-full rounded-xl bg-[#0c1a13] py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-[#183325] dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
-            >
-              Verify / Inquire Account
-            </button>
-          </div>
+        <div className="rounded-xl border border-[#e3ebdc] bg-white p-4 dark:border-[#193023] dark:bg-[#08120d]">
+          <h4 className="text-sm font-semibold text-[#0c1a13] dark:text-white">Summary</h4>
+          <dl className="mt-3 space-y-2 text-xs">
+            {[
+              ["Latest month reported", latest ? `${MONTH_NAMES[Number(latest.month.slice(5)) - 1]} ${latest.month.slice(0, 4)}` : "—"],
+              ["Latest status", !latest ? "—" : latest.status === "ontime" ? "Paid on time" : `${latest.daysPastDue} days past due`],
+              ["Worst delay", history.length === 0 ? "—" : worst === 0 ? "None" : `${worst} days`],
+              ["Months late: ≤30 / 31–60 / 60+ days", history.length ? lateCounts.join(" / ") : "—"],
+              ["Months reported", String(history.length)],
+            ].map(([term, value]) => (
+              <div key={term} className="flex justify-between gap-3 border-b border-[#ebf0ed] pb-1.5 last:border-0 dark:border-[#15281d]">
+                <dt className="text-[#687e72] dark:text-[#87a092]">{term}</dt>
+                <dd className={`text-right font-semibold ${term === "Latest status" && latest?.status === "late" ? "text-rose-600 dark:text-rose-400" : "text-[#0c1a13] dark:text-white"}`}>
+                  {value}
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </div>
     </div>
   );
 }
-

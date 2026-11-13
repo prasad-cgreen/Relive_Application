@@ -59,7 +59,8 @@ export const ModelName = {
   UserSession: 'UserSession',
   KycVerification: 'KycVerification',
   CreditReport: 'CreditReport',
-  ApiTransaction: 'ApiTransaction'
+  ApiTransaction: 'ApiTransaction',
+  SupportRequest: 'SupportRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -92,6 +93,9 @@ export const UserScalarFieldEnum = {
   id: 'id',
   mobileHash: 'mobileHash',
   mobileLast4: 'mobileLast4',
+  mobileEncrypted: 'mobileEncrypted',
+  bureauMobileEncrypted: 'bureauMobileEncrypted',
+  bureauMobileLast4: 'bureauMobileLast4',
   status: 'status',
   failedOtpWindow: 'failedOtpWindow',
   blockedUntil: 'blockedUntil',
@@ -138,6 +142,9 @@ export const OtpTransactionScalarFieldEnum = {
   userId: 'userId',
   channel: 'channel',
   otpHash: 'otpHash',
+  providerRef: 'providerRef',
+  purpose: 'purpose',
+  targetMobileEncrypted: 'targetMobileEncrypted',
   status: 'status',
   failedAttempts: 'failedAttempts',
   expiresAt: 'expiresAt',
@@ -166,6 +173,7 @@ export const KycVerificationScalarFieldEnum = {
   userId: 'userId',
   panHash: 'panHash',
   panLast4: 'panLast4',
+  panEncrypted: 'panEncrypted',
   status: 'status',
   attempts: 'attempts',
   providerRef: 'providerRef',
@@ -183,6 +191,7 @@ export const CreditReportScalarFieldEnum = {
   bureau: 'bureau',
   score: 'score',
   reportJson: 'reportJson',
+  rawResponse: 'rawResponse',
   status: 'status',
   providerRef: 'providerRef',
   idempotencyKey: 'idempotencyKey',
@@ -208,6 +217,21 @@ export const ApiTransactionScalarFieldEnum = {
 } as const
 
 export type ApiTransactionScalarFieldEnum = (typeof ApiTransactionScalarFieldEnum)[keyof typeof ApiTransactionScalarFieldEnum]
+
+
+export const SupportRequestScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  topic: 'topic',
+  accountLabel: 'accountLabel',
+  question: 'question',
+  preferredTime: 'preferredTime',
+  preferredLanguage: 'preferredLanguage',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type SupportRequestScalarFieldEnum = (typeof SupportRequestScalarFieldEnum)[keyof typeof SupportRequestScalarFieldEnum]
 
 
 export const SortOrder = {

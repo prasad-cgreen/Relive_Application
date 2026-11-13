@@ -455,10 +455,6 @@ export type EnumConsentStatusFieldUpdateOperationsInput = {
   set?: $Enums.ConsentStatus
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type UserConsentCreateWithoutUserInput = {
   id?: string
   purpose: $Enums.ConsentPurpose

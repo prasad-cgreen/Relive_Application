@@ -64,6 +64,7 @@ export type CreditReportCountAggregateOutputType = {
   bureau: number
   score: number
   reportJson: number
+  rawResponse: number
   status: number
   providerRef: number
   idempotencyKey: number
@@ -111,6 +112,7 @@ export type CreditReportCountAggregateInputType = {
   bureau?: true
   score?: true
   reportJson?: true
+  rawResponse?: true
   status?: true
   providerRef?: true
   idempotencyKey?: true
@@ -211,6 +213,7 @@ export type CreditReportGroupByOutputType = {
   bureau: string
   score: number
   reportJson: runtime.JsonValue
+  rawResponse: runtime.JsonValue | null
   status: $Enums.ReportStatus
   providerRef: string | null
   idempotencyKey: string
@@ -247,6 +250,7 @@ export type CreditReportWhereInput = {
   bureau?: Prisma.StringFilter<"CreditReport"> | string
   score?: Prisma.IntFilter<"CreditReport"> | number
   reportJson?: Prisma.JsonFilter<"CreditReport">
+  rawResponse?: Prisma.JsonNullableFilter<"CreditReport">
   status?: Prisma.EnumReportStatusFilter<"CreditReport"> | $Enums.ReportStatus
   providerRef?: Prisma.StringNullableFilter<"CreditReport"> | string | null
   idempotencyKey?: Prisma.UuidFilter<"CreditReport"> | string
@@ -261,6 +265,7 @@ export type CreditReportOrderByWithRelationInput = {
   bureau?: Prisma.SortOrder
   score?: Prisma.SortOrder
   reportJson?: Prisma.SortOrder
+  rawResponse?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   providerRef?: Prisma.SortOrderInput | Prisma.SortOrder
   idempotencyKey?: Prisma.SortOrder
@@ -279,6 +284,7 @@ export type CreditReportWhereUniqueInput = Prisma.AtLeast<{
   bureau?: Prisma.StringFilter<"CreditReport"> | string
   score?: Prisma.IntFilter<"CreditReport"> | number
   reportJson?: Prisma.JsonFilter<"CreditReport">
+  rawResponse?: Prisma.JsonNullableFilter<"CreditReport">
   status?: Prisma.EnumReportStatusFilter<"CreditReport"> | $Enums.ReportStatus
   providerRef?: Prisma.StringNullableFilter<"CreditReport"> | string | null
   retrievedAt?: Prisma.DateTimeFilter<"CreditReport"> | Date | string
@@ -292,6 +298,7 @@ export type CreditReportOrderByWithAggregationInput = {
   bureau?: Prisma.SortOrder
   score?: Prisma.SortOrder
   reportJson?: Prisma.SortOrder
+  rawResponse?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   providerRef?: Prisma.SortOrderInput | Prisma.SortOrder
   idempotencyKey?: Prisma.SortOrder
@@ -313,6 +320,7 @@ export type CreditReportScalarWhereWithAggregatesInput = {
   bureau?: Prisma.StringWithAggregatesFilter<"CreditReport"> | string
   score?: Prisma.IntWithAggregatesFilter<"CreditReport"> | number
   reportJson?: Prisma.JsonWithAggregatesFilter<"CreditReport">
+  rawResponse?: Prisma.JsonNullableWithAggregatesFilter<"CreditReport">
   status?: Prisma.EnumReportStatusWithAggregatesFilter<"CreditReport"> | $Enums.ReportStatus
   providerRef?: Prisma.StringNullableWithAggregatesFilter<"CreditReport"> | string | null
   idempotencyKey?: Prisma.UuidWithAggregatesFilter<"CreditReport"> | string
@@ -325,6 +333,7 @@ export type CreditReportCreateInput = {
   bureau?: string
   score: number
   reportJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: $Enums.ReportStatus
   providerRef?: string | null
   idempotencyKey: string
@@ -339,6 +348,7 @@ export type CreditReportUncheckedCreateInput = {
   bureau?: string
   score: number
   reportJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: $Enums.ReportStatus
   providerRef?: string | null
   idempotencyKey: string
@@ -351,6 +361,7 @@ export type CreditReportUpdateInput = {
   bureau?: Prisma.StringFieldUpdateOperationsInput | string
   score?: Prisma.IntFieldUpdateOperationsInput | number
   reportJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -365,6 +376,7 @@ export type CreditReportUncheckedUpdateInput = {
   bureau?: Prisma.StringFieldUpdateOperationsInput | string
   score?: Prisma.IntFieldUpdateOperationsInput | number
   reportJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -378,6 +390,7 @@ export type CreditReportCreateManyInput = {
   bureau?: string
   score: number
   reportJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: $Enums.ReportStatus
   providerRef?: string | null
   idempotencyKey: string
@@ -390,6 +403,7 @@ export type CreditReportUpdateManyMutationInput = {
   bureau?: Prisma.StringFieldUpdateOperationsInput | string
   score?: Prisma.IntFieldUpdateOperationsInput | number
   reportJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -403,6 +417,7 @@ export type CreditReportUncheckedUpdateManyInput = {
   bureau?: Prisma.StringFieldUpdateOperationsInput | string
   score?: Prisma.IntFieldUpdateOperationsInput | number
   reportJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -426,6 +441,7 @@ export type CreditReportCountOrderByAggregateInput = {
   bureau?: Prisma.SortOrder
   score?: Prisma.SortOrder
   reportJson?: Prisma.SortOrder
+  rawResponse?: Prisma.SortOrder
   status?: Prisma.SortOrder
   providerRef?: Prisma.SortOrder
   idempotencyKey?: Prisma.SortOrder
@@ -516,6 +532,7 @@ export type CreditReportCreateWithoutUserInput = {
   bureau?: string
   score: number
   reportJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: $Enums.ReportStatus
   providerRef?: string | null
   idempotencyKey: string
@@ -528,6 +545,7 @@ export type CreditReportUncheckedCreateWithoutUserInput = {
   bureau?: string
   score: number
   reportJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: $Enums.ReportStatus
   providerRef?: string | null
   idempotencyKey: string
@@ -570,6 +588,7 @@ export type CreditReportScalarWhereInput = {
   bureau?: Prisma.StringFilter<"CreditReport"> | string
   score?: Prisma.IntFilter<"CreditReport"> | number
   reportJson?: Prisma.JsonFilter<"CreditReport">
+  rawResponse?: Prisma.JsonNullableFilter<"CreditReport">
   status?: Prisma.EnumReportStatusFilter<"CreditReport"> | $Enums.ReportStatus
   providerRef?: Prisma.StringNullableFilter<"CreditReport"> | string | null
   idempotencyKey?: Prisma.UuidFilter<"CreditReport"> | string
@@ -582,6 +601,7 @@ export type CreditReportCreateManyUserInput = {
   bureau?: string
   score: number
   reportJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: $Enums.ReportStatus
   providerRef?: string | null
   idempotencyKey: string
@@ -594,6 +614,7 @@ export type CreditReportUpdateWithoutUserInput = {
   bureau?: Prisma.StringFieldUpdateOperationsInput | string
   score?: Prisma.IntFieldUpdateOperationsInput | number
   reportJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -606,6 +627,7 @@ export type CreditReportUncheckedUpdateWithoutUserInput = {
   bureau?: Prisma.StringFieldUpdateOperationsInput | string
   score?: Prisma.IntFieldUpdateOperationsInput | number
   reportJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -618,6 +640,7 @@ export type CreditReportUncheckedUpdateManyWithoutUserInput = {
   bureau?: Prisma.StringFieldUpdateOperationsInput | string
   score?: Prisma.IntFieldUpdateOperationsInput | number
   reportJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
   providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -633,6 +656,7 @@ export type CreditReportSelect<ExtArgs extends runtime.Types.Extensions.Internal
   bureau?: boolean
   score?: boolean
   reportJson?: boolean
+  rawResponse?: boolean
   status?: boolean
   providerRef?: boolean
   idempotencyKey?: boolean
@@ -647,6 +671,7 @@ export type CreditReportSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   bureau?: boolean
   score?: boolean
   reportJson?: boolean
+  rawResponse?: boolean
   status?: boolean
   providerRef?: boolean
   idempotencyKey?: boolean
@@ -661,6 +686,7 @@ export type CreditReportSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   bureau?: boolean
   score?: boolean
   reportJson?: boolean
+  rawResponse?: boolean
   status?: boolean
   providerRef?: boolean
   idempotencyKey?: boolean
@@ -675,6 +701,7 @@ export type CreditReportSelectScalar = {
   bureau?: boolean
   score?: boolean
   reportJson?: boolean
+  rawResponse?: boolean
   status?: boolean
   providerRef?: boolean
   idempotencyKey?: boolean
@@ -682,7 +709,7 @@ export type CreditReportSelectScalar = {
   expiresAt?: boolean
 }
 
-export type CreditReportOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "bureau" | "score" | "reportJson" | "status" | "providerRef" | "idempotencyKey" | "retrievedAt" | "expiresAt", ExtArgs["result"]["creditReport"]>
+export type CreditReportOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "bureau" | "score" | "reportJson" | "rawResponse" | "status" | "providerRef" | "idempotencyKey" | "retrievedAt" | "expiresAt", ExtArgs["result"]["creditReport"]>
 export type CreditReportInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -704,6 +731,7 @@ export type $CreditReportPayload<ExtArgs extends runtime.Types.Extensions.Intern
     bureau: string
     score: number
     reportJson: runtime.JsonValue
+    rawResponse: runtime.JsonValue | null
     status: $Enums.ReportStatus
     providerRef: string | null
     idempotencyKey: string
@@ -1138,6 +1166,7 @@ export interface CreditReportFieldRefs {
   readonly bureau: Prisma.FieldRef<"CreditReport", 'String'>
   readonly score: Prisma.FieldRef<"CreditReport", 'Int'>
   readonly reportJson: Prisma.FieldRef<"CreditReport", 'Json'>
+  readonly rawResponse: Prisma.FieldRef<"CreditReport", 'Json'>
   readonly status: Prisma.FieldRef<"CreditReport", 'ReportStatus'>
   readonly providerRef: Prisma.FieldRef<"CreditReport", 'String'>
   readonly idempotencyKey: Prisma.FieldRef<"CreditReport", 'String'>
