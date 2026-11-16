@@ -65,13 +65,15 @@ const OTP_MAX_SENDS = 5; // per OTP_SEND_WINDOW_MS per user
 const OTP_SEND_WINDOW_MS = 30 * 60_000;
 const LOCKOUT_MS = 15 * 60_000;
 const SESSION_TTL_MS = 8 * 60 * 60_000;
+// Customer care number shown in user-facing errors. Keep in sync with frontend/lib/contact.ts.
+const SUPPORT_PHONE = "+91 82912 11398";
 // Same options when setting and clearing, or the browser keeps the old cookie.
 const sessionCookie = () => ({ httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax" as const, path: "/" });
 
 const secondsUntil = (date: Date) => Math.max(1, Math.ceil((date.getTime() - Date.now()) / 1000));
 
 function assertNotLocked(user: { status: string; blockedUntil: Date | null }) {
-  if (user.status === "BLOCKED") throw new HttpError(403, "ACCOUNT_BLOCKED", "This account is blocked. Please contact support");
+  if (user.status === "BLOCKED") throw new HttpError(403, "ACCOUNT_BLOCKED", `This account is blocked. Please contact customer care on ${SUPPORT_PHONE}`);
   if (user.blockedUntil && user.blockedUntil > new Date()) {
     throw new HttpError(429, "OTP_ATTEMPTS_EXCEEDED", "Too many attempts. Please try again later", true, { retryAfterSeconds: secondsUntil(user.blockedUntil) });
   }
@@ -295,7 +297,7 @@ app.post("/api/v1/kyc/verify", requireAuth, sensitiveLimiter, async (req, res) =
     production.kycVerification.count({ where: { userId, createdAt: { gt: new Date(Date.now() - DAY_MS) } } }),
   ]);
   if (linkedElsewhere) {
-    throw new HttpError(409, "PAN_ALREADY_LINKED", "This PAN is already registered with another mobile number. Log in with that number, or contact support");
+    throw new HttpError(409, "PAN_ALREADY_LINKED", `This PAN is already registered with another mobile number. Log in with that number, or call customer care on ${SUPPORT_PHONE}`);
   }
   if (recentAttempts >= PAN_ATTEMPTS_PER_DAY) {
     throw new HttpError(429, "PAN_ATTEMPT_LIMIT", "Too many PAN attempts today. Continue by entering your name as on PAN", false);

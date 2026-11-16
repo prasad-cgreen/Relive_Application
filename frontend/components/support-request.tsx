@@ -3,6 +3,7 @@
 import { ArrowRight, CheckCircle2, Phone } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { api, apiMessage } from "../lib/api";
+import { SUPPORT_EMAIL, SUPPORT_PHONE, SUPPORT_TEL } from "../lib/contact";
 import type { AccountItem } from "./accounts-table";
 
 // Same values the backend accepts (supportRequestSchema in @relive/shared).
@@ -78,6 +79,11 @@ export function SupportRequestView({ accounts, account, mobileLast4, onBack }: P
           {time !== "No preference" ? `, preferably in the ${time.toLowerCase()}` : ""}, in {language === "Other" ? "a language that suits you" : language}.
         </p>
         <p className="mt-3 text-xs text-[#63776b] dark:text-[#8ba295]">Reference: {sentId.slice(0, 8).toUpperCase()}</p>
+        <p className="mt-2 text-xs text-[#63776b] dark:text-[#8ba295]">
+          Need us sooner? Call{" "}
+          <a href={`tel:${SUPPORT_TEL}`} className="whitespace-nowrap font-semibold text-[#216b49] hover:underline dark:text-emerald-400">{SUPPORT_PHONE}</a>
+          {" "}and quote this reference.
+        </p>
         <button
           type="button"
           onClick={onBack}
@@ -185,8 +191,12 @@ export function SupportRequestView({ accounts, account, mobileLast4, onBack }: P
           ))}
         </ol>
         <p className="mt-5 text-sm text-[#465a50] dark:text-[#a0b8ab]">
+          Prefer to talk now? Call customer care on{" "}
+          <a href={`tel:${SUPPORT_TEL}`} className="whitespace-nowrap font-semibold text-[#216b49] hover:underline dark:text-emerald-400">{SUPPORT_PHONE}</a>
+        </p>
+        <p className="mt-2 text-sm text-[#465a50] dark:text-[#a0b8ab]">
           Prefer email? Write to{" "}
-          <a href="mailto:relive@cgreen.in" className="font-semibold text-[#216b49] hover:underline dark:text-emerald-400">relive@cgreen.in</a>
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold text-[#216b49] hover:underline dark:text-emerald-400">{SUPPORT_EMAIL}</a>
         </p>
         <p className="mt-5 flex items-start gap-2 border-t border-[#d5e3c8] pt-4 text-xs leading-relaxed text-[#63776b] dark:border-[#1a3827] dark:text-[#8ba295]">
           <Phone className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />

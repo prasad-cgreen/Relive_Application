@@ -14,6 +14,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
+import { SUPPORT_EMAIL, SUPPORT_PHONE, SUPPORT_TEL } from "../lib/contact";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { ThemeToggle } from "../components/theme-toggle";
@@ -567,9 +568,14 @@ export default function Home() {
               <p className="mt-3 text-sm leading-relaxed text-[#5c7366] dark:text-[#8ba295]">
                 Relive helps you understand your debt and find a practical way forward.
               </p>
-              <a href="mailto:relive@cgreen.in" className="mt-2 inline-block text-sm font-medium text-[#216b49] hover:underline dark:text-emerald-400">
-                relive@cgreen.in
-              </a>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium">
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="text-[#216b49] hover:underline dark:text-emerald-400">
+                  {SUPPORT_EMAIL}
+                </a>
+                <a href={`tel:${SUPPORT_TEL}`} className="whitespace-nowrap text-[#216b49] hover:underline dark:text-emerald-400">
+                  {SUPPORT_PHONE}
+                </a>
+              </div>
             </div>
             <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-2.5 text-sm text-[#4f6358] sm:flex sm:gap-8 dark:text-[#a0b8ab]">
               <a href="#how-it-works" className="hover:text-[#216b49] dark:hover:text-emerald-400">How it works</a>
