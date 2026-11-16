@@ -24,7 +24,6 @@ type Action = "details" | "retry" | "relogin" | "altMobile" | "noHistory";
 const ACTIONS: Record<string, Action[]> = {
   PAN_NOT_VERIFIED: ["details", "retry"],
   PAN_UNAVAILABLE: ["details"],
-  PAN_SERVICE_UNAVAILABLE: ["details"], // PAN API key/service not active: name entry is the way forward
   PAN_ATTEMPT_LIMIT: ["details"],
   PAN_ALREADY_LINKED: ["retry", "relogin"], // retry = maybe a typo in the PAN
   PAN_MOBILE_MISMATCH: ["details", "relogin"], // PAN belongs to another number: log in with it, or enter details

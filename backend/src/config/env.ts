@@ -29,9 +29,6 @@ const schema = z.object({
   INDICONNECT_AUTHORIZATION: z.string().min(1).optional(),
   INDICONNECT_APP_ID: z.string().min(1).default("verification_v1"),
   INDICONNECT_PROVIDER_CODE: z.string().min(1).optional(),
-  // Optional PAN-specific keys (IndiConnect may issue a separate service key per API). Default: the keys above.
-  INDICONNECT_PAN_SERVICE_KEY: z.string().min(1).optional(),
-  INDICONNECT_PAN_AUTHORIZATION: z.string().min(1).optional(),
   INDICONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
   // Bureau pulls are slow (report generation) and billable, so they get their own, longer timeout.
   INDICONNECT_BUREAU_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),

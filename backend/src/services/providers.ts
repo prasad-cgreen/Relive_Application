@@ -75,25 +75,14 @@ function simulate(scenario: MockScenario, attempt: number) {
 
 // ---- IndiConnect (https://developer.indiconnect.in) ----
 
-/** IndiConnect issues service keys per product: PAN can use its own key; bureau/OTP use the default one. */
-type Credentials = { serviceKey: string; authorization: string; extraHeaders: boolean };
-const defaultCredentials = (): Credentials => ({ serviceKey: env.INDICONNECT_SERVICE_KEY!, authorization: env.INDICONNECT_AUTHORIZATION!, extraHeaders: true });
-const panCredentials = (): Credentials => ({
-  serviceKey: env.INDICONNECT_PAN_SERVICE_KEY ?? env.INDICONNECT_SERVICE_KEY!,
-  authorization: env.INDICONNECT_PAN_AUTHORIZATION ?? env.INDICONNECT_AUTHORIZATION!,
-  extraHeaders: false, // the PAN API documents only service-key + Authorization
-});
-
-async function indiconnect(path: string, body: unknown, timeoutMs = env.INDICONNECT_TIMEOUT_MS, credentials = defaultCredentials()): Promise<any> {
+async function indiconnect(path: string, body: unknown, timeoutMs = env.INDICONNECT_TIMEOUT_MS): Promise<any> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "service-key": credentials.serviceKey,
-    Authorization: credentials.authorization,
+    "service-key": env.INDICONNECT_SERVICE_KEY!,
+    Authorization: env.INDICONNECT_AUTHORIZATION!,
+    myAppId: env.INDICONNECT_APP_ID,
   };
-  if (credentials.extraHeaders) {
-    headers.myAppId = env.INDICONNECT_APP_ID;
-    if (env.INDICONNECT_PROVIDER_CODE) headers.providercode = env.INDICONNECT_PROVIDER_CODE;
-  }
+  if (env.INDICONNECT_PROVIDER_CODE) headers.providercode = env.INDICONNECT_PROVIDER_CODE;
   let response: Response;
   try {
     response = await fetch(new URL(path, env.INDICONNECT_BASE_URL), {
@@ -152,6 +141,7 @@ export function panToProfile(data: any): Omit<PanProfile, "providerRef"> {
 }
 
 const NO_RECORD = { code: "NO_CREDIT_RECORD", message: "No credit record was found for these details" };
+const PAN_NOT_VERIFIED = { code: "PAN_NOT_VERIFIED", message: "We could not verify this PAN. Check it and try again, or continue without PAN" };
 
 const indiconnectApi = {
   sendOtp: async (mobile: string) => {
@@ -172,27 +162,21 @@ const indiconnectApi = {
       { code: "INVALID_OTP", message: "Invalid OTP" },
     );
   },
+  // Verification Service V4 "PAN Premium" (developer.indiconnect.in/44970429e0): same GraphQL endpoint and keys as the bureaus.
   panDetails: async (pan: string): Promise<PanProfile> => {
-    let body;
-    try {
-      body = await indiconnect("/idverification/pan-detailed", { id_number: pan, document_type: "PAN Comprehensive" }, env.INDICONNECT_TIMEOUT_MS, panCredentials());
-    } catch (error) {
-      // 400/404/422 for a PAN lookup means the PAN wasn't found, not an outage (401/403 = our credentials).
-      if (error instanceof ProviderError && error.code === "PROVIDER_REQUEST_REJECTED") {
-        throw new ProviderError("BUSINESS_FAILURE", "PAN_NOT_VERIFIED", "We could not verify this PAN. Check it and try again, or continue without PAN", false);
-      }
-      // "Service key not valid / service inactive": a configuration problem, so retrying won't help the user.
-      if (error instanceof ProviderError && error.code === "PROVIDER_AUTH_FAILED") {
-        throw new ProviderError("TECHNICAL_FAILURE", "PAN_SERVICE_UNAVAILABLE", "PAN verification isn’t available right now. Please enter your name exactly as on your PAN", false);
-      }
-      throw error;
-    }
-    if (body?.status !== "SUCCESS" || !body?.data) {
-      throw new ProviderError("BUSINESS_FAILURE", "PAN_NOT_VERIFIED", "We could not verify this PAN. Check it and try again, or continue without PAN", false);
+    const result = await verifyMutation(
+      `mutation VerifyPanPremium($input: VerifyInput!) { verify(input: $input) { ok message status
+        result { ... on BTPanPremiumResult { txn_id full_name full_name_split dob email phone_number } }
+        error { status message } } }`,
+      PAN_NOT_VERIFIED,
+      { input: { documentType: "verify-pan-premium", pan } },
+    );
+    if (!result.full_name && !result.full_name_split?.length) {
+      throw new ProviderError("BUSINESS_FAILURE", PAN_NOT_VERIFIED.code, PAN_NOT_VERIFIED.message, false);
     }
     // Mobile on the PAN record (often masked): only the last 4 digits are kept, for the audit trail.
-    const phoneDigits = String(body.data.phone_number ?? "").replace(/\D/g, "");
-    return { ...panToProfile(body.data), providerRef: String(body.data.client_id ?? `pan_${randomUUID()}`), phoneLast4: phoneDigits.length >= 4 ? phoneDigits.slice(-4) : null };
+    const phoneDigits = String(result.phone_number ?? "").replace(/\D/g, "");
+    return { ...panToProfile(result), providerRef: String(result.txn_id ?? `pan_${randomUUID()}`), phoneLast4: phoneDigits.length >= 4 ? phoneDigits.slice(-4) : null };
   },
   bureau: async (bureau: Bureau, input: BureauInput): Promise<BureauPull> => {
     const query = bureau === "EXPERIAN"
