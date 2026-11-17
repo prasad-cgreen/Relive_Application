@@ -3,7 +3,37 @@ import { describe, expect, it } from "vitest";
 // Pure parsing helpers: no database needed, so give env.ts placeholder URLs before importing.
 process.env.DATABASE_URL ??= "postgresql://test@localhost/test";
 process.env.DATABASE_URL_UNPOOLED ??= "postgresql://test@localhost/test";
-const { normalizeDob, panToProfile, otpSmsText, smartpingResult } = await import("./providers.js");
+const { normalizeDob, panToProfile, otpSmsText, smartpingResult, normalizePanPhone, panPhoneMatches, maskPanPhone } = await import("./providers.js");
+
+describe("PAN record mobile vs the OTP-verified mobile", () => {
+  const login = "9100953181";
+  const check = (raw: string) => panPhoneMatches(normalizePanPhone(raw)!, login);
+
+  it("matches IndiConnect's masked number on the digits it shows", () => {
+    expect(check("91XXXXXX81")).toBe(true); // the live format: first 2 + last 2 digits
+    expect(check("92XXXXXX81")).toBe(false);
+    expect(check("91XXXXXX82")).toBe(false);
+  });
+
+  it("handles full numbers, +91, spaces and other mask styles", () => {
+    expect(check("9100953181")).toBe(true);
+    expect(check("9100953182")).toBe(false);
+    expect(check("+91 91XXXXXX81")).toBe(true);
+    expect(check("******3181")).toBe(true);
+    expect(check("XXXXXX3180")).toBe(false);
+  });
+
+  it("treats a missing or fully masked number as nothing to compare", () => {
+    expect(normalizePanPhone(null)).toBeNull();
+    expect(normalizePanPhone("")).toBeNull();
+    expect(normalizePanPhone("XXXXXXXXXX")).toBeNull();
+  });
+
+  it("never logs more than the first 2 and last 2 digits", () => {
+    expect(maskPanPhone("9100953181")).toBe("91XXXXXX81");
+    expect(maskPanPhone("91XXXXXX81")).toBe("91XXXXXX81");
+  });
+});
 
 describe("Smartping SMS", () => {
   it("sends the DLT-approved template text exactly", () => {
