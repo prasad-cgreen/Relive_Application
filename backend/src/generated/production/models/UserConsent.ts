@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model UserConsent
- * 
+ * Kept per purpose with status/withdrawn_at so a consent can be withdrawn later (DPDP).
  */
 export type UserConsentModel = runtime.Types.Result.DefaultSelection<Prisma.$UserConsentPayload>
 

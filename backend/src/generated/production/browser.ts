@@ -18,11 +18,6 @@ export { Prisma }
 export * as $Enums from './enums.js'
 export * from './enums.js';
 /**
- * Model AppStatus
- * 
- */
-export type AppStatus = Prisma.AppStatusModel
-/**
  * Model User
  * 
  */
@@ -34,12 +29,12 @@ export type User = Prisma.UserModel
 export type UserProfile = Prisma.UserProfileModel
 /**
  * Model UserConsent
- * 
+ * Kept per purpose with status/withdrawn_at so a consent can be withdrawn later (DPDP).
  */
 export type UserConsent = Prisma.UserConsentModel
 /**
  * Model OtpTransaction
- * 
+ * One OTP sent by SMS. Wrong attempts are counted per user (users.failed_otp_window), not per OTP.
  */
 export type OtpTransaction = Prisma.OtpTransactionModel
 /**
@@ -49,7 +44,7 @@ export type OtpTransaction = Prisma.OtpTransactionModel
 export type UserSession = Prisma.UserSessionModel
 /**
  * Model KycVerification
- * 
+ * One row per PAN lookup (attempts per day = rows per day).
  */
 export type KycVerification = Prisma.KycVerificationModel
 /**
@@ -59,7 +54,7 @@ export type KycVerification = Prisma.KycVerificationModel
 export type CreditReport = Prisma.CreditReportModel
 /**
  * Model ApiTransaction
- * 
+ * Every external provider call (OTP, PAN, bureau): the billing and outage record.
  */
 export type ApiTransaction = Prisma.ApiTransactionModel
 /**

@@ -31,8 +31,8 @@ export * from "./enums.js"
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more AppStatuses
- * const appStatuses = await prisma.appStatus.findMany()
+ * // Fetch zero or more Users
+ * const users = await prisma.user.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -41,11 +41,6 @@ export const PrismaClient = $Class.getPrismaClientClass()
 export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts extends Prisma.PrismaClientOptions["omit"] = Prisma.PrismaClientOptions["omit"], ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = $Class.PrismaClient<LogOpts, OmitOpts, ExtArgs>
 export { Prisma }
 
-/**
- * Model AppStatus
- * 
- */
-export type AppStatus = Prisma.AppStatusModel
 /**
  * Model User
  * 
@@ -58,12 +53,12 @@ export type User = Prisma.UserModel
 export type UserProfile = Prisma.UserProfileModel
 /**
  * Model UserConsent
- * 
+ * Kept per purpose with status/withdrawn_at so a consent can be withdrawn later (DPDP).
  */
 export type UserConsent = Prisma.UserConsentModel
 /**
  * Model OtpTransaction
- * 
+ * One OTP sent by SMS. Wrong attempts are counted per user (users.failed_otp_window), not per OTP.
  */
 export type OtpTransaction = Prisma.OtpTransactionModel
 /**
@@ -73,7 +68,7 @@ export type OtpTransaction = Prisma.OtpTransactionModel
 export type UserSession = Prisma.UserSessionModel
 /**
  * Model KycVerification
- * 
+ * One row per PAN lookup (attempts per day = rows per day).
  */
 export type KycVerification = Prisma.KycVerificationModel
 /**
@@ -83,7 +78,7 @@ export type KycVerification = Prisma.KycVerificationModel
 export type CreditReport = Prisma.CreditReportModel
 /**
  * Model ApiTransaction
- * 
+ * Every external provider call (OTP, PAN, bureau): the billing and outage record.
  */
 export type ApiTransaction = Prisma.ApiTransactionModel
 /**

@@ -75,7 +75,7 @@ export async function getCreditOverview(userId: string) {
   }
 
   const config = scoreConfig(latestReport.bureau);
-  const expired = latestReport.expiresAt <= new Date() || latestReport.status === "EXPIRED";
+  const expired = latestReport.expiresAt <= new Date();
   const category = config ? categoryFor(latestReport.score, config.bands) : null;
 
   return {

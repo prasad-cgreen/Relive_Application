@@ -112,7 +112,7 @@ async function issueOtp(req: Request, user: { id: string }, mobile: string, purp
     // A new OTP supersedes any earlier one still pending.
     production.otpTransaction.updateMany({ where: { userId: user.id, status: "PENDING" }, data: { status: "EXPIRED" } }),
     production.otpTransaction.create({ data: {
-      id: transactionId, userId: user.id, channel: "SMS", status: "PENDING", purpose,
+      id: transactionId, userId: user.id, status: "PENDING", purpose,
       targetMobileEncrypted: purpose === "BUREAU_MOBILE" ? encrypt(mobile) : null,
       providerRef: sent.providerRef, otpHash: sent.providerRef ? null : hashOtp(transactionId, env.OTP_MOCK_CODE),
       expiresAt: new Date(now + OTP_TTL_MS), resendAfter: new Date(now + OTP_RESEND_AFTER_MS),
@@ -141,7 +141,7 @@ async function consumeOtp(req: Request, data: { transactionId: string; otp: stri
     throw new HttpError(400, "OTP_TRANSACTION_NOT_FOUND", "OTP request was not found. Request a new OTP");
   }
   assertNotLocked(transaction.user);
-  if (transaction.status === "USED" || transaction.status === "VERIFIED") throw new HttpError(409, "OTP_ALREADY_USED", "This OTP has already been used. Request a new OTP");
+  if (transaction.status === "USED") throw new HttpError(409, "OTP_ALREADY_USED", "This OTP has already been used. Request a new OTP");
   if (transaction.status === "BLOCKED") throw new HttpError(429, "OTP_ATTEMPTS_EXCEEDED", "Too many attempts. Please try again later");
   if (transaction.status === "EXPIRED" || transaction.expiresAt <= new Date()) {
     if (transaction.status === "PENDING") await production.otpTransaction.update({ where: { id: transaction.id }, data: { status: "EXPIRED" } });
@@ -164,10 +164,7 @@ async function consumeOtp(req: Request, data: { transactionId: string; otp: stri
 
   if (!valid) {
     // ponytail: failedOtpWindow only resets on success or lockout, add a last-failure timestamp if stale failures should expire
-    const [, user] = await production.$transaction([
-      production.otpTransaction.update({ where: { id: transaction.id }, data: { failedAttempts: { increment: 1 } } }),
-      production.user.update({ where: { id: transaction.userId }, data: { failedOtpWindow: { increment: 1 } } }),
-    ]);
+    const user = await production.user.update({ where: { id: transaction.userId }, data: { failedOtpWindow: { increment: 1 } } });
     const locked = user.failedOtpWindow >= OTP_MAX_FAILED_ATTEMPTS;
     if (locked) {
       await production.$transaction([

@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model ApiTransaction
- * 
+ * Every external provider call (OTP, PAN, bureau): the billing and outage record.
  */
 export type ApiTransactionModel = runtime.Types.Result.DefaultSelection<Prisma.$ApiTransactionPayload>
 
@@ -72,7 +72,6 @@ export type ApiTransactionCountAggregateOutputType = {
   idempotencyKey: number
   errorCode: number
   durationMs: number
-  metadata: number
   createdAt: number
   _all: number
 }
@@ -124,7 +123,6 @@ export type ApiTransactionCountAggregateInputType = {
   idempotencyKey?: true
   errorCode?: true
   durationMs?: true
-  metadata?: true
   createdAt?: true
   _all?: true
 }
@@ -225,7 +223,6 @@ export type ApiTransactionGroupByOutputType = {
   idempotencyKey: string | null
   errorCode: string | null
   durationMs: number
-  metadata: runtime.JsonValue | null
   createdAt: Date
   _count: ApiTransactionCountAggregateOutputType | null
   _avg: ApiTransactionAvgAggregateOutputType | null
@@ -262,7 +259,6 @@ export type ApiTransactionWhereInput = {
   idempotencyKey?: Prisma.StringNullableFilter<"ApiTransaction"> | string | null
   errorCode?: Prisma.StringNullableFilter<"ApiTransaction"> | string | null
   durationMs?: Prisma.IntFilter<"ApiTransaction"> | number
-  metadata?: Prisma.JsonNullableFilter<"ApiTransaction">
   createdAt?: Prisma.DateTimeFilter<"ApiTransaction"> | Date | string
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }
@@ -277,7 +273,6 @@ export type ApiTransactionOrderByWithRelationInput = {
   idempotencyKey?: Prisma.SortOrderInput | Prisma.SortOrder
   errorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   durationMs?: Prisma.SortOrder
-  metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
 }
@@ -295,7 +290,6 @@ export type ApiTransactionWhereUniqueInput = Prisma.AtLeast<{
   idempotencyKey?: Prisma.StringNullableFilter<"ApiTransaction"> | string | null
   errorCode?: Prisma.StringNullableFilter<"ApiTransaction"> | string | null
   durationMs?: Prisma.IntFilter<"ApiTransaction"> | number
-  metadata?: Prisma.JsonNullableFilter<"ApiTransaction">
   createdAt?: Prisma.DateTimeFilter<"ApiTransaction"> | Date | string
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }, "id">
@@ -310,7 +304,6 @@ export type ApiTransactionOrderByWithAggregationInput = {
   idempotencyKey?: Prisma.SortOrderInput | Prisma.SortOrder
   errorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   durationMs?: Prisma.SortOrder
-  metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ApiTransactionCountOrderByAggregateInput
   _avg?: Prisma.ApiTransactionAvgOrderByAggregateInput
@@ -332,7 +325,6 @@ export type ApiTransactionScalarWhereWithAggregatesInput = {
   idempotencyKey?: Prisma.StringNullableWithAggregatesFilter<"ApiTransaction"> | string | null
   errorCode?: Prisma.StringNullableWithAggregatesFilter<"ApiTransaction"> | string | null
   durationMs?: Prisma.IntWithAggregatesFilter<"ApiTransaction"> | number
-  metadata?: Prisma.JsonNullableWithAggregatesFilter<"ApiTransaction">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ApiTransaction"> | Date | string
 }
 
@@ -345,7 +337,6 @@ export type ApiTransactionCreateInput = {
   idempotencyKey?: string | null
   errorCode?: string | null
   durationMs: number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   user?: Prisma.UserCreateNestedOneWithoutTransactionsInput
 }
@@ -360,7 +351,6 @@ export type ApiTransactionUncheckedCreateInput = {
   idempotencyKey?: string | null
   errorCode?: string | null
   durationMs: number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
 }
 
@@ -373,7 +363,6 @@ export type ApiTransactionUpdateInput = {
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneWithoutTransactionsNestedInput
 }
@@ -388,7 +377,6 @@ export type ApiTransactionUncheckedUpdateInput = {
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -402,7 +390,6 @@ export type ApiTransactionCreateManyInput = {
   idempotencyKey?: string | null
   errorCode?: string | null
   durationMs: number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
 }
 
@@ -415,7 +402,6 @@ export type ApiTransactionUpdateManyMutationInput = {
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -429,7 +415,6 @@ export type ApiTransactionUncheckedUpdateManyInput = {
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -453,7 +438,6 @@ export type ApiTransactionCountOrderByAggregateInput = {
   idempotencyKey?: Prisma.SortOrder
   errorCode?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
-  metadata?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -548,7 +532,6 @@ export type ApiTransactionCreateWithoutUserInput = {
   idempotencyKey?: string | null
   errorCode?: string | null
   durationMs: number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
 }
 
@@ -561,7 +544,6 @@ export type ApiTransactionUncheckedCreateWithoutUserInput = {
   idempotencyKey?: string | null
   errorCode?: string | null
   durationMs: number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
 }
 
@@ -604,7 +586,6 @@ export type ApiTransactionScalarWhereInput = {
   idempotencyKey?: Prisma.StringNullableFilter<"ApiTransaction"> | string | null
   errorCode?: Prisma.StringNullableFilter<"ApiTransaction"> | string | null
   durationMs?: Prisma.IntFilter<"ApiTransaction"> | number
-  metadata?: Prisma.JsonNullableFilter<"ApiTransaction">
   createdAt?: Prisma.DateTimeFilter<"ApiTransaction"> | Date | string
 }
 
@@ -617,7 +598,6 @@ export type ApiTransactionCreateManyUserInput = {
   idempotencyKey?: string | null
   errorCode?: string | null
   durationMs: number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
 }
 
@@ -630,7 +610,6 @@ export type ApiTransactionUpdateWithoutUserInput = {
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -643,7 +622,6 @@ export type ApiTransactionUncheckedUpdateWithoutUserInput = {
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -656,7 +634,6 @@ export type ApiTransactionUncheckedUpdateManyWithoutUserInput = {
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -672,7 +649,6 @@ export type ApiTransactionSelect<ExtArgs extends runtime.Types.Extensions.Intern
   idempotencyKey?: boolean
   errorCode?: boolean
   durationMs?: boolean
-  metadata?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.ApiTransaction$userArgs<ExtArgs>
 }, ExtArgs["result"]["apiTransaction"]>
@@ -687,7 +663,6 @@ export type ApiTransactionSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   idempotencyKey?: boolean
   errorCode?: boolean
   durationMs?: boolean
-  metadata?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.ApiTransaction$userArgs<ExtArgs>
 }, ExtArgs["result"]["apiTransaction"]>
@@ -702,7 +677,6 @@ export type ApiTransactionSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   idempotencyKey?: boolean
   errorCode?: boolean
   durationMs?: boolean
-  metadata?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.ApiTransaction$userArgs<ExtArgs>
 }, ExtArgs["result"]["apiTransaction"]>
@@ -717,11 +691,10 @@ export type ApiTransactionSelectScalar = {
   idempotencyKey?: boolean
   errorCode?: boolean
   durationMs?: boolean
-  metadata?: boolean
   createdAt?: boolean
 }
 
-export type ApiTransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "provider" | "operation" | "status" | "attempt" | "idempotencyKey" | "errorCode" | "durationMs" | "metadata" | "createdAt", ExtArgs["result"]["apiTransaction"]>
+export type ApiTransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "provider" | "operation" | "status" | "attempt" | "idempotencyKey" | "errorCode" | "durationMs" | "createdAt", ExtArgs["result"]["apiTransaction"]>
 export type ApiTransactionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.ApiTransaction$userArgs<ExtArgs>
 }
@@ -747,7 +720,6 @@ export type $ApiTransactionPayload<ExtArgs extends runtime.Types.Extensions.Inte
     idempotencyKey: string | null
     errorCode: string | null
     durationMs: number
-    metadata: runtime.JsonValue | null
     createdAt: Date
   }, ExtArgs["result"]["apiTransaction"]>
   composites: {}
@@ -1182,7 +1154,6 @@ export interface ApiTransactionFieldRefs {
   readonly idempotencyKey: Prisma.FieldRef<"ApiTransaction", 'String'>
   readonly errorCode: Prisma.FieldRef<"ApiTransaction", 'String'>
   readonly durationMs: Prisma.FieldRef<"ApiTransaction", 'Int'>
-  readonly metadata: Prisma.FieldRef<"ApiTransaction", 'Json'>
   readonly createdAt: Prisma.FieldRef<"ApiTransaction", 'DateTime'>
 }
     

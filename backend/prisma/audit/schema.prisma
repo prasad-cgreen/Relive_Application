@@ -15,7 +15,7 @@ model AuditLog {
   status        String
   requestId     String? @map("request_id")
   metadata      Json?
-  createdAt     DateTime @default(now()) @map("created_at")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   @@index([eventType, createdAt])
   @@index([userRef, createdAt])
   @@map("audit_logs")
@@ -38,9 +38,9 @@ model OnboardingJourney {
   otpFailures    Int       @default(0) @map("otp_failures")
   panAttempts    Int       @default(0) @map("pan_attempts")
   reportAttempts Int       @default(0) @map("report_attempts")
-  startedAt      DateTime  @default(now()) @map("started_at")
-  lastActivityAt DateTime  @default(now()) @map("last_activity_at")
-  completedAt    DateTime? @map("completed_at")
+  startedAt      DateTime  @default(now()) @map("started_at") @db.Timestamptz(3)
+  lastActivityAt DateTime  @default(now()) @map("last_activity_at") @db.Timestamptz(3)
+  completedAt    DateTime? @map("completed_at") @db.Timestamptz(3)
   @@index([status, lastActivityAt])
   @@map("onboarding_journeys")
 }
@@ -52,7 +52,7 @@ model ErrorLog {
   requestId String? @map("request_id")
   userRef   String? @map("user_ref")
   metadata  Json?
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   @@index([code, createdAt])
   @@map("error_logs")
 }

@@ -51,7 +51,6 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  AppStatus: 'AppStatus',
   User: 'User',
   UserProfile: 'UserProfile',
   UserConsent: 'UserConsent',
@@ -77,16 +76,6 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
-
-
-export const AppStatusScalarFieldEnum = {
-  id: 'id',
-  schemaVersion: 'schemaVersion',
-  environment: 'environment',
-  deployedAt: 'deployedAt'
-} as const
-
-export type AppStatusScalarFieldEnum = (typeof AppStatusScalarFieldEnum)[keyof typeof AppStatusScalarFieldEnum]
 
 
 export const UserScalarFieldEnum = {
@@ -140,13 +129,11 @@ export type UserConsentScalarFieldEnum = (typeof UserConsentScalarFieldEnum)[key
 export const OtpTransactionScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  channel: 'channel',
   otpHash: 'otpHash',
   providerRef: 'providerRef',
   purpose: 'purpose',
   targetMobileEncrypted: 'targetMobileEncrypted',
   status: 'status',
-  failedAttempts: 'failedAttempts',
   expiresAt: 'expiresAt',
   resendAfter: 'resendAfter',
   verifiedAt: 'verifiedAt',
@@ -175,7 +162,6 @@ export const KycVerificationScalarFieldEnum = {
   panLast4: 'panLast4',
   panEncrypted: 'panEncrypted',
   status: 'status',
-  attempts: 'attempts',
   providerRef: 'providerRef',
   failureReason: 'failureReason',
   createdAt: 'createdAt',
@@ -212,7 +198,6 @@ export const ApiTransactionScalarFieldEnum = {
   idempotencyKey: 'idempotencyKey',
   errorCode: 'errorCode',
   durationMs: 'durationMs',
-  metadata: 'metadata',
   createdAt: 'createdAt'
 } as const
 

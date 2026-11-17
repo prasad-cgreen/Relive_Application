@@ -7,6 +7,8 @@ datasource db {
   provider = "postgresql"
 }
 
+// All timestamps are timestamptz (UTC instants), so tools like the Neon console show the zone.
+
 enum UserStatus {
   ACTIVE
   BLOCKED
@@ -28,12 +30,6 @@ enum ConsentStatus {
   WITHDRAWN
 }
 
-enum OtpChannel {
-  SMS
-  CALL
-  WHATSAPP
-}
-
 enum OtpPurpose {
   LOGIN
   BUREAU_MOBILE // OTP to an alternate number the bureaus may have on file
@@ -41,24 +37,21 @@ enum OtpPurpose {
 
 enum OtpStatus {
   PENDING
-  VERIFIED
+  USED
   EXPIRED
   BLOCKED
-  USED
 }
 
 enum KycStatus {
-  PENDING
   VERIFIED
   FAILED
   MANUAL_REVIEW
 }
 
+/// Expiry is not a status: a CURRENT report past expires_at is expired.
 enum ReportStatus {
   CURRENT
-  EXPIRED
   NO_RECORD
-  FAILED
 }
 
 enum TransactionStatus {
@@ -66,14 +59,6 @@ enum TransactionStatus {
   BUSINESS_FAILURE
   TECHNICAL_FAILURE
   TIMEOUT
-}
-
-model AppStatus {
-  id            String   @id
-  schemaVersion Int      @map("schema_version")
-  environment   String
-  deployedAt    DateTime @default(now()) @map("deployed_at") @db.Timestamptz(6)
-  @@map("app_status")
 }
 
 model User {
@@ -85,9 +70,9 @@ model User {
   bureauMobileLast4     String? @map("bureau_mobile_last4")
   status          UserStatus @default(ACTIVE)
   failedOtpWindow Int      @default(0) @map("failed_otp_window")
-  blockedUntil    DateTime? @map("blocked_until")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  blockedUntil    DateTime? @map("blocked_until") @db.Timestamptz(3)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
   profile         UserProfile?
   consents        UserConsent[]
   otps            OtpTransaction[]
@@ -108,20 +93,21 @@ model UserProfile {
   dateOfBirth DateTime @map("date_of_birth") @db.Date
   source      ProfileSource
   verified    Boolean @default(false)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
   user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@map("user_profiles")
 }
 
+/// Kept per purpose with status/withdrawn_at so a consent can be withdrawn later (DPDP).
 model UserConsent {
   id          String @id @default(uuid()) @db.Uuid
   userId      String @map("user_id") @db.Uuid
   purpose     ConsentPurpose
   version     String
   status      ConsentStatus @default(GRANTED)
-  grantedAt   DateTime @default(now()) @map("granted_at")
-  withdrawnAt DateTime? @map("withdrawn_at")
+  grantedAt   DateTime @default(now()) @map("granted_at") @db.Timestamptz(3)
+  withdrawnAt DateTime? @map("withdrawn_at") @db.Timestamptz(3)
   ipAddress   String? @map("ip_address")
   userAgent   String? @map("user_agent")
   user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -129,20 +115,19 @@ model UserConsent {
   @@map("user_consents")
 }
 
+/// One OTP sent by SMS. Wrong attempts are counted per user (users.failed_otp_window), not per OTP.
 model OtpTransaction {
   id             String @id @default(uuid()) @db.Uuid
   userId         String @map("user_id") @db.Uuid
-  channel        OtpChannel
   otpHash        String? @map("otp_hash")
   providerRef    String? @map("provider_ref")
   purpose        OtpPurpose @default(LOGIN)
   targetMobileEncrypted String? @map("target_mobile_encrypted") // set for BUREAU_MOBILE
   status         OtpStatus @default(PENDING)
-  failedAttempts Int @default(0) @map("failed_attempts")
-  expiresAt      DateTime @map("expires_at")
-  resendAfter    DateTime @map("resend_after")
-  verifiedAt     DateTime? @map("verified_at")
-  createdAt      DateTime @default(now()) @map("created_at")
+  expiresAt      DateTime @map("expires_at") @db.Timestamptz(3)
+  resendAfter    DateTime @map("resend_after") @db.Timestamptz(3)
+  verifiedAt     DateTime? @map("verified_at") @db.Timestamptz(3)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId, createdAt])
   @@map("otp_transactions")
@@ -152,14 +137,15 @@ model UserSession {
   id        String @id @default(uuid()) @db.Uuid
   userId    String @map("user_id") @db.Uuid
   tokenHash String @unique @map("token_hash")
-  expiresAt DateTime @map("expires_at")
-  revokedAt DateTime? @map("revoked_at")
-  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId, expiresAt])
   @@map("user_sessions")
 }
 
+/// One row per PAN lookup (attempts per day = rows per day).
 model KycVerification {
   id            String @id @default(uuid()) @db.Uuid
   userId        String @map("user_id") @db.Uuid
@@ -167,11 +153,10 @@ model KycVerification {
   panLast4      String @map("pan_last4")
   panEncrypted  String? @map("pan_encrypted") // AES-256-GCM, VERIFIED rows only: bureau pulls send the verified PAN
   status        KycStatus
-  attempts      Int @default(1)
   providerRef   String? @map("provider_ref")
   failureReason String? @map("failure_reason")
-  createdAt     DateTime @default(now()) @map("created_at")
-  verifiedAt    DateTime? @map("verified_at")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  verifiedAt    DateTime? @map("verified_at") @db.Timestamptz(3)
   user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId, createdAt])
   @@map("kyc_verifications")
@@ -180,20 +165,21 @@ model KycVerification {
 model CreditReport {
   id             String @id @default(uuid()) @db.Uuid
   userId         String @map("user_id") @db.Uuid
-  bureau         String @default("EXPERIAN")
+  bureau         String @default("EXPERIAN") // EXPERIAN | CRIF | NONE (no record)
   score          Int
   reportJson     Json @map("report_json")
   rawResponse    Json? @map("raw_response") // full bureau payload, never sent to the browser
   status         ReportStatus @default(CURRENT)
   providerRef    String? @map("provider_ref")
   idempotencyKey String @unique @map("idempotency_key") @db.Uuid
-  retrievedAt    DateTime @default(now()) @map("retrieved_at")
-  expiresAt      DateTime @map("expires_at")
+  retrievedAt    DateTime @default(now()) @map("retrieved_at") @db.Timestamptz(3)
+  expiresAt      DateTime @map("expires_at") @db.Timestamptz(3)
   user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId, status, expiresAt])
   @@map("credit_reports")
 }
 
+/// Every external provider call (OTP, PAN, bureau): the billing and outage record.
 model ApiTransaction {
   id             String @id @default(uuid()) @db.Uuid
   userId         String? @map("user_id") @db.Uuid
@@ -204,8 +190,7 @@ model ApiTransaction {
   idempotencyKey String? @map("idempotency_key")
   errorCode      String? @map("error_code")
   durationMs     Int @map("duration_ms")
-  metadata       Json?
-  createdAt      DateTime @default(now()) @map("created_at")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   user           User? @relation(fields: [userId], references: [id], onDelete: SetNull)
   @@index([provider, operation, createdAt])
   @@map("api_transactions")
@@ -234,7 +219,7 @@ model SupportRequest {
   preferredTime     String        @map("preferred_time")
   preferredLanguage String        @map("preferred_language")
   status            SupportStatus @default(NEW)
-  createdAt         DateTime      @default(now()) @map("created_at")
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
   user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([status, createdAt])
   @@map("support_requests")

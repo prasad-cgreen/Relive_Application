@@ -397,7 +397,6 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
-  AppStatus: 'AppStatus',
   User: 'User',
   UserProfile: 'UserProfile',
   UserConsent: 'UserConsent',
@@ -422,84 +421,10 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "appStatus" | "user" | "userProfile" | "userConsent" | "otpTransaction" | "userSession" | "kycVerification" | "creditReport" | "apiTransaction" | "supportRequest"
+    modelProps: "user" | "userProfile" | "userConsent" | "otpTransaction" | "userSession" | "kycVerification" | "creditReport" | "apiTransaction" | "supportRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
-    AppStatus: {
-      payload: Prisma.$AppStatusPayload<ExtArgs>
-      fields: Prisma.AppStatusFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.AppStatusFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppStatusPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.AppStatusFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppStatusPayload>
-        }
-        findFirst: {
-          args: Prisma.AppStatusFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppStatusPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.AppStatusFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppStatusPayload>
-        }
-        findMany: {
-          args: Prisma.AppStatusFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppStatusPayload>[]
-        }
-        create: {
-          args: Prisma.AppStatusCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppStatusPayload>
-        }
-        createMany: {
-          args: Prisma.AppStatusCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.AppStatusCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppStatusPayload>[]
-        }
-        delete: {
-          args: Prisma.AppStatusDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppStatusPayload>
-        }
-        update: {
-          args: Prisma.AppStatusUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppStatusPayload>
-        }
-        deleteMany: {
-          args: Prisma.AppStatusDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.AppStatusUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.AppStatusUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppStatusPayload>[]
-        }
-        upsert: {
-          args: Prisma.AppStatusUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppStatusPayload>
-        }
-        aggregate: {
-          args: Prisma.AppStatusAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateAppStatus>
-        }
-        groupBy: {
-          args: Prisma.AppStatusGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AppStatusGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.AppStatusCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AppStatusCountAggregateOutputType> | number
-        }
-      }
-    }
     User: {
       payload: Prisma.$UserPayload<ExtArgs>
       fields: Prisma.UserFieldRefs
@@ -1205,16 +1130,6 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const AppStatusScalarFieldEnum = {
-  id: 'id',
-  schemaVersion: 'schemaVersion',
-  environment: 'environment',
-  deployedAt: 'deployedAt'
-} as const
-
-export type AppStatusScalarFieldEnum = (typeof AppStatusScalarFieldEnum)[keyof typeof AppStatusScalarFieldEnum]
-
-
 export const UserScalarFieldEnum = {
   id: 'id',
   mobileHash: 'mobileHash',
@@ -1266,13 +1181,11 @@ export type UserConsentScalarFieldEnum = (typeof UserConsentScalarFieldEnum)[key
 export const OtpTransactionScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  channel: 'channel',
   otpHash: 'otpHash',
   providerRef: 'providerRef',
   purpose: 'purpose',
   targetMobileEncrypted: 'targetMobileEncrypted',
   status: 'status',
-  failedAttempts: 'failedAttempts',
   expiresAt: 'expiresAt',
   resendAfter: 'resendAfter',
   verifiedAt: 'verifiedAt',
@@ -1301,7 +1214,6 @@ export const KycVerificationScalarFieldEnum = {
   panLast4: 'panLast4',
   panEncrypted: 'panEncrypted',
   status: 'status',
-  attempts: 'attempts',
   providerRef: 'providerRef',
   failureReason: 'failureReason',
   createdAt: 'createdAt',
@@ -1338,7 +1250,6 @@ export const ApiTransactionScalarFieldEnum = {
   idempotencyKey: 'idempotencyKey',
   errorCode: 'errorCode',
   durationMs: 'durationMs',
-  metadata: 'metadata',
   createdAt: 'createdAt'
 } as const
 
@@ -1429,6 +1340,20 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
+ * Reference to a field of type 'UserStatus'
+ */
+export type EnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'UserStatus[]'
+ */
+export type ListEnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -1453,20 +1378,6 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
-    
-
-
-/**
- * Reference to a field of type 'UserStatus'
- */
-export type EnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserStatus'>
-    
-
-
-/**
- * Reference to a field of type 'UserStatus[]'
- */
-export type ListEnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserStatus[]'>
     
 
 
@@ -1516,20 +1427,6 @@ export type EnumConsentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'ConsentStatus[]'
  */
 export type ListEnumConsentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConsentStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'OtpChannel'
- */
-export type EnumOtpChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OtpChannel'>
-    
-
-
-/**
- * Reference to a field of type 'OtpChannel[]'
- */
-export type ListEnumOtpChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OtpChannel[]'>
     
 
 
@@ -1809,7 +1706,6 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
  */
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
-  appStatus?: Prisma.AppStatusOmit
   user?: Prisma.UserOmit
   userProfile?: Prisma.UserProfileOmit
   userConsent?: Prisma.UserConsentOmit

@@ -70,7 +70,7 @@ type CreditReportData = {
 };
 
 type CreditOverview = {
-  status: "MISSING" | "CURRENT" | "EXPIRED" | "NO_RECORD" | "FAILED";
+  status: "MISSING" | "CURRENT" | "EXPIRED" | "NO_RECORD";
   score: number | null;
   bureau: string | null;
   scoreRange: { min: number; max: number; bands: ScoreBand[] } | null;

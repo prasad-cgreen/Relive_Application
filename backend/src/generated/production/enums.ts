@@ -42,15 +42,6 @@ export const ConsentStatus = {
 export type ConsentStatus = (typeof ConsentStatus)[keyof typeof ConsentStatus]
 
 
-export const OtpChannel = {
-  SMS: 'SMS',
-  CALL: 'CALL',
-  WHATSAPP: 'WHATSAPP'
-} as const
-
-export type OtpChannel = (typeof OtpChannel)[keyof typeof OtpChannel]
-
-
 export const OtpPurpose = {
   LOGIN: 'LOGIN',
   BUREAU_MOBILE: 'BUREAU_MOBILE'
@@ -61,17 +52,15 @@ export type OtpPurpose = (typeof OtpPurpose)[keyof typeof OtpPurpose]
 
 export const OtpStatus = {
   PENDING: 'PENDING',
-  VERIFIED: 'VERIFIED',
+  USED: 'USED',
   EXPIRED: 'EXPIRED',
-  BLOCKED: 'BLOCKED',
-  USED: 'USED'
+  BLOCKED: 'BLOCKED'
 } as const
 
 export type OtpStatus = (typeof OtpStatus)[keyof typeof OtpStatus]
 
 
 export const KycStatus = {
-  PENDING: 'PENDING',
   VERIFIED: 'VERIFIED',
   FAILED: 'FAILED',
   MANUAL_REVIEW: 'MANUAL_REVIEW'
@@ -82,9 +71,7 @@ export type KycStatus = (typeof KycStatus)[keyof typeof KycStatus]
 
 export const ReportStatus = {
   CURRENT: 'CURRENT',
-  EXPIRED: 'EXPIRED',
-  NO_RECORD: 'NO_RECORD',
-  FAILED: 'FAILED'
+  NO_RECORD: 'NO_RECORD'
 } as const
 
 export type ReportStatus = (typeof ReportStatus)[keyof typeof ReportStatus]
