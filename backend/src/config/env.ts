@@ -29,7 +29,7 @@ const schema = z.object({
   INDICONNECT_AUTHORIZATION: z.string().min(1).optional(),
   INDICONNECT_APP_ID: z.string().min(1).default("verification_v1"),
   INDICONNECT_PROVIDER_CODE: z.string().min(1).optional(),
-  INDICONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
+  INDICONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000), // OTP send/verify, PAN; frontend lib/api.ts timeout must stay above 2x this
   // Bureau pulls are slow (report generation) and billable, so they get their own, longer timeout.
   INDICONNECT_BUREAU_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
   // "Get help" leads are emailed here. SMTP_URL e.g. smtps://user%40domain:password@smtp.host:465; unset = no emails.

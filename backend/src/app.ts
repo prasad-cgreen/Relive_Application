@@ -10,7 +10,7 @@ import {
 } from "@relive/shared";
 import { z, ZodError } from "zod";
 import { env } from "./config/env.js";
-import { production } from "./database/clients.js";
+import { audit, production } from "./database/clients.js";
 import { findSession, requireAuth, SESSION_COOKIE } from "./middleware/auth.js";
 import { decrypt, encrypt, hashMobile, hashOtp, hashPan, hashToken, newToken, secureEqual } from "./lib/crypto.js";
 import { HttpError, ProviderError } from "./lib/errors.js";
@@ -581,6 +581,21 @@ app.use(async (error: unknown, req: Request, res: Response, _next: NextFunction)
   else if (error instanceof ProviderError) {
     status = error.kind === "BUSINESS_FAILURE" ? 422 : error.kind === "TIMEOUT" ? 504 : 503;
     code = error.code; message = error.message; retryable = error.retryable;
+  }
+  // express.json(): malformed or oversized body. The client's mistake, not an internal error.
+  else if (typeof (error as { status?: unknown })?.status === "number" && (error as { status: number }).status < 500) {
+    status = (error as { status: number }).status; code = "BAD_REQUEST"; message = "Invalid request";
+  }
+  else {
+    // Unexpected: the response hides the cause and API_ERROR below keeps only the code, so error_logs keeps the cause.
+    console.error(error);
+    const cause = error instanceof Error ? error : new Error(String(error));
+    try {
+      await audit.errorLog.create({ data: {
+        code, message: cause.message.slice(0, 1000), requestId: req.requestId, userRef: req.userId,
+        metadata: { method: req.method, path: req.path, stack: cause.stack?.slice(0, 4000) ?? null },
+      }});
+    } catch { /* same as below: never mask the original response */ }
   }
   try { await writeAudit({ eventType: "API_ERROR", userRef: req.userId, status: code, requestId: req.requestId, metadata: { method: req.method, path: req.path } }); } catch { /* preserve the original response if audit storage is unavailable */ }
   res.status(status).json({ error: { code, message, retryable, ...(details !== undefined && { details }) } });

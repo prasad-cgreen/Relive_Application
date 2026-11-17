@@ -3,7 +3,9 @@ import axios from "axios";
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4100/api/v1",
   withCredentials: true,
-  timeout: 10_000,
+  // Must outlast the backend's worst case, or the browser gives up while the server still sends the OTP:
+  // Turnstile 10s + INDICONNECT_TIMEOUT_MS 30s (PAN retries once: 2 x 30s). /credit/report sets its own longer timeout.
+  timeout: 90_000,
   headers: { "Content-Type": "application/json" },
 });
 

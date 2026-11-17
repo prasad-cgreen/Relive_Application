@@ -127,6 +127,8 @@ export default function Home() {
   // Signed-in users skip the mobile step: straight to the dashboard, or back into onboarding.
   const resumeSession = async () => {
     try {
+      // Ask /auth/session first: probing /workflow while signed out writes a 401 into the audit log.
+      if (!(await getSession()).authenticated) return false;
       const { data } = await api.get<Workflow>("/workflow");
       if (data.stage === "DASHBOARD") return goToPortal();
       setWorkflow(data);
