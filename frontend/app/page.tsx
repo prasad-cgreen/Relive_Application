@@ -485,7 +485,7 @@ export default function Home() {
                 <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
               </button>
               <Link
-                href="/privacy"
+                href="/privacy-policy"
                 className="inline-flex items-center justify-center gap-1.5 text-xs text-[#465a50] underline-offset-4 hover:underline dark:text-[#a0b8ab]"
               >
                 How my information is used
@@ -597,8 +597,8 @@ export default function Home() {
             <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-2.5 text-sm text-[#4f6358] sm:flex sm:gap-8 dark:text-[#a0b8ab]">
               <a href="#how-it-works" className="hover:text-[#216b49] dark:hover:text-emerald-400">How it works</a>
               <a href="#security" className="hover:text-[#216b49] dark:hover:text-emerald-400">Security</a>
-              <Link href="/privacy" className="hover:text-[#216b49] dark:hover:text-emerald-400">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-[#216b49] dark:hover:text-emerald-400">Terms of Service</Link>
+              <Link href="/privacy-policy" className="hover:text-[#216b49] dark:hover:text-emerald-400">Privacy Policy</Link>
+              <Link href="/terms-conditions" className="hover:text-[#216b49] dark:hover:text-emerald-400">Terms of Service</Link>
             </nav>
           </div>
           <div className="mt-8 flex flex-col gap-3 border-t border-[#eef3f0] pt-6 text-xs text-[#6e8577] md:flex-row md:justify-between dark:border-[#14261c] dark:text-[#8ba295]">
@@ -710,11 +710,11 @@ export default function Home() {
                     />
                     <span className="text-xs leading-5 text-[#3f5447] dark:text-[#a0b8ab]">
                       I agree to the{" "}
-                      <Link href="/terms" target="_blank" className="font-semibold text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">
+                      <Link href="/terms-conditions" target="_blank" className="font-semibold text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">
                         Terms of Use
                       </Link>{" "}
                       and{" "}
-                      <Link href="/privacy" target="_blank" className="font-semibold text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">
+                      <Link href="/privacy-policy" target="_blank" className="font-semibold text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">
                         Privacy Policy
                       </Link>
                       , and consent to Relive fetching my credit report and contacting me.

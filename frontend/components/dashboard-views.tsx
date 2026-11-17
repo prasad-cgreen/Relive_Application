@@ -220,7 +220,7 @@ export function ProfileSettingsView({ workflow, onUpdated }: ViewProps) {
         </div>
         <p className="mt-1.5 text-sm leading-relaxed text-emerald-900/80 dark:text-emerald-300/80">
           You consented to Relive fetching your credit report from the bureau when you signed up. Read our{" "}
-          <a href="/privacy" className="font-medium underline underline-offset-2">privacy policy</a> for how your data is used and how to withdraw consent.
+          <a href="/privacy-policy" className="font-medium underline underline-offset-2">privacy policy</a> for how your data is used and how to withdraw consent.
         </p>
       </div>
     </section>

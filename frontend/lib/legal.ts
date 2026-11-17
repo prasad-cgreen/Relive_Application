@@ -1,14 +1,14 @@
 import { SUPPORT_EMAIL, SUPPORT_PHONE } from "./contact";
 
 // Company details shown in the Terms of Use and Privacy Policy.
-// TODO before launch: replace every "[...]" value with the registered details, then have counsel review both pages.
+// Pages render the address as `${company}, ${address}`.
 export const LEGAL = {
-  company: "[Registered company name]",
+  company: "Matference Technologies India Private Limited",
   brand: "Relive",
-  address: "[Registered office address]",
-  grievanceOfficer: "[Grievance Officer name]",
+  address: "Building No. 1 (61), B Wing, Sector 2, Millennium Business Park, Mahape, Navi Mumbai – 400710 (Landmark: Near Post Office Building)",
+  grievanceOfficer: "Makrand Manjrekar",
   email: SUPPORT_EMAIL,
   phone: SUPPORT_PHONE,
-  jurisdiction: "[City]",
+  jurisdiction: "Mumbai",
   lastUpdated: "17 November 2026",
 };

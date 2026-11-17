@@ -91,7 +91,7 @@ try {
   });
   assert(verifyResponse.ok(), `OTP verification failed: ${verifyResponse.status()}`);
 
-  const routes = ["/", "/privacy", "/terms", "/portal"];
+  const routes = ["/", "/privacy-policy", "/terms-conditions", "/portal"];
   const results = [];
   for (const route of routes) {
     results.push(await assertTheme(route, "light", false));
