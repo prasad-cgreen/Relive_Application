@@ -71,16 +71,26 @@ export function buildAssessment(accounts: AccountItem[], summary: Summary) {
   };
 }
 
+/** AI-written from the customer's answers (selected_concern, customer_text) and their report: GET /credit/insight. */
+export type PersonalInsight = { title: string; insights: string[]; recommendations: string[] };
+
 interface AssessmentCardProps {
   accounts: AccountItem[];
   summary: Summary;
   bureau: string;
   retrievedAt: string | null;
+  insight?: PersonalInsight | null;
+  personalizing?: boolean;
   onViewAccounts: () => void;
 }
 
-export function AssessmentCard({ accounts, summary, bureau, retrievedAt, onViewAccounts }: AssessmentCardProps) {
-  const { title, body, action, tone } = buildAssessment(accounts, summary);
+export function AssessmentCard({ accounts, summary, bureau, retrievedAt, insight, personalizing, onViewAccounts }: AssessmentCardProps) {
+  // Tone and the accounts link stay rule-based (straight from the numbers); the words come from the AI when available.
+  const rules = buildAssessment(accounts, summary);
+  const { action, tone } = rules;
+  const title = insight?.title ?? rules.title;
+  const body: ReactNode[] = insight?.insights ?? rules.body;
+  const steps = insight?.recommendations ?? [];
 
   return (
     <section className="flex h-full flex-col rounded-3xl border border-[#d5e3c8] bg-[#edf3e6] p-5 sm:p-7 dark:border-[#1a3827] dark:bg-[#0c1a12]">
@@ -100,16 +110,34 @@ export function AssessmentCard({ accounts, summary, bureau, retrievedAt, onViewA
                 : "bg-white/70 text-[#216b49] dark:bg-emerald-500/15 dark:text-emerald-300"
           }`}
         >
-          Initial review
+          {insight ? "Personalised for you" : personalizing ? "Personalising…" : "Initial review"}
         </span>
       </div>
 
-      <h2 className="mt-5 max-w-lg text-2xl font-semibold leading-tight tracking-tight text-[#183b2f] sm:text-[28px] dark:text-white">{title}</h2>
+      <div key={insight ? "personal" : "rules"} className="animate-in fade-in duration-500">
+        <h2 className="mt-5 max-w-lg text-2xl font-semibold leading-tight tracking-tight text-[#183b2f] sm:text-[28px] dark:text-white">{title}</h2>
 
-      <div className="mt-4 max-w-xl space-y-3 text-sm leading-relaxed text-[#465a50] dark:text-[#a0b8ab]">
-        {body.map((paragraph, i) => (
-          <p key={i}>{paragraph}</p>
-        ))}
+        <div className="mt-4 max-w-xl space-y-3 text-sm leading-relaxed text-[#465a50] dark:text-[#a0b8ab]">
+          {body.map((paragraph, i) => (
+            <p key={i}>{paragraph}</p>
+          ))}
+        </div>
+
+        {steps.length > 0 && (
+          <div className="mt-5 max-w-xl">
+            <p className="text-xs font-semibold uppercase tracking-[1px] text-[#183b2f] dark:text-emerald-300">Your next steps</p>
+            <ol className="mt-2 space-y-2 text-sm leading-relaxed text-[#465a50] dark:text-[#a0b8ab]">
+              {steps.map((step, i) => (
+                <li key={i} className="flex gap-2.5">
+                  <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-white/70 text-[11px] font-semibold text-[#216b49] dark:bg-emerald-950 dark:text-emerald-400">
+                    {i + 1}
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
       </div>
 
       {action && (
@@ -127,7 +155,8 @@ export function AssessmentCard({ accounts, summary, bureau, retrievedAt, onViewA
       <div className="mt-auto pt-6">
         <p className="flex items-start gap-2 border-t border-[#d5e3c8] pt-4 text-xs text-[#63776b] dark:border-[#1a3827] dark:text-[#8ba295]">
           <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-          Based on your {bureau} report{retrievedAt ? ` from ${formatDay(retrievedAt)}` : ""}. Current balances and lender terms are not yet confirmed.
+          Based on your {bureau} report{retrievedAt ? ` from ${formatDay(retrievedAt)}` : ""}
+          {insight ? " and what you told us, summarised with AI" : ""}. Current balances and lender terms are not yet confirmed.
         </p>
       </div>
     </section>

@@ -7,7 +7,7 @@ import { api, apiErrorCode, apiMessage } from "../lib/api";
 export type Workflow = {
   stage: "PROFILE" | "REPORT" | "DASHBOARD";
   mobileLast4?: string | null;
-  profile?: { firstName: string; lastName: string; email: string; dateOfBirth: string; source: string; verified: boolean } | null;
+  profile?: { firstName: string; lastName: string; email: string; dateOfBirth: string | null; source: string; verified: boolean } | null;
 };
 
 // Experian, then CRIF on failure: each can take up to a minute.
@@ -258,8 +258,8 @@ export function OnboardingFlow({ initial, onComplete }: { initial: Workflow; onC
             <input name="lastName" autoComplete="family-name" defaultValue={workflow.profile?.lastName ?? ""} className={inputClass} />
           </label>
           <label className={labelClass}>
-            Date of birth
-            <input required type="date" name="dateOfBirth" autoComplete="bday" max={new Date().toISOString().slice(0, 10)} defaultValue={workflow.profile?.dateOfBirth ?? ""} className={inputClass} />
+            Date of birth <span className="font-normal text-[#71867a]">(optional)</span>
+            <input type="date" name="dateOfBirth" autoComplete="bday" max={new Date().toISOString().slice(0, 10)} defaultValue={workflow.profile?.dateOfBirth ?? ""} className={inputClass} />
           </label>
           <label className={labelClass}>
             Email <span className="font-normal text-[#71867a]">(optional)</span>

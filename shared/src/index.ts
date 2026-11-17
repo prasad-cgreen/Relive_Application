@@ -26,7 +26,8 @@ export const manualProfileSchema = z.object({
   firstName: z.string().trim().min(1, "Enter your first name").max(80),
   lastName: z.string().trim().max(120).default(""),
   email: z.string().trim().email().or(z.literal("")).default(""),
-  dateOfBirth: z.string().date(),
+  // Optional: blank -> null. When given, it's used to check the bureau report is this user's.
+  dateOfBirth: z.string().date().or(z.literal("")).optional().transform((value) => value || null),
 });
 
 export const panSchema = z.string().trim().toUpperCase().regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/, "Enter a valid PAN");
@@ -34,6 +35,23 @@ export const panSchema = z.string().trim().toUpperCase().regex(/^[A-Z]{5}[0-9]{4
 export const kycSchema = z.object({ pan: panSchema });
 
 export const reportRequestSchema = z.object({ idempotencyKey: z.string().uuid() });
+
+// "What brings you to Relive today?" on the landing page. Feeds the personalised dashboard summary.
+export const CONCERN_OPTIONS = [
+  "I am struggling with overdue payments",
+  "I want to explore closing my debts",
+  "My monthly repayments are too high",
+  "Something in my report looks wrong",
+  "I need help speaking to my lenders",
+  "I am not sure where to start",
+] as const;
+export const CUSTOMER_TEXT_MAX = 800;
+export const concernSchema = z.object({
+  // Radio today, checkboxes later: always a list, only the fixed options (never free text).
+  selected_concern: z.array(z.enum(CONCERN_OPTIONS)).max(CONCERN_OPTIONS.length).default([])
+    .transform((list) => [...new Set(list)]),
+  customer_text: z.string().trim().max(CUSTOMER_TEXT_MAX).default(""),
+});
 
 // "Get help" request from the dashboard (a lead for the Relive team).
 export const SUPPORT_TOPICS = ["OPTIONS", "LENDER_DISCUSSION", "NOTICE"] as const;
@@ -56,7 +74,7 @@ export type ApiErrorShape = {
 export type WorkflowResponse = {
   stage: WorkflowStage;
   mobileLast4?: string | null;
-  profile?: { firstName: string; lastName: string; email: string; dateOfBirth: string; source: string; verified: boolean } | null;
+  profile?: { firstName: string; lastName: string; email: string; dateOfBirth: string | null; source: string; verified: boolean } | null;
   kycStatus?: string | null;
   reportStatus?: string | null;
 };

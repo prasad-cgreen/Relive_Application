@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { env } from "../config/env.js";
 import { production } from "../database/clients.js";
 import { hashToken } from "../lib/crypto.js";
 import { HttpError } from "../lib/errors.js";
@@ -14,7 +15,10 @@ export async function findSession(req: Request) {
   const token = req.cookies?.[SESSION_COOKIE] as string | undefined;
   if (!token) return null;
   const session = await production.userSession.findUnique({ where: { tokenHash: hashToken(token) } });
-  return session && !session.revokedAt && session.expiresAt > new Date() ? session : null;
+  if (!session || session.revokedAt || session.expiresAt <= new Date()) return null;
+  // Local dev: each `npm run dev` starts signed out (sessions from earlier runs don't count). Never in production.
+  if (env.NODE_ENV === "development" && env.RELIVE_DEV_RUN_STARTED_AT && session.createdAt.getTime() < env.RELIVE_DEV_RUN_STARTED_AT) return null;
+  return session;
 }
 
 export async function requireAuth(req: Request, _res: Response, next: NextFunction) {

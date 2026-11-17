@@ -17,7 +17,7 @@ export async function getWorkflow(userId: string) {
   return {
     stage,
     mobileLast4: user?.mobileLast4 ?? null, // lets the UI show who is signed in
-    profile: profile && { ...profile, dateOfBirth: profile.dateOfBirth.toISOString().slice(0, 10) },
+    profile: profile && { ...profile, dateOfBirth: profile.dateOfBirth?.toISOString().slice(0, 10) ?? null },
     kycStatus: kyc?.status ?? null,
     // Verified PAN usable for bureau pulls. False for PANs verified before it was stored: they re-verify once.
     panOnFile: kyc?.status === "VERIFIED" && Boolean(kyc.panEncrypted),

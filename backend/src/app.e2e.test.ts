@@ -141,7 +141,7 @@ describe("Relive end-to-end member workflow", () => {
     const user = await production.user.findUniqueOrThrow({ where: { mobileHash: hashMobile(loginMobile) } });
     try {
       await agent.post("/api/v1/auth/verify-otp").send({ transactionId: otp.body.transactionId, otp: "123456" }).expect(200);
-      await agent.post("/api/v1/profile/manual").send({ firstName: "Ravi", lastName: "Patil", dateOfBirth: "1990-05-05" }).expect(200);
+      await agent.post("/api/v1/profile/manual").send({ firstName: "Ravi", lastName: "Patil", dateOfBirth: "" }).expect(200); // DOB is optional
 
       // Both bureaus: no record for the login number.
       const noRecord = await agent.post("/api/v1/credit/report").set("x-relive-mock-scenario", "no_record").send({ idempotencyKey: randomUUID() }).expect(422);

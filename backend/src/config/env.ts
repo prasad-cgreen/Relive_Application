@@ -37,6 +37,11 @@ const schema = z.object({
   SMTP_URL: z.string().url().optional(),
   // Cloudflare Turnstile: stops bots from triggering (billed) OTP SMS. Unset = no check (local dev, tests).
   TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
+  // OpenAI key for the personalised dashboard summary (prompt: prompts/dashboard-summary.md). Unset = rule-based summary.
+  OPENAI_API_KEY: z.string().min(1).optional(),
+  OPENAI_MODEL: z.string().min(1).default("gpt-5.4-mini"),
+  // Set by the root `npm run dev` (scripts/dev.mjs): in development, sessions from earlier runs are ignored.
+  RELIVE_DEV_RUN_STARTED_AT: z.coerce.number().int().positive().optional(),
 }).superRefine((value, ctx) => {
   const services = ["OTP_PROVIDER", "PAN_PROVIDER", "BUREAU_PROVIDER"] as const;
   if (services.some((service) => value[service] === "indiconnect")) {

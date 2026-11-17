@@ -53,6 +53,16 @@ export type KycVerification = Prisma.KycVerificationModel
  */
 export type CreditReport = Prisma.CreditReportModel
 /**
+ * Model UserConcern
+ * The customer's answers to "What brings you to Relive today?" (latest wins).
+ */
+export type UserConcern = Prisma.UserConcernModel
+/**
+ * Model DashboardInsight
+ * AI-written dashboard summary, cached per report and per set of answers (inputHash), so each costs one model call.
+ */
+export type DashboardInsight = Prisma.DashboardInsightModel
+/**
  * Model ApiTransaction
  * Every external provider call (OTP, PAN, bureau): the billing and outage record.
  */

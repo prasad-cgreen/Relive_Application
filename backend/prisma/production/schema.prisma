@@ -81,6 +81,7 @@ model User {
   reports         CreditReport[]
   transactions    ApiTransaction[]
   supportRequests SupportRequest[]
+  concern         UserConcern?
   @@map("users")
 }
 
@@ -90,7 +91,7 @@ model UserProfile {
   firstName   String @map("first_name")
   lastName    String @map("last_name")
   email       String
-  dateOfBirth DateTime @map("date_of_birth") @db.Date
+  dateOfBirth DateTime? @map("date_of_birth") @db.Date
   source      ProfileSource
   verified    Boolean @default(false)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -175,8 +176,33 @@ model CreditReport {
   retrievedAt    DateTime @default(now()) @map("retrieved_at") @db.Timestamptz(3)
   expiresAt      DateTime @map("expires_at") @db.Timestamptz(3)
   user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  insights       DashboardInsight[]
   @@index([userId, status, expiresAt])
   @@map("credit_reports")
+}
+
+/// The customer's answers to "What brings you to Relive today?" (latest wins).
+model UserConcern {
+  id                    String   @id @default(uuid()) @db.Uuid
+  userId                String   @unique @map("user_id") @db.Uuid
+  selectedConcern       String[] @map("selected_concern")
+  customerTextEncrypted String?  @map("customer_text_encrypted") // AES-256-GCM: free text can hold personal details
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user                  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("user_concerns")
+}
+
+/// AI-written dashboard summary, cached per report and per set of answers (inputHash), so each costs one model call.
+model DashboardInsight {
+  id        String   @id @default(uuid()) @db.Uuid
+  reportId  String   @map("report_id") @db.Uuid
+  inputHash String   @map("input_hash")
+  content   Json
+  model     String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  report    CreditReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  @@unique([reportId, inputHash])
+  @@map("dashboard_insights")
 }
 
 /// Every external provider call (OTP, PAN, bureau): the billing and outage record.

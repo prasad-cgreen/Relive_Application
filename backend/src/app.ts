@@ -5,7 +5,7 @@ import express, { type NextFunction, type Request, type Response } from "express
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import {
-  bureauMobileSchema, kycSchema, manualProfileSchema, requestOtpSchema,
+  bureauMobileSchema, concernSchema, kycSchema, manualProfileSchema, requestOtpSchema,
   reportRequestSchema, supportRequestSchema, verifyOtpSchema,
 } from "@relive/shared";
 import { z, ZodError } from "zod";
@@ -18,6 +18,7 @@ import { stepForStage, trackJourney, writeAudit } from "./services/audit.js";
 import { providers, type MockScenario } from "./services/providers.js";
 import { getWorkflow } from "./services/workflow.js";
 import { getCreditOverview } from "./services/credit-score.js";
+import { getDashboardInsight } from "./services/dashboard-insight.js";
 import { emailLead } from "./services/lead-email.js";
 import { echoedRequestIdentity, extractReportIdentity, matchReportIdentity } from "./services/report-identity.js";
 
@@ -270,17 +271,48 @@ app.get("/api/v1/auth/session", async (req, res) => {
 app.get("/api/v1/workflow", requireAuth, async (req, res) => res.json(await getWorkflow(userContext(req))));
 app.get("/api/v1/credit/overview", requireAuth, async (req, res) => res.json(await getCreditOverview(userContext(req))));
 
+// "What brings you to Relive today?" answers, sent right after login. Latest answers replace earlier ones.
+app.post("/api/v1/concern", requireAuth, sensitiveLimiter, async (req, res) => {
+  const userId = userContext(req);
+  const { selected_concern, customer_text } = concernSchema.parse(req.body);
+  const fields = { selectedConcern: selected_concern, customerTextEncrypted: customer_text ? encrypt(customer_text) : null };
+  await production.userConcern.upsert({ where: { userId }, create: { userId, ...fields }, update: fields });
+  // The options are a fixed list; the free text can hold personal details, so only its presence is logged.
+  await writeAudit({ eventType: "CONCERN_SAVED", userRef: userId, status: "SUCCESS", requestId: req.requestId, metadata: { selected_concern, hasText: Boolean(customer_text) } });
+  res.status(204).end();
+});
+
+// Personalised dashboard summary (AI). { insight: null } = keep the rule-based summary (AI off, no report, or it failed).
+app.get("/api/v1/credit/insight", requireAuth, async (req, res) => {
+  const userId = userContext(req);
+  try {
+    const insight = await getDashboardInsight(userId, (metadata) =>
+      writeAudit({ eventType: "INSIGHT_GENERATED", userRef: userId, status: "SUCCESS", requestId: req.requestId, metadata }));
+    res.json({ insight });
+  } catch (error) {
+    // Not an error for the user: the dashboard already shows the rule-based summary.
+    const cause = error instanceof Error ? error : new Error(String(error));
+    console.error(cause);
+    await audit.errorLog.create({ data: {
+      code: "INSIGHT_FAILED", message: cause.message.slice(0, 1000), requestId: req.requestId, userRef: userId,
+      metadata: { method: req.method, path: req.path, stack: cause.stack?.slice(0, 4000) ?? null },
+    }}).catch(() => undefined);
+    res.json({ insight: null });
+  }
+});
+
 app.post("/api/v1/profile/manual", requireAuth, sensitiveLimiter, async (req, res) => {
   const userId = userContext(req);
   const data = manualProfileSchema.parse(req.body);
+  const dateOfBirth = data.dateOfBirth ? new Date(data.dateOfBirth) : null; // optional
   const profile = await production.userProfile.upsert({
     where: { userId },
-    create: { userId, ...data, dateOfBirth: new Date(data.dateOfBirth), source: "MANUAL_UNVERIFIED", verified: false },
-    update: { ...data, dateOfBirth: new Date(data.dateOfBirth), source: "MANUAL_UNVERIFIED", verified: false },
+    create: { userId, ...data, dateOfBirth, source: "MANUAL_UNVERIFIED", verified: false },
+    update: { ...data, dateOfBirth, source: "MANUAL_UNVERIFIED", verified: false },
   });
   await trackJourney({
     userRef: userId, eventType: "DETAILS_SAVED", step: "REPORT", outcome: "SUCCESS", requestId: req.requestId,
-    metadata: { source: profile.source, hasEmail: Boolean(profile.email) }, set: { identitySource: "MANUAL" },
+    metadata: { source: profile.source, hasEmail: Boolean(profile.email), hasDob: Boolean(profile.dateOfBirth) }, set: { identitySource: "MANUAL" },
   });
   res.json(await getWorkflow(userId));
 });
@@ -396,10 +428,11 @@ app.post("/api/v1/credit/report", requireAuth, sensitiveLimiter, async (req, res
   } catch {
     verifiedPan = undefined; // unreadable (key rotated): fall back to name + mobile; the identity check still applies
   }
+  const dateOfBirth = profile.dateOfBirth?.toISOString().slice(0, 10) ?? null;
   const input = {
     name: `${profile.firstName} ${profile.lastName}`.trim(),
     mobile,
-    ...(verifiedPan && profile.verified && { pan: verifiedPan, dob: profile.dateOfBirth.toISOString().slice(0, 10) }),
+    ...(verifiedPan && profile.verified && dateOfBirth && { pan: verifiedPan, dob: dateOfBirth }),
   };
   reportsInFlight.add(userId);
   try {
@@ -437,10 +470,12 @@ app.post("/api/v1/credit/report", requireAuth, sensitiveLimiter, async (req, res
     }
     // The pull is keyed on name + mobile only: never show a report whose PAN / DOB isn't this user's
     // (shared phone, recycled number, SIM swap). Mock reports carry no identity and aren't real people.
-    if (!(pull.raw as { mock?: boolean } | null)?.mock) {
+    // Date of birth is optional: with neither a verified PAN nor a DOB there's nothing to compare, so the
+    // report is shown on name + OTP-verified mobile alone (product decision, accepts the recycled-number risk).
+    if (!(pull.raw as { mock?: boolean } | null)?.mock && (verifiedKyc || dateOfBirth)) {
       const verdict = matchReportIdentity(
         extractReportIdentity(pull.raw),
-        { verifiedPanHash: verifiedKyc?.panHash ?? null, dateOfBirth: profile.dateOfBirth.toISOString().slice(0, 10) },
+        { verifiedPanHash: verifiedKyc?.panHash ?? null, dateOfBirth },
         hashPan,
       );
       if (verdict !== "MATCH") {

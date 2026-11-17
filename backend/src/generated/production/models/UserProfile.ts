@@ -183,7 +183,7 @@ export type UserProfileGroupByOutputType = {
   firstName: string
   lastName: string
   email: string
-  dateOfBirth: Date
+  dateOfBirth: Date | null
   source: $Enums.ProfileSource
   verified: boolean
   createdAt: Date
@@ -217,7 +217,7 @@ export type UserProfileWhereInput = {
   firstName?: Prisma.StringFilter<"UserProfile"> | string
   lastName?: Prisma.StringFilter<"UserProfile"> | string
   email?: Prisma.StringFilter<"UserProfile"> | string
-  dateOfBirth?: Prisma.DateTimeFilter<"UserProfile"> | Date | string
+  dateOfBirth?: Prisma.DateTimeNullableFilter<"UserProfile"> | Date | string | null
   source?: Prisma.EnumProfileSourceFilter<"UserProfile"> | $Enums.ProfileSource
   verified?: Prisma.BoolFilter<"UserProfile"> | boolean
   createdAt?: Prisma.DateTimeFilter<"UserProfile"> | Date | string
@@ -231,7 +231,7 @@ export type UserProfileOrderByWithRelationInput = {
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  dateOfBirth?: Prisma.SortOrder
+  dateOfBirth?: Prisma.SortOrderInput | Prisma.SortOrder
   source?: Prisma.SortOrder
   verified?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -248,7 +248,7 @@ export type UserProfileWhereUniqueInput = Prisma.AtLeast<{
   firstName?: Prisma.StringFilter<"UserProfile"> | string
   lastName?: Prisma.StringFilter<"UserProfile"> | string
   email?: Prisma.StringFilter<"UserProfile"> | string
-  dateOfBirth?: Prisma.DateTimeFilter<"UserProfile"> | Date | string
+  dateOfBirth?: Prisma.DateTimeNullableFilter<"UserProfile"> | Date | string | null
   source?: Prisma.EnumProfileSourceFilter<"UserProfile"> | $Enums.ProfileSource
   verified?: Prisma.BoolFilter<"UserProfile"> | boolean
   createdAt?: Prisma.DateTimeFilter<"UserProfile"> | Date | string
@@ -262,7 +262,7 @@ export type UserProfileOrderByWithAggregationInput = {
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  dateOfBirth?: Prisma.SortOrder
+  dateOfBirth?: Prisma.SortOrderInput | Prisma.SortOrder
   source?: Prisma.SortOrder
   verified?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -281,7 +281,7 @@ export type UserProfileScalarWhereWithAggregatesInput = {
   firstName?: Prisma.StringWithAggregatesFilter<"UserProfile"> | string
   lastName?: Prisma.StringWithAggregatesFilter<"UserProfile"> | string
   email?: Prisma.StringWithAggregatesFilter<"UserProfile"> | string
-  dateOfBirth?: Prisma.DateTimeWithAggregatesFilter<"UserProfile"> | Date | string
+  dateOfBirth?: Prisma.DateTimeNullableWithAggregatesFilter<"UserProfile"> | Date | string | null
   source?: Prisma.EnumProfileSourceWithAggregatesFilter<"UserProfile"> | $Enums.ProfileSource
   verified?: Prisma.BoolWithAggregatesFilter<"UserProfile"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"UserProfile"> | Date | string
@@ -293,7 +293,7 @@ export type UserProfileCreateInput = {
   firstName: string
   lastName: string
   email: string
-  dateOfBirth: Date | string
+  dateOfBirth?: Date | string | null
   source: $Enums.ProfileSource
   verified?: boolean
   createdAt?: Date | string
@@ -307,7 +307,7 @@ export type UserProfileUncheckedCreateInput = {
   firstName: string
   lastName: string
   email: string
-  dateOfBirth: Date | string
+  dateOfBirth?: Date | string | null
   source: $Enums.ProfileSource
   verified?: boolean
   createdAt?: Date | string
@@ -319,7 +319,7 @@ export type UserProfileUpdateInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  dateOfBirth?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   source?: Prisma.EnumProfileSourceFieldUpdateOperationsInput | $Enums.ProfileSource
   verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -333,7 +333,7 @@ export type UserProfileUncheckedUpdateInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  dateOfBirth?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   source?: Prisma.EnumProfileSourceFieldUpdateOperationsInput | $Enums.ProfileSource
   verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -346,7 +346,7 @@ export type UserProfileCreateManyInput = {
   firstName: string
   lastName: string
   email: string
-  dateOfBirth: Date | string
+  dateOfBirth?: Date | string | null
   source: $Enums.ProfileSource
   verified?: boolean
   createdAt?: Date | string
@@ -358,7 +358,7 @@ export type UserProfileUpdateManyMutationInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  dateOfBirth?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   source?: Prisma.EnumProfileSourceFieldUpdateOperationsInput | $Enums.ProfileSource
   verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -371,7 +371,7 @@ export type UserProfileUncheckedUpdateManyInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  dateOfBirth?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   source?: Prisma.EnumProfileSourceFieldUpdateOperationsInput | $Enums.ProfileSource
   verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -467,7 +467,7 @@ export type UserProfileCreateWithoutUserInput = {
   firstName: string
   lastName: string
   email: string
-  dateOfBirth: Date | string
+  dateOfBirth?: Date | string | null
   source: $Enums.ProfileSource
   verified?: boolean
   createdAt?: Date | string
@@ -479,7 +479,7 @@ export type UserProfileUncheckedCreateWithoutUserInput = {
   firstName: string
   lastName: string
   email: string
-  dateOfBirth: Date | string
+  dateOfBirth?: Date | string | null
   source: $Enums.ProfileSource
   verified?: boolean
   createdAt?: Date | string
@@ -507,7 +507,7 @@ export type UserProfileUpdateWithoutUserInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  dateOfBirth?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   source?: Prisma.EnumProfileSourceFieldUpdateOperationsInput | $Enums.ProfileSource
   verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -519,7 +519,7 @@ export type UserProfileUncheckedUpdateWithoutUserInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  dateOfBirth?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   source?: Prisma.EnumProfileSourceFieldUpdateOperationsInput | $Enums.ProfileSource
   verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -605,7 +605,7 @@ export type $UserProfilePayload<ExtArgs extends runtime.Types.Extensions.Interna
     firstName: string
     lastName: string
     email: string
-    dateOfBirth: Date
+    dateOfBirth: Date | null
     source: $Enums.ProfileSource
     verified: boolean
     createdAt: Date

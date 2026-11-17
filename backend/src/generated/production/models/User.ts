@@ -272,6 +272,7 @@ export type UserWhereInput = {
   reports?: Prisma.CreditReportListRelationFilter
   transactions?: Prisma.ApiTransactionListRelationFilter
   supportRequests?: Prisma.SupportRequestListRelationFilter
+  concern?: Prisma.XOR<Prisma.UserConcernNullableScalarRelationFilter, Prisma.UserConcernWhereInput> | null
 }
 
 export type UserOrderByWithRelationInput = {
@@ -294,6 +295,7 @@ export type UserOrderByWithRelationInput = {
   reports?: Prisma.CreditReportOrderByRelationAggregateInput
   transactions?: Prisma.ApiTransactionOrderByRelationAggregateInput
   supportRequests?: Prisma.SupportRequestOrderByRelationAggregateInput
+  concern?: Prisma.UserConcernOrderByWithRelationInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -319,6 +321,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   reports?: Prisma.CreditReportListRelationFilter
   transactions?: Prisma.ApiTransactionListRelationFilter
   supportRequests?: Prisma.SupportRequestListRelationFilter
+  concern?: Prisma.XOR<Prisma.UserConcernNullableScalarRelationFilter, Prisma.UserConcernWhereInput> | null
 }, "id" | "mobileHash">
 
 export type UserOrderByWithAggregationInput = {
@@ -377,6 +380,7 @@ export type UserCreateInput = {
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -399,6 +403,7 @@ export type UserUncheckedCreateInput = {
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -421,6 +426,7 @@ export type UserUpdateInput = {
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -443,6 +449,7 @@ export type UserUncheckedUpdateInput = {
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -659,6 +666,20 @@ export type UserUpdateOneRequiredWithoutReportsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReportsInput, Prisma.UserUpdateWithoutReportsInput>, Prisma.UserUncheckedUpdateWithoutReportsInput>
 }
 
+export type UserCreateNestedOneWithoutConcernInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutConcernInput, Prisma.UserUncheckedCreateWithoutConcernInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutConcernInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutConcernNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutConcernInput, Prisma.UserUncheckedCreateWithoutConcernInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutConcernInput
+  upsert?: Prisma.UserUpsertWithoutConcernInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutConcernInput, Prisma.UserUpdateWithoutConcernInput>, Prisma.UserUncheckedUpdateWithoutConcernInput>
+}
+
 export type UserCreateNestedOneWithoutTransactionsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutTransactionsInput, Prisma.UserUncheckedCreateWithoutTransactionsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutTransactionsInput
@@ -708,6 +729,7 @@ export type UserCreateWithoutProfileInput = {
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProfileInput = {
@@ -729,6 +751,7 @@ export type UserUncheckedCreateWithoutProfileInput = {
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProfileInput = {
@@ -766,6 +789,7 @@ export type UserUpdateWithoutProfileInput = {
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProfileInput = {
@@ -787,6 +811,7 @@ export type UserUncheckedUpdateWithoutProfileInput = {
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutConsentsInput = {
@@ -808,6 +833,7 @@ export type UserCreateWithoutConsentsInput = {
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutConsentsInput = {
@@ -829,6 +855,7 @@ export type UserUncheckedCreateWithoutConsentsInput = {
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutConsentsInput = {
@@ -866,6 +893,7 @@ export type UserUpdateWithoutConsentsInput = {
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConsentsInput = {
@@ -887,6 +915,7 @@ export type UserUncheckedUpdateWithoutConsentsInput = {
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOtpsInput = {
@@ -908,6 +937,7 @@ export type UserCreateWithoutOtpsInput = {
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOtpsInput = {
@@ -929,6 +959,7 @@ export type UserUncheckedCreateWithoutOtpsInput = {
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOtpsInput = {
@@ -966,6 +997,7 @@ export type UserUpdateWithoutOtpsInput = {
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOtpsInput = {
@@ -987,6 +1019,7 @@ export type UserUncheckedUpdateWithoutOtpsInput = {
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1008,6 +1041,7 @@ export type UserCreateWithoutSessionsInput = {
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1029,6 +1063,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1066,6 +1101,7 @@ export type UserUpdateWithoutSessionsInput = {
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1087,6 +1123,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutKycsInput = {
@@ -1108,6 +1145,7 @@ export type UserCreateWithoutKycsInput = {
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutKycsInput = {
@@ -1129,6 +1167,7 @@ export type UserUncheckedCreateWithoutKycsInput = {
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutKycsInput = {
@@ -1166,6 +1205,7 @@ export type UserUpdateWithoutKycsInput = {
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutKycsInput = {
@@ -1187,6 +1227,7 @@ export type UserUncheckedUpdateWithoutKycsInput = {
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReportsInput = {
@@ -1208,6 +1249,7 @@ export type UserCreateWithoutReportsInput = {
   kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReportsInput = {
@@ -1229,6 +1271,7 @@ export type UserUncheckedCreateWithoutReportsInput = {
   kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReportsInput = {
@@ -1266,6 +1309,7 @@ export type UserUpdateWithoutReportsInput = {
   kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReportsInput = {
@@ -1285,6 +1329,111 @@ export type UserUncheckedUpdateWithoutReportsInput = {
   otps?: Prisma.OtpTransactionUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
   kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
+  transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
+}
+
+export type UserCreateWithoutConcernInput = {
+  id?: string
+  mobileHash: string
+  mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
+  status?: $Enums.UserStatus
+  failedOtpWindow?: number
+  blockedUntil?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  profile?: Prisma.UserProfileCreateNestedOneWithoutUserInput
+  consents?: Prisma.UserConsentCreateNestedManyWithoutUserInput
+  otps?: Prisma.OtpTransactionCreateNestedManyWithoutUserInput
+  sessions?: Prisma.UserSessionCreateNestedManyWithoutUserInput
+  kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
+  reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
+  transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutConcernInput = {
+  id?: string
+  mobileHash: string
+  mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
+  status?: $Enums.UserStatus
+  failedOtpWindow?: number
+  blockedUntil?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  profile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput
+  consents?: Prisma.UserConsentUncheckedCreateNestedManyWithoutUserInput
+  otps?: Prisma.OtpTransactionUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.UserSessionUncheckedCreateNestedManyWithoutUserInput
+  kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
+  reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
+  transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutConcernInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutConcernInput, Prisma.UserUncheckedCreateWithoutConcernInput>
+}
+
+export type UserUpsertWithoutConcernInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutConcernInput, Prisma.UserUncheckedUpdateWithoutConcernInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutConcernInput, Prisma.UserUncheckedCreateWithoutConcernInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutConcernInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutConcernInput, Prisma.UserUncheckedUpdateWithoutConcernInput>
+}
+
+export type UserUpdateWithoutConcernInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
+  blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  profile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput
+  consents?: Prisma.UserConsentUpdateManyWithoutUserNestedInput
+  otps?: Prisma.OtpTransactionUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUpdateManyWithoutUserNestedInput
+  kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
+  reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
+  transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutConcernInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
+  blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  profile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput
+  consents?: Prisma.UserConsentUncheckedUpdateManyWithoutUserNestedInput
+  otps?: Prisma.OtpTransactionUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
+  kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
+  reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -1308,6 +1457,7 @@ export type UserCreateWithoutTransactionsInput = {
   kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTransactionsInput = {
@@ -1329,6 +1479,7 @@ export type UserUncheckedCreateWithoutTransactionsInput = {
   kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTransactionsInput = {
@@ -1366,6 +1517,7 @@ export type UserUpdateWithoutTransactionsInput = {
   kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTransactionsInput = {
@@ -1387,6 +1539,7 @@ export type UserUncheckedUpdateWithoutTransactionsInput = {
   kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSupportRequestsInput = {
@@ -1408,6 +1561,7 @@ export type UserCreateWithoutSupportRequestsInput = {
   kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSupportRequestsInput = {
@@ -1429,6 +1583,7 @@ export type UserUncheckedCreateWithoutSupportRequestsInput = {
   kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSupportRequestsInput = {
@@ -1466,6 +1621,7 @@ export type UserUpdateWithoutSupportRequestsInput = {
   kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSupportRequestsInput = {
@@ -1487,6 +1643,7 @@ export type UserUncheckedUpdateWithoutSupportRequestsInput = {
   kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
 }
 
 
@@ -1594,6 +1751,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   reports?: boolean | Prisma.User$reportsArgs<ExtArgs>
   transactions?: boolean | Prisma.User$transactionsArgs<ExtArgs>
   supportRequests?: boolean | Prisma.User$supportRequestsArgs<ExtArgs>
+  concern?: boolean | Prisma.User$concernArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1649,6 +1807,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   reports?: boolean | Prisma.User$reportsArgs<ExtArgs>
   transactions?: boolean | Prisma.User$transactionsArgs<ExtArgs>
   supportRequests?: boolean | Prisma.User$supportRequestsArgs<ExtArgs>
+  concern?: boolean | Prisma.User$concernArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1665,6 +1824,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     reports: Prisma.$CreditReportPayload<ExtArgs>[]
     transactions: Prisma.$ApiTransactionPayload<ExtArgs>[]
     supportRequests: Prisma.$SupportRequestPayload<ExtArgs>[]
+    concern: Prisma.$UserConcernPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2080,6 +2240,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   reports<T extends Prisma.User$reportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CreditReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   transactions<T extends Prisma.User$transactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApiTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   supportRequests<T extends Prisma.User$supportRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$supportRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  concern<T extends Prisma.User$concernArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$concernArgs<ExtArgs>>): Prisma.Prisma__UserConcernClient<runtime.Types.Result.GetResult<Prisma.$UserConcernPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2697,6 +2858,25 @@ export type User$supportRequestsArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.SupportRequestScalarFieldEnum | Prisma.SupportRequestScalarFieldEnum[]
+}
+
+/**
+ * User.concern
+ */
+export type User$concernArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserConcern
+   */
+  select?: Prisma.UserConcernSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserConcern
+   */
+  omit?: Prisma.UserConcernOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserConcernInclude<ExtArgs> | null
+  where?: Prisma.UserConcernWhereInput
 }
 
 /**

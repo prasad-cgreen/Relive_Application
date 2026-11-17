@@ -28,6 +28,7 @@ type LoginStep = "mobile" | "otp" | "onboarding";
 // Bump when the consent text below changes: the backend stores which version each user agreed to.
 const CONSENT_VERSION = "relive-consent-v2";
 
+// Same list the backend accepts (CONCERN_OPTIONS in @relive/shared); the answers personalise the dashboard summary.
 const concerns = [
   "I am struggling with overdue payments",
   "I want to explore closing my debts",
@@ -124,11 +125,24 @@ export default function Home() {
     window.location.replace("/portal");
   };
 
+  // The "What brings you to Relive" answers (selected_concern, customer_text), saved once signed in.
+  // Best effort: a failure only means the dashboard summary isn't personalised, so it never blocks login.
+  const saveConcern = async () => {
+    const customer_text = concernDetails.trim();
+    if (!concern && !customer_text) return;
+    try {
+      await api.post("/concern", { selected_concern: concern ? [concern] : [], customer_text });
+    } catch {
+      /* ignore */
+    }
+  };
+
   // Signed-in users skip the mobile step: straight to the dashboard, or back into onboarding.
   const resumeSession = async () => {
     try {
       // Ask /auth/session first: probing /workflow while signed out writes a 401 into the audit log.
       if (!(await getSession()).authenticated) return false;
+      await saveConcern();
       const { data } = await api.get<Workflow>("/workflow");
       if (data.stage === "DASHBOARD") return goToPortal();
       setWorkflow(data);
@@ -261,6 +275,7 @@ export default function Home() {
     setBusy(true);
     try {
       const { data } = await api.post<Workflow>("/auth/verify-otp", { transactionId, otp });
+      await saveConcern();
       if (data.stage === "DASHBOARD") return goToPortal(); // existing user with a current report
       setWorkflow(data);
       setStep("onboarding");

@@ -404,6 +404,8 @@ export const ModelName = {
   UserSession: 'UserSession',
   KycVerification: 'KycVerification',
   CreditReport: 'CreditReport',
+  UserConcern: 'UserConcern',
+  DashboardInsight: 'DashboardInsight',
   ApiTransaction: 'ApiTransaction',
   SupportRequest: 'SupportRequest'
 } as const
@@ -421,7 +423,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userProfile" | "userConsent" | "otpTransaction" | "userSession" | "kycVerification" | "creditReport" | "apiTransaction" | "supportRequest"
+    modelProps: "user" | "userProfile" | "userConsent" | "otpTransaction" | "userSession" | "kycVerification" | "creditReport" | "userConcern" | "dashboardInsight" | "apiTransaction" | "supportRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -943,6 +945,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    UserConcern: {
+      payload: Prisma.$UserConcernPayload<ExtArgs>
+      fields: Prisma.UserConcernFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserConcernFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserConcernPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserConcernFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserConcernPayload>
+        }
+        findFirst: {
+          args: Prisma.UserConcernFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserConcernPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserConcernFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserConcernPayload>
+        }
+        findMany: {
+          args: Prisma.UserConcernFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserConcernPayload>[]
+        }
+        create: {
+          args: Prisma.UserConcernCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserConcernPayload>
+        }
+        createMany: {
+          args: Prisma.UserConcernCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserConcernCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserConcernPayload>[]
+        }
+        delete: {
+          args: Prisma.UserConcernDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserConcernPayload>
+        }
+        update: {
+          args: Prisma.UserConcernUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserConcernPayload>
+        }
+        deleteMany: {
+          args: Prisma.UserConcernDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserConcernUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserConcernUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserConcernPayload>[]
+        }
+        upsert: {
+          args: Prisma.UserConcernUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserConcernPayload>
+        }
+        aggregate: {
+          args: Prisma.UserConcernAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserConcern>
+        }
+        groupBy: {
+          args: Prisma.UserConcernGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserConcernGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserConcernCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserConcernCountAggregateOutputType> | number
+        }
+      }
+    }
+    DashboardInsight: {
+      payload: Prisma.$DashboardInsightPayload<ExtArgs>
+      fields: Prisma.DashboardInsightFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DashboardInsightFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardInsightPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DashboardInsightFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardInsightPayload>
+        }
+        findFirst: {
+          args: Prisma.DashboardInsightFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardInsightPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DashboardInsightFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardInsightPayload>
+        }
+        findMany: {
+          args: Prisma.DashboardInsightFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardInsightPayload>[]
+        }
+        create: {
+          args: Prisma.DashboardInsightCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardInsightPayload>
+        }
+        createMany: {
+          args: Prisma.DashboardInsightCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DashboardInsightCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardInsightPayload>[]
+        }
+        delete: {
+          args: Prisma.DashboardInsightDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardInsightPayload>
+        }
+        update: {
+          args: Prisma.DashboardInsightUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardInsightPayload>
+        }
+        deleteMany: {
+          args: Prisma.DashboardInsightDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DashboardInsightUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DashboardInsightUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardInsightPayload>[]
+        }
+        upsert: {
+          args: Prisma.DashboardInsightUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardInsightPayload>
+        }
+        aggregate: {
+          args: Prisma.DashboardInsightAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDashboardInsight>
+        }
+        groupBy: {
+          args: Prisma.DashboardInsightGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DashboardInsightGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DashboardInsightCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DashboardInsightCountAggregateOutputType> | number
+        }
+      }
+    }
     ApiTransaction: {
       payload: Prisma.$ApiTransactionPayload<ExtArgs>
       fields: Prisma.ApiTransactionFieldRefs
@@ -1238,6 +1388,29 @@ export const CreditReportScalarFieldEnum = {
 } as const
 
 export type CreditReportScalarFieldEnum = (typeof CreditReportScalarFieldEnum)[keyof typeof CreditReportScalarFieldEnum]
+
+
+export const UserConcernScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  selectedConcern: 'selectedConcern',
+  customerTextEncrypted: 'customerTextEncrypted',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserConcernScalarFieldEnum = (typeof UserConcernScalarFieldEnum)[keyof typeof UserConcernScalarFieldEnum]
+
+
+export const DashboardInsightScalarFieldEnum = {
+  id: 'id',
+  reportId: 'reportId',
+  inputHash: 'inputHash',
+  content: 'content',
+  model: 'model',
+  createdAt: 'createdAt'
+} as const
+
+export type DashboardInsightScalarFieldEnum = (typeof DashboardInsightScalarFieldEnum)[keyof typeof DashboardInsightScalarFieldEnum]
 
 
 export const ApiTransactionScalarFieldEnum = {
@@ -1713,6 +1886,8 @@ export type GlobalOmitConfig = {
   userSession?: Prisma.UserSessionOmit
   kycVerification?: Prisma.KycVerificationOmit
   creditReport?: Prisma.CreditReportOmit
+  userConcern?: Prisma.UserConcernOmit
+  dashboardInsight?: Prisma.DashboardInsightOmit
   apiTransaction?: Prisma.ApiTransactionOmit
   supportRequest?: Prisma.SupportRequestOmit
 }

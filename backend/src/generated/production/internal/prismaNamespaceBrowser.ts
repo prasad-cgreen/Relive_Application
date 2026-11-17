@@ -58,6 +58,8 @@ export const ModelName = {
   UserSession: 'UserSession',
   KycVerification: 'KycVerification',
   CreditReport: 'CreditReport',
+  UserConcern: 'UserConcern',
+  DashboardInsight: 'DashboardInsight',
   ApiTransaction: 'ApiTransaction',
   SupportRequest: 'SupportRequest'
 } as const
@@ -186,6 +188,29 @@ export const CreditReportScalarFieldEnum = {
 } as const
 
 export type CreditReportScalarFieldEnum = (typeof CreditReportScalarFieldEnum)[keyof typeof CreditReportScalarFieldEnum]
+
+
+export const UserConcernScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  selectedConcern: 'selectedConcern',
+  customerTextEncrypted: 'customerTextEncrypted',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserConcernScalarFieldEnum = (typeof UserConcernScalarFieldEnum)[keyof typeof UserConcernScalarFieldEnum]
+
+
+export const DashboardInsightScalarFieldEnum = {
+  id: 'id',
+  reportId: 'reportId',
+  inputHash: 'inputHash',
+  content: 'content',
+  model: 'model',
+  createdAt: 'createdAt'
+} as const
+
+export type DashboardInsightScalarFieldEnum = (typeof DashboardInsightScalarFieldEnum)[keyof typeof DashboardInsightScalarFieldEnum]
 
 
 export const ApiTransactionScalarFieldEnum = {

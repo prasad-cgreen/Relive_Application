@@ -4,7 +4,7 @@ import { AlertTriangle, CalendarCheck, CircleAlert, FileSearch, Wallet } from "l
 import { useCallback, useEffect, useState } from "react";
 import { AccountSummaryCards } from "../../components/account-summary-cards";
 import { AccountsTable } from "../../components/accounts-table";
-import { AssessmentCard } from "../../components/assessment-card";
+import { AssessmentCard, type PersonalInsight } from "../../components/assessment-card";
 import { type ScoreBand } from "../../components/credit-score-gauge";
 import { DebtSummaryCard } from "../../components/debt-summary-card";
 import { DashboardHeader } from "../../components/dashboard-header";
@@ -29,7 +29,7 @@ type Workflow = {
     firstName: string;
     lastName: string;
     email: string;
-    dateOfBirth: string;
+    dateOfBirth: string | null;
     source: string;
     verified: boolean;
   } | null;
@@ -121,8 +121,24 @@ export default function PortalPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountsFilter, setAccountsFilter] = useState<"all" | "negative">("all");
   const [focusAccount, setFocusAccount] = useState<CreditAccountItem | null>(null);
+  // AI summary written from the customer's own answers; null keeps the rule-based summary.
+  const [insight, setInsight] = useState<PersonalInsight | null>(null);
+  const [personalizing, setPersonalizing] = useState(false);
 
   useSessionGuard();
+
+  // Loaded after the dashboard so a slow (or failed) AI call never holds the page up.
+  const loadInsight = useCallback(async () => {
+    setPersonalizing(true);
+    try {
+      const { data } = await api.get<{ insight: PersonalInsight | null }>("/credit/insight", { timeout: 120_000 });
+      setInsight(data.insight);
+    } catch {
+      /* keep the rule-based summary */
+    } finally {
+      setPersonalizing(false);
+    }
+  }, []);
 
   // Open the tab named in the URL (refresh, shared link) and follow Back/Forward between tabs.
   useEffect(() => {
@@ -153,6 +169,7 @@ export default function PortalPage() {
       setOverview(overviewResponse.data);
       setError("");
       setLoading(false);
+      if (overviewResponse.data.score != null) void loadInsight();
     } catch (requestError: unknown) {
       const status = (requestError as { response?: { status?: number } }).response?.status;
       if (status === 401) {
@@ -162,7 +179,7 @@ export default function PortalPage() {
       setError(apiMessage(requestError));
       setLoading(false);
     }
-  }, []);
+  }, [loadInsight]);
 
   useEffect(() => {
     void load();
@@ -324,6 +341,8 @@ export default function PortalPage() {
                       summary={summary}
                       bureau={bureauLabel}
                       retrievedAt={overview.retrievedAt}
+                      insight={insight}
+                      personalizing={personalizing}
                       onViewAccounts={() => changeTab("accounts", "negative")}
                     />
                     <ScoreHero

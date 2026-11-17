@@ -35,6 +35,13 @@ function categoryFor(score: number, bands: ScoreBand[]) {
   return bands.find((band) => score >= band.min && score <= band.max) ?? null;
 }
 
+/** e.g. "Excellent (800-900 on a 300-900 scale)"; null for a bureau without bands. */
+export function scoreBandLabel(bureau: string, score: number) {
+  const config = scoreConfig(bureau);
+  const band = config && categoryFor(score, config.bands);
+  return config && band ? `${band.label} (${band.min}-${band.max} on a ${config.min}-${config.max} scale)` : null;
+}
+
 export async function getCreditOverview(userId: string) {
   const [[latestReport, previousReport], workflow] = await Promise.all([
     production.creditReport.findMany({ where: { userId, status: { not: "NO_RECORD" } }, orderBy: { retrievedAt: "desc" }, take: 2 }),
