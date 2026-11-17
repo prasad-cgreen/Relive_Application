@@ -10,8 +10,23 @@ export type Bureau = "EXPERIAN" | "CRIF";
 /** pan + dob only for PAN-verified users (YYYY-MM-DD). */
 export type BureauInput = { name: string; mobile: string; pan?: string; dob?: string };
 export type BureauPull = { bureau: Bureau; providerRef: string; report: NormalizedReport; raw: unknown };
-/** phoneLast4 / phoneFormat describe the mobile on the PAN record; phoneFormat has every digit replaced by 9 (shows masking, hides the number). */
-export type PanProfile = { firstName: string; lastName: string; email: string; dateOfBirth: string; providerRef: string; phoneLast4?: string | null; phoneFormat?: string | null };
+/** phone: the mobile on the PAN record as IndiConnect shows it (middle masked, e.g. "91XXXXXX81"); see normalizePanPhone. */
+export type PanProfile = { firstName: string; lastName: string; email: string; dateOfBirth: string; providerRef: string; phone?: string | null };
+
+/** Digits and mask characters of the last 10 positions (drops +91 and spaces); null when no digit is visible (nothing to compare). */
+export function normalizePanPhone(value: unknown) {
+  const phone = String(value ?? "").replace(/[^0-9Xx*]/g, "").slice(-10);
+  return /\d/.test(phone) ? phone : null;
+}
+
+/** True when every digit the PAN record shows equals the mobile's digit in the same position (right-aligned). */
+export function panPhoneMatches(panPhone: string, mobile: string) {
+  const offset = mobile.length - panPhone.length;
+  return offset >= 0 && [...panPhone].every((char, i) => !/\d/.test(char) || char === mobile[offset + i]);
+}
+
+/** For logs: at most the first 2 and last 2 digits, like IndiConnect's own masking, even if it ever sends the full number. */
+export const maskPanPhone = (phone: string) => phone.replace(/\d/g, (digit, i: number) => (i < 2 || i >= phone.length - 2 ? digit : "X"));
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 type Service = "otp" | "pan" | "bureau";
@@ -176,13 +191,7 @@ const indiconnectApi = {
       throw new ProviderError("BUSINESS_FAILURE", PAN_NOT_VERIFIED.code, PAN_NOT_VERIFIED.message, false);
     }
     // Mobile on the PAN record (often masked): only the last 4 digits are kept, for the audit trail.
-    const phone = String(result.phone_number ?? "");
-    const phoneDigits = phone.replace(/\D/g, "");
-    return {
-      ...panToProfile(result), providerRef: String(result.txn_id ?? `pan_${randomUUID()}`),
-      phoneLast4: phoneDigits.length >= 4 ? phoneDigits.slice(-4) : null,
-      phoneFormat: phone ? phone.replace(/\d/g, "9").slice(0, 20) : null,
-    };
+    return { ...panToProfile(result), providerRef: String(result.txn_id ?? `pan_${randomUUID()}`), phone: normalizePanPhone(result.phone_number) };
   },
   bureau: async (bureau: Bureau, input: BureauInput): Promise<BureauPull> => {
     const query = bureau === "EXPERIAN"

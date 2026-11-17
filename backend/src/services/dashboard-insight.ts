@@ -27,7 +27,7 @@ const INSIGHT_JSON_SCHEMA = {
   type: "object",
   properties: {
     title: { type: "string" },
-    insights: { type: "array", items: { type: "string" } },
+    insights: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 1 }, // one paragraph: the model ignores "one" in the prompt alone
     recommendations: { type: "array", items: { type: "string" } },
   },
   required: ["title", "insights", "recommendations"],
@@ -114,7 +114,7 @@ async function generate(prompt: string) {
   const clean = (text: string) => text.replace(/\s+/g, " ").trim();
   const content: DashboardInsightContent = {
     title: clean(parsed.data.title),
-    insights: parsed.data.insights.map(clean).filter(Boolean).slice(0, 2),
+    insights: parsed.data.insights.map(clean).filter(Boolean).slice(0, 1), // the card shows one paragraph (see the prompt file)
     recommendations: parsed.data.recommendations.map(clean).filter(Boolean).slice(0, 3),
   };
   if (!content.title || !content.insights.length) throw new Error("Summary came back empty");

@@ -15,7 +15,7 @@ import { findSession, requireAuth, SESSION_COOKIE } from "./middleware/auth.js";
 import { decrypt, encrypt, hashMobile, hashOtp, hashPan, hashToken, newToken, secureEqual } from "./lib/crypto.js";
 import { HttpError, ProviderError } from "./lib/errors.js";
 import { stepForStage, trackJourney, writeAudit } from "./services/audit.js";
-import { providers, type MockScenario } from "./services/providers.js";
+import { maskPanPhone, panPhoneMatches, providers, type MockScenario } from "./services/providers.js";
 import { getWorkflow } from "./services/workflow.js";
 import { getCreditOverview } from "./services/credit-score.js";
 import { getDashboardInsight } from "./services/dashboard-insight.js";
@@ -347,17 +347,22 @@ app.post("/api/v1/kyc/verify", requireAuth, sensitiveLimiter, async (req, res) =
     throw error;
   }
   // The PAN record is the verified identity: it fills a new profile or replaces manual details.
-  const { providerRef, email, phoneLast4, phoneFormat, ...identity } = details;
-  // Last 4 digits + digit-free format of the PAN record's mobile: enough to check a mismatch, never the number itself.
-  const panPhone = { panPhoneLast4: phoneLast4 ?? null, panPhoneFormat: phoneFormat ?? null };
-  const user = await production.user.findUniqueOrThrow({ where: { id: userId }, select: { mobileLast4: true, bureauMobileLast4: true } });
+  const { providerRef, email, phone, ...identity } = details;
+  const user = await production.user.findUniqueOrThrow({ where: { id: userId }, select: { mobileLast4: true, mobileEncrypted: true, bureauMobileEncrypted: true } });
+  // Numbers this user proved by OTP: the login number and, once verified, the alternate one.
+  const ownMobiles = [user.mobileEncrypted, user.bureauMobileEncrypted].flatMap((value) => {
+    try { return value ? [decrypt(value)] : []; } catch { return []; } // unreadable (key rotated): not proven
+  });
+  // IndiConnect masks the middle ("91XXXXXX81"): compare only the digits it shows. null = no mobile on the PAN record.
+  const panMobileMatched = phone ? ownMobiles.some((mobile) => panPhoneMatches(phone, mobile)) : null;
+  const panPhoneLog = { panPhone: phone ? maskPanPhone(phone) : null, panMobileMatched };
   // Anyone can type any PAN: when the PAN record names a mobile that isn't one this user proved by OTP,
   // don't reveal or adopt that identity (name, DOB, email); a person reviews it instead.
-  if (phoneLast4 && phoneLast4 !== user.mobileLast4 && phoneLast4 !== user.bureauMobileLast4) {
+  if (panMobileMatched === false) {
     await production.kycVerification.create({ data: { userId, panHash, panLast4: pan.slice(-4), status: "MANUAL_REVIEW", providerRef, failureReason: "PAN_MOBILE_MISMATCH" } });
     await trackJourney({
       userRef: userId, eventType: "PAN_MOBILE_MISMATCH", step: "PAN", outcome: "MANUAL_REVIEW", requestId: req.requestId,
-      metadata: { panLast4: pan.slice(-4), provider: env.PAN_PROVIDER, loginMobileLast4: user.mobileLast4, ...panPhone }, increment: ["panAttempts"],
+      metadata: { panLast4: pan.slice(-4), provider: env.PAN_PROVIDER, loginMobileLast4: user.mobileLast4, ...panPhoneLog }, increment: ["panAttempts"],
     });
     throw new HttpError(409, "PAN_MOBILE_MISMATCH",
       "This PAN is registered with a different mobile number, so we couldn't verify it here. Log in with that number, or continue by entering your details", false);
@@ -373,8 +378,8 @@ app.post("/api/v1/kyc/verify", requireAuth, sensitiveLimiter, async (req, res) =
   ]);
   await trackJourney({
     userRef: userId, eventType: "PAN_VERIFIED", step: "REPORT", outcome: "SUCCESS", requestId: req.requestId,
-    // A mismatching PAN mobile is rejected above; null = the PAN record had no mobile to compare.
-    metadata: { panLast4: pan.slice(-4), provider: env.PAN_PROVIDER, panMobileMatchesLogin: phoneLast4 ? phoneLast4 === user.mobileLast4 : null, ...panPhone },
+    // A mismatching PAN mobile is rejected above, so panMobileMatched is true, or null when the record had no mobile.
+    metadata: { panLast4: pan.slice(-4), provider: env.PAN_PROVIDER, ...panPhoneLog },
     increment: ["panAttempts"],
     set: { identitySource: "PAN", panLast4: pan.slice(-4) },
   });

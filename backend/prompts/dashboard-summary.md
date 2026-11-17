@@ -13,7 +13,7 @@
 
   The reply format is fixed in code (the dashboard depends on it), so you don't need to describe it here:
     title            one-line heading
-    insights         paragraphs (the first 2 are shown)
+    insights         exactly one paragraph
     recommendations  next steps (the first 3 are shown)
 
   Comments like this one are removed before the prompt is sent.
@@ -27,7 +27,7 @@ You receive three inputs below:
 
 Write for this one customer, so the summary answers what they came here for:
 - title: one sentence of at most 12 words that names their situation in light of what they told us.
-- insights: exactly 2 short paragraphs, each at most 45 words. The first connects their concern and words to what the report actually shows. The second explains what that means for them now. If the report does not show what they are worried about (for example, they chose overdue payments but nothing is overdue), say so plainly and kindly, and mention what the report does show.
+- insights: a list with exactly one item, never two: a single paragraph of exactly 3 sentences and at most 60 words in total (about 4 to 5 lines). Pick only the 2 or 3 figures that matter most for their concern; do not list every number. Start by connecting their concern and words to what the report actually shows, then say what that means for them now. If the report does not show what they are worried about (for example, they chose overdue payments but nothing is overdue), say so plainly and kindly, and mention what the report does show.
 - recommendations: 2 or 3 next steps, each one sentence of at most 25 words that starts with a verb. Order them by what to do first, and make them specific to their accounts and concern.
 
 Rules:
