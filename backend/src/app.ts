@@ -98,9 +98,9 @@ async function issueOtp(req: Request, user: { id: string }, mobile: string, purp
   await assertCanSendOtp(user.id);
   const otpStep = purpose === "LOGIN" ? "OTP" : "ALT_MOBILE";
   const transactionId = randomUUID();
-  let sent: { providerRef: string | null };
+  let sent: { providerRef: string | null; otp: string | null };
   try {
-    sent = await providers.sendOtp(user.id, mobile, scenario(req));
+    sent = await providers.sendOtp(user.id, mobile, scenario(req), transactionId);
   } catch (error) {
     await trackJourney({
       userRef: user.id, eventType: "OTP_SEND_FAILED", step: otpStep, outcome: error instanceof ProviderError ? error.code : "UNKNOWN",
@@ -115,20 +115,21 @@ async function issueOtp(req: Request, user: { id: string }, mobile: string, purp
     production.otpTransaction.create({ data: {
       id: transactionId, userId: user.id, status: "PENDING", purpose,
       targetMobileEncrypted: purpose === "BUREAU_MOBILE" ? encrypt(mobile) : null,
-      providerRef: sent.providerRef, otpHash: sent.providerRef ? null : hashOtp(transactionId, env.OTP_MOCK_CODE),
+      providerRef: sent.providerRef, otpHash: sent.otp ? hashOtp(transactionId, sent.otp) : null,
       expiresAt: new Date(now + OTP_TTL_MS), resendAfter: new Date(now + OTP_RESEND_AFTER_MS),
     }}),
   ]);
   await trackJourney({
     userRef: user.id, eventType: "OTP_SENT", step: otpStep, outcome: "SUCCESS", requestId: req.requestId, transactionId,
-    metadata: { purpose, mobileLast4: mobile.slice(-4), provider: sent.providerRef ? "INDICONNECT" : "MOCK" }, increment: ["otpSends"],
+    metadata: { purpose, mobileLast4: mobile.slice(-4), provider: env.OTP_PROVIDER.toUpperCase() }, increment: ["otpSends"],
   });
   return {
     transactionId,
     mobileLast4: mobile.slice(-4),
     expiresInSeconds: OTP_TTL_MS / 1000,
     resendAfterSeconds: OTP_RESEND_AFTER_MS / 1000,
-    ...(env.NODE_ENV !== "production" && !sent.providerRef && { devOtp: env.OTP_MOCK_CODE }),
+    // Only the fixed mock code is ever echoed back; a real OTP must reach the user only by SMS.
+    ...(env.NODE_ENV !== "production" && env.OTP_PROVIDER === "mock" && { devOtp: env.OTP_MOCK_CODE }),
   };
 }
 
@@ -150,7 +151,8 @@ async function consumeOtp(req: Request, data: { transactionId: string; otp: stri
   }
 
   let valid: boolean;
-  if (transaction.providerRef) {
+  // No stored hash = IndiConnect generated the OTP and checks it. Otherwise (mock, Smartping) Relive checks its own hash.
+  if (transaction.otpHash === null && transaction.providerRef) {
     try {
       await providers.verifyOtp(transaction.userId, transaction.providerRef, data.otp);
       valid = true;
@@ -345,7 +347,9 @@ app.post("/api/v1/kyc/verify", requireAuth, sensitiveLimiter, async (req, res) =
     throw error;
   }
   // The PAN record is the verified identity: it fills a new profile or replaces manual details.
-  const { providerRef, email, phoneLast4, ...identity } = details;
+  const { providerRef, email, phoneLast4, phoneFormat, ...identity } = details;
+  // Last 4 digits + digit-free format of the PAN record's mobile: enough to check a mismatch, never the number itself.
+  const panPhone = { panPhoneLast4: phoneLast4 ?? null, panPhoneFormat: phoneFormat ?? null };
   const user = await production.user.findUniqueOrThrow({ where: { id: userId }, select: { mobileLast4: true, bureauMobileLast4: true } });
   // Anyone can type any PAN: when the PAN record names a mobile that isn't one this user proved by OTP,
   // don't reveal or adopt that identity (name, DOB, email); a person reviews it instead.
@@ -353,7 +357,7 @@ app.post("/api/v1/kyc/verify", requireAuth, sensitiveLimiter, async (req, res) =
     await production.kycVerification.create({ data: { userId, panHash, panLast4: pan.slice(-4), status: "MANUAL_REVIEW", providerRef, failureReason: "PAN_MOBILE_MISMATCH" } });
     await trackJourney({
       userRef: userId, eventType: "PAN_MOBILE_MISMATCH", step: "PAN", outcome: "MANUAL_REVIEW", requestId: req.requestId,
-      metadata: { panLast4: pan.slice(-4), provider: env.PAN_PROVIDER }, increment: ["panAttempts"],
+      metadata: { panLast4: pan.slice(-4), provider: env.PAN_PROVIDER, loginMobileLast4: user.mobileLast4, ...panPhone }, increment: ["panAttempts"],
     });
     throw new HttpError(409, "PAN_MOBILE_MISMATCH",
       "This PAN is registered with a different mobile number, so we couldn't verify it here. Log in with that number, or continue by entering your details", false);
@@ -370,7 +374,7 @@ app.post("/api/v1/kyc/verify", requireAuth, sensitiveLimiter, async (req, res) =
   await trackJourney({
     userRef: userId, eventType: "PAN_VERIFIED", step: "REPORT", outcome: "SUCCESS", requestId: req.requestId,
     // A mismatching PAN mobile is rejected above; null = the PAN record had no mobile to compare.
-    metadata: { panLast4: pan.slice(-4), provider: env.PAN_PROVIDER, panMobileMatchesLogin: phoneLast4 ? phoneLast4 === user.mobileLast4 : null },
+    metadata: { panLast4: pan.slice(-4), provider: env.PAN_PROVIDER, panMobileMatchesLogin: phoneLast4 ? phoneLast4 === user.mobileLast4 : null, ...panPhone },
     increment: ["panAttempts"],
     set: { identitySource: "PAN", panLast4: pan.slice(-4) },
   });

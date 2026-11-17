@@ -20,7 +20,10 @@ const schema = z.object({
   DATA_ENCRYPTION_KEY: z.string().min(24).default("relive-local-data-key-change-me-please"),
   OTP_MOCK_CODE: z.string().regex(/^\d{6}$/).default("123456"),
   // Per service: mock (local fakes, OTP = OTP_MOCK_CODE) or indiconnect (real, billed API calls).
-  OTP_PROVIDER: z.enum(["mock", "indiconnect"]).default("mock"),
+  OTP_PROVIDER: z.enum(["mock", "indiconnect", "smartping"]).default("mock"),
+  // Smartping SPARC SMS account (OTP_PROVIDER=smartping): user ID ending in .trans, and its Secret Key.
+  SMARTPING_USERNAME: z.string().min(1).optional(),
+  SMARTPING_PASSWORD: z.string().min(1).optional(),
   PAN_PROVIDER: z.enum(["mock", "indiconnect"]).default("mock"),
   BUREAU_PROVIDER: z.enum(["mock", "indiconnect"]).default("mock"),
   INDICONNECT_BASE_URL: z.string().url().default("https://api.staging.indiconnect.in"),
@@ -47,6 +50,11 @@ const schema = z.object({
   if (services.some((service) => value[service] === "indiconnect")) {
     for (const key of ["INDICONNECT_SERVICE_KEY", "INDICONNECT_AUTHORIZATION"] as const) {
       if (!value[key]) ctx.addIssue({ code: "custom", path: [key], message: `${key} is required when any *_PROVIDER=indiconnect` });
+    }
+  }
+  if (value.OTP_PROVIDER === "smartping") {
+    for (const key of ["SMARTPING_USERNAME", "SMARTPING_PASSWORD"] as const) {
+      if (!value[key]) ctx.addIssue({ code: "custom", path: [key], message: `${key} is required when OTP_PROVIDER=smartping` });
     }
   }
   if (value.NODE_ENV === "production") {

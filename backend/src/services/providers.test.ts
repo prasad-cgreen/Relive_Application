@@ -3,7 +3,20 @@ import { describe, expect, it } from "vitest";
 // Pure parsing helpers: no database needed, so give env.ts placeholder URLs before importing.
 process.env.DATABASE_URL ??= "postgresql://test@localhost/test";
 process.env.DATABASE_URL_UNPOOLED ??= "postgresql://test@localhost/test";
-const { normalizeDob, panToProfile } = await import("./providers.js");
+const { normalizeDob, panToProfile, otpSmsText, smartpingResult } = await import("./providers.js");
+
+describe("Smartping SMS", () => {
+  it("sends the DLT-approved template text exactly", () => {
+    expect(otpSmsText("048213")).toBe("Dear Customer, Your login OTP is 048213. Do not share it with anyone.-cGreen");
+  });
+
+  it("maps SPARC submit states", () => {
+    expect(smartpingResult({ state: "SUBMIT_ACCEPTED", transactionId: 42 })).toEqual({ providerRef: "42" });
+    expect(() => smartpingResult({ state: "INVALID_MSISDN" })).toThrow(expect.objectContaining({ kind: "BUSINESS_FAILURE" }));
+    expect(() => smartpingResult({ state: "TEMPLATE_MISSING" })).toThrow(expect.objectContaining({ code: "SMARTPING_TEMPLATE_MISSING", kind: "TECHNICAL_FAILURE" }));
+    expect(() => smartpingResult(null)).toThrow(expect.objectContaining({ code: "INVALID_PROVIDER_RESPONSE" }));
+  });
+});
 
 describe("IndiConnect PAN response parsing", () => {
   it("normalizes the date formats the provider may return", () => {

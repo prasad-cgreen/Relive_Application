@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import { env } from "../config/env.js";
 import { production } from "../database/clients.js";
 import { ProviderError } from "../lib/errors.js";
@@ -10,7 +10,8 @@ export type Bureau = "EXPERIAN" | "CRIF";
 /** pan + dob only for PAN-verified users (YYYY-MM-DD). */
 export type BureauInput = { name: string; mobile: string; pan?: string; dob?: string };
 export type BureauPull = { bureau: Bureau; providerRef: string; report: NormalizedReport; raw: unknown };
-export type PanProfile = { firstName: string; lastName: string; email: string; dateOfBirth: string; providerRef: string; phoneLast4?: string | null };
+/** phoneLast4 / phoneFormat describe the mobile on the PAN record; phoneFormat has every digit replaced by 9 (shows masking, hides the number). */
+export type PanProfile = { firstName: string; lastName: string; email: string; dateOfBirth: string; providerRef: string; phoneLast4?: string | null; phoneFormat?: string | null };
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 type Service = "otp" | "pan" | "bureau";
@@ -175,8 +176,13 @@ const indiconnectApi = {
       throw new ProviderError("BUSINESS_FAILURE", PAN_NOT_VERIFIED.code, PAN_NOT_VERIFIED.message, false);
     }
     // Mobile on the PAN record (often masked): only the last 4 digits are kept, for the audit trail.
-    const phoneDigits = String(result.phone_number ?? "").replace(/\D/g, "");
-    return { ...panToProfile(result), providerRef: String(result.txn_id ?? `pan_${randomUUID()}`), phoneLast4: phoneDigits.length >= 4 ? phoneDigits.slice(-4) : null };
+    const phone = String(result.phone_number ?? "");
+    const phoneDigits = phone.replace(/\D/g, "");
+    return {
+      ...panToProfile(result), providerRef: String(result.txn_id ?? `pan_${randomUUID()}`),
+      phoneLast4: phoneDigits.length >= 4 ? phoneDigits.slice(-4) : null,
+      phoneFormat: phone ? phone.replace(/\d/g, "9").slice(0, 20) : null,
+    };
   },
   bureau: async (bureau: Bureau, input: BureauInput): Promise<BureauPull> => {
     const query = bureau === "EXPERIAN"
@@ -202,14 +208,66 @@ const indiconnectApi = {
   },
 };
 
+// ---- Smartping SPARC SMS (apis.sparc.smartping.io, "SMS" API): it only delivers the text; Relive generates and checks the OTP ----
+
+const SMS_TIMEOUT_MS = 15_000;
+// DLT registration for sender CGRNSR (cGreen). The text must match the approved template exactly, or operators drop the SMS.
+const SMARTPING_DLT = { sender: "CGRNSR", peId: "1001680961489679847", templateId: "1007729635073898162", telemarketerId: "1702166020082452097" };
+export const otpSmsText = (otp: string) => `Dear Customer, Your login OTP is ${otp}. Do not share it with anyone.-cGreen`;
+
+/** SPARC's submit response. SUBMIT_ACCEPTED = accepted for delivery (not yet delivered). */
+export function smartpingResult(body: any): { providerRef: string } {
+  const state = body?.state;
+  if (state === "SUBMIT_ACCEPTED") return { providerRef: String(body.transactionId ?? "") };
+  if (state === "INVALID_MSISDN") throw new ProviderError("BUSINESS_FAILURE", "OTP_SEND_FAILED", "We could not send an OTP to this number. Check the number and try again", false);
+  if (state === "THROTTLING_ERROR") throw new ProviderError("TECHNICAL_FAILURE", "SMS_THROTTLED", "Too many requests right now. Please try again in a minute", false);
+  if (typeof state !== "string") throw new ProviderError("TECHNICAL_FAILURE", "INVALID_PROVIDER_RESPONSE", "Provider returned an invalid response", false);
+  // TEMPLATE_MISSING, DLT_*_INVALID, INVALID_SOURCE_ADDRESS...: our SMS setup is wrong, not the user's input.
+  throw new ProviderError("TECHNICAL_FAILURE", `SMARTPING_${state}`, "We could not send the OTP right now. Please try again later", false);
+}
+
+async function smartpingSendOtp(mobile: string, otp: string, corelationId: string) {
+  let response: Response;
+  try {
+    response = await fetch("https://pgapi.sparc.smartping.io/fe/api/v1/message", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${Buffer.from(`${env.SMARTPING_USERNAME}:${env.SMARTPING_PASSWORD}`).toString("base64")}`,
+      },
+      body: JSON.stringify({
+        unicode: false,
+        sender: SMARTPING_DLT.sender,
+        message: { recipient: Number(`91${mobile}`), text: otpSmsText(otp), corelationId },
+        extra: { dltContentId: SMARTPING_DLT.templateId, dltPrincipalEntityId: SMARTPING_DLT.peId, dltTelemarketerId: SMARTPING_DLT.telemarketerId },
+      }),
+      signal: AbortSignal.timeout(SMS_TIMEOUT_MS),
+    });
+  } catch (error) {
+    if ((error as Error).name === "TimeoutError") throw new ProviderError("TIMEOUT", "PROVIDER_TIMEOUT", "SMS service timed out", false);
+    throw new ProviderError("TECHNICAL_FAILURE", "PROVIDER_UNAVAILABLE", "SMS service is temporarily unavailable", false);
+  }
+  if (!response.ok) {
+    const code = response.status === 401 || response.status === 403 ? "PROVIDER_AUTH_FAILED" : response.status >= 500 ? "PROVIDER_UNAVAILABLE" : "PROVIDER_REQUEST_REJECTED";
+    throw new ProviderError("TECHNICAL_FAILURE", code, "We could not send the OTP right now. Please try again later", false);
+  }
+  return smartpingResult(await response.json().catch(() => null));
+}
+
 // OTP calls never retry: a retried send texts the user twice, a retried verify can burn the OTP.
 export const providers = {
-  sendOtp: (userId: string, mobile: string, scenario: MockScenario) => execute({
-    provider: live("otp") ? "INDICONNECT" : "MOCK_OTP", operation: "SEND_OTP", userId, retries: 0,
-    action: async (attempt): Promise<{ providerRef: string | null }> => {
-      if (live("otp")) return indiconnectApi.sendOtp(mobile);
+  /** `otp` is set when Relive checks the code itself (mock, Smartping); IndiConnect checks it on its side (providerRef). */
+  sendOtp: (userId: string, mobile: string, scenario: MockScenario, transactionId: string) => execute({
+    provider: live("otp") ? "INDICONNECT" : env.OTP_PROVIDER === "smartping" ? "SMARTPING" : "MOCK_OTP", operation: "SEND_OTP", userId, retries: 0,
+    timeoutMs: env.OTP_PROVIDER === "smartping" ? SMS_TIMEOUT_MS + 1_000 : undefined,
+    action: async (attempt): Promise<{ providerRef: string | null; otp: string | null }> => {
+      if (live("otp")) return { ...(await indiconnectApi.sendOtp(mobile)), otp: null };
+      if (env.OTP_PROVIDER === "smartping") {
+        const otp = randomInt(0, 1_000_000).toString().padStart(6, "0");
+        return { ...(await smartpingSendOtp(mobile, otp, transactionId)), otp };
+      }
       await simulate(scenario, attempt);
-      return { providerRef: null };
+      return { providerRef: null, otp: env.OTP_MOCK_CODE };
     },
   }),
   verifyOtp: (userId: string, requestId: string, otp: string) => execute({
