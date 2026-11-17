@@ -75,7 +75,8 @@ export function buildReportFacts(report: NormalizedReport, bureau: string, retri
 
 /** The prompt file without its <!-- comments -->. Read fresh each time, so edits apply to the next summary. */
 export async function loadPromptTemplate() {
-  return (await readFile(PROMPT_FILE, "utf8")).replace(/<!--[\s\S]*?-->/g, "").trim();
+  // Windows editors save CRLF; normalise so the prompt is the same wherever it was edited.
+  return (await readFile(PROMPT_FILE, "utf8")).replace(/\r\n?/g, "\n").replace(/<!--[\s\S]*?-->/g, "").trim();
 }
 
 type PromptInputs = { selected_concern: string[]; customer_text: string; facts: ReturnType<typeof buildReportFacts> };

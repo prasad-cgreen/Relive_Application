@@ -264,6 +264,7 @@ export default function PortalPage() {
           bureau={overview?.score != null ? bureauLabel : null}
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
           onLogout={logout}
+          onOpenProfile={() => changeTab("profile")}
         />
 
         <main className="mx-auto w-full max-w-[1400px] flex-1 space-y-4 p-4 pb-24 sm:space-y-6 sm:p-6 sm:pb-24 lg:p-8">
@@ -343,6 +344,7 @@ export default function PortalPage() {
                       retrievedAt={overview.retrievedAt}
                       insight={insight}
                       personalizing={personalizing}
+                      firstName={firstName}
                       onViewAccounts={() => changeTab("accounts", "negative")}
                     />
                     <ScoreHero

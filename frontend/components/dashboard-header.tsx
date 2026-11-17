@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, LogOut, Menu } from "lucide-react";
+import { ChevronDown, LogOut, Menu, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -11,6 +11,7 @@ interface DashboardHeaderProps {
   userEmail?: string;
   onOpenMobileMenu: () => void;
   onLogout: () => void;
+  onOpenProfile?: () => void;
   bureau?: string | null;
 }
 
@@ -21,6 +22,7 @@ export function DashboardHeader({
   userEmail,
   onOpenMobileMenu,
   onLogout,
+  onOpenProfile,
   bureau,
 }: DashboardHeaderProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -88,6 +90,20 @@ export function DashboardHeader({
                 <p className="truncate text-sm font-semibold text-[#0c1a13] dark:text-white">{userName}</p>
                 <p className="truncate text-xs text-[#71867a] dark:text-[#8ba295]">{userEmail || "Verified member"}</p>
               </div>
+              {onOpenProfile && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    onOpenProfile();
+                  }}
+                  className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-[#183b2f] transition hover:bg-[#f1f6f3] dark:text-[#d6e6dc] dark:hover:bg-[#12241a]"
+                >
+                  <UserRound className="size-4" />
+                  My profile
+                </button>
+              )}
               <button
                 type="button"
                 role="menuitem"

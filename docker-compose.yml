@@ -1,0 +1,50 @@
+# Relive: API + web app.
+#
+#   docker compose run --rm migrate      # apply database migrations (once per release)
+#   docker compose up -d --build         # start the API (port 4100) and web app (port 3000)
+#
+# Secrets come from backend/.env at run time (never copied into the images).
+# Browser-side settings are compiled into the web app, so set them in a root .env file
+# (copy .env.example) or your shell before building:
+#   NEXT_PUBLIC_API_URL=https://api.your-domain.com/api/v1
+#   NEXT_PUBLIC_TURNSTILE_SITE_KEY=<Cloudflare Turnstile site key>
+# and set FRONTEND_ORIGIN in backend/.env to the web app's address (e.g. https://your-domain.com).
+
+services:
+  api:
+    build:
+      context: .
+      target: backend
+    image: relive-api
+    env_file: backend/.env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      HOST: 0.0.0.0
+      PORT: 4100
+    ports:
+      - "4100:4100"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      target: frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4100/api/v1}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+    image: relive-web
+    environment:
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      target: migrate
+    image: relive-migrate
+    env_file: backend/.env
+    profiles: ["tools"] # only runs when called: docker compose run --rm migrate

@@ -10,6 +10,8 @@ for (const file of [resolve(process.cwd(), ".env"), resolve(process.cwd(), "../f
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().default(4100),
+  // 0.0.0.0 in Docker so the container port is reachable; 127.0.0.1 locally.
+  HOST: z.string().min(1).default("127.0.0.1"),
   FRONTEND_ORIGIN: z.string().default("http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173"),
   DATABASE_URL: z.string().url(),
   DATABASE_URL_UNPOOLED: z.string().url(),

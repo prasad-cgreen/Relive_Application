@@ -1,8 +1,8 @@
 import { app } from "./app.js";
 import { env } from "./config/env.js";
 
-const server = app.listen(env.PORT, "127.0.0.1", () => {
-  console.log(`Relive API listening on http://127.0.0.1:${env.PORT}`);
+const server = app.listen(env.PORT, env.HOST, () => {
+  console.log(`Relive API listening on http://${env.HOST}:${env.PORT}`);
 });
 
 function shutdown() {

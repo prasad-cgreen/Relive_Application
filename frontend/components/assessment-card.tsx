@@ -81,16 +81,20 @@ interface AssessmentCardProps {
   retrievedAt: string | null;
   insight?: PersonalInsight | null;
   personalizing?: boolean;
+  /** First name from the verified profile; the greeting is hidden without it. */
+  firstName?: string | null;
   onViewAccounts: () => void;
 }
 
-export function AssessmentCard({ accounts, summary, bureau, retrievedAt, insight, personalizing, onViewAccounts }: AssessmentCardProps) {
+export function AssessmentCard({ accounts, summary, bureau, retrievedAt, insight, personalizing, firstName, onViewAccounts }: AssessmentCardProps) {
   // Tone and the accounts link stay rule-based (straight from the numbers); the words come from the AI when available.
   const rules = buildAssessment(accounts, summary);
   const { action, tone } = rules;
   const title = insight?.title ?? rules.title;
   const body: ReactNode[] = insight?.insights ?? rules.body;
   const steps = insight?.recommendations ?? [];
+  // Names arrive in capitals from PAN ("PRASAD"); greet as "Prasad".
+  const name = firstName?.trim().split(/\s+/)[0]?.toLowerCase().replace(/^./, (c) => c.toUpperCase());
 
   return (
     <section className="flex h-full flex-col rounded-3xl border border-[#d5e3c8] bg-[#edf3e6] p-5 sm:p-7 dark:border-[#1a3827] dark:bg-[#0c1a12]">
@@ -114,8 +118,10 @@ export function AssessmentCard({ accounts, summary, bureau, retrievedAt, insight
         </span>
       </div>
 
+      {name && <p className="mt-5 text-base font-medium text-[#216b49] dark:text-emerald-300">Hi, {name}</p>}
+
       <div key={insight ? "personal" : "rules"} className="animate-in fade-in duration-500">
-        <h2 className="mt-5 max-w-lg text-2xl font-semibold leading-tight tracking-tight text-[#183b2f] sm:text-[28px] dark:text-white">{title}</h2>
+        <h2 className={`${name ? "mt-1.5" : "mt-5"} max-w-lg text-2xl font-semibold leading-tight tracking-tight text-[#183b2f] sm:text-[28px] dark:text-white`}>{title}</h2>
 
         <div className="mt-4 max-w-xl space-y-3 text-sm leading-relaxed text-[#465a50] dark:text-[#a0b8ab]">
           {body.map((paragraph, i) => (
