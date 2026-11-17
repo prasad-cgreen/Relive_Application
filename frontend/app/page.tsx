@@ -26,7 +26,7 @@ import { getSession, setSignedInHint, type Session } from "../lib/session";
 type LoginStep = "mobile" | "otp" | "onboarding";
 
 // Bump when the consent text below changes: the backend stores which version each user agreed to.
-const CONSENT_VERSION = "relive-consent-v2";
+const CONSENT_VERSION = "relive-consent-v3"; // v3: links to the full Terms and Privacy Policy, adds the AI summary
 
 // Same list the backend accepts (CONCERN_OPTIONS in @relive/shared); the answers personalise the dashboard summary.
 const concerns = [
@@ -727,6 +727,7 @@ export default function Home() {
                         [
                           [Fingerprint, "Verification", "Verify my mobile number with a one-time password (OTP)."],
                           [FileSearch, "Credit report", "Fetch my credit report from Experian and CRIF High Mark using my PAN, name and mobile number, and store it securely to show my score and insights."],
+                          [ShieldCheck, "AI summary", "Use an AI service to summarise my report and what I tell Relive. My name, PAN, mobile number and account numbers are not shared with it."],
                           [Sparkles, "Communication", "Contact me by SMS, WhatsApp, email and phone about my credit health and relevant offers."],
                         ] as const
                       ).map(([Icon, title, text]) => (

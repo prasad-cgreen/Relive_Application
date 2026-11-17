@@ -8,7 +8,7 @@ const SECURED = /hous|home|property|mortgage|auto|\bcar\b|vehicle|two-wheeler|go
 const COLORS = ["bg-emerald-500", "bg-sky-500", "bg-violet-500", "bg-amber-500", "bg-rose-500", "bg-teal-500"];
 const rupees = (value: number) => `₹${value.toLocaleString("en-IN")}`;
 
-/** Freed-style debt summary: where the outstanding money sits, by loan type. */
+/** Debt summary: where the outstanding money sits, by loan type. */
 export function DebtSummaryCard({ totalBalance, accounts }: { totalBalance: number; accounts: Account[] }) {
   const byType = new Map<string, { balance: number; count: number }>();
   let secured = 0;
