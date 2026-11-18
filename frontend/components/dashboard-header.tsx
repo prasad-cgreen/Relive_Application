@@ -2,7 +2,6 @@
 
 import { ChevronDown, Headset, LogOut, Menu, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ThemeToggle } from "./theme-toggle";
 
 interface DashboardHeaderProps {
   title: string;
@@ -82,7 +81,6 @@ export function DashboardHeader({
           </span>
         )}
 
-        <ThemeToggle />
 
         <div className="relative" ref={dropdownRef}>
           <button

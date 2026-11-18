@@ -121,7 +121,7 @@ const sections: LegalSection[] = [
   {
     heading: "Cookies and similar technologies",
     content: [
-      "We use one essential cookie to keep you signed in. It cannot be read by scripts on the page and expires after 8 hours. Cloudflare Turnstile may use its own essential cookies to check that you are not a bot. Your browser's local storage remembers your light or dark theme and whether you were signed in.",
+      "We use one essential cookie to keep you signed in. It cannot be read by scripts on the page and expires after 8 hours. Cloudflare Turnstile may use its own essential cookies to check that you are not a bot. Your browser's local storage remembers whether you were signed in.",
       "We do not use advertising cookies or third-party analytics. If you block essential cookies in your browser, you will not be able to sign in.",
     ],
   },

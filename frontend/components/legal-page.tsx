@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { ComponentType } from "react";
 import { LEGAL } from "../lib/legal";
-import { ThemeToggle } from "./theme-toggle";
 
 /** A paragraph (string) or a bulleted list (string[]). */
 export type LegalBlock = string | string[];
@@ -34,7 +33,6 @@ export function LegalPage({ title, intro, sections }: LegalPageProps) {
             >
               Get started
             </Link>
-            <ThemeToggle />
           </div>
         </div>
       </header>

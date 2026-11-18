@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import "../vendor/shadcn-tailwind-4.13.0.css";
 
-/* `dark:` follows the theme toggle (next-themes puts .dark on <html>), not the OS setting. */
+/* The app is light-only (theme-provider forces "light"), so `dark:` styles never apply; they follow a .dark class on <html>, not the OS setting. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
@@ -188,7 +188,6 @@ html.dark select,
 html.dark textarea { color: #f4f6fa; caret-color: #78a9ff; }
 html.dark input::placeholder,
 html.dark textarea::placeholder { color: #7d8796; }
-html.dark .theme-toggle { background-color: #111113 !important; border-color: #34363b !important; color: #f4f6fa !important; }
 html.dark article,
 html.dark section[role="dialog"] { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.38); }
 html.dark section[role="dialog"] { background-color: rgb(13, 13, 15) !important; }

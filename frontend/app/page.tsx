@@ -17,7 +17,6 @@ import {
 import { SUPPORT_EMAIL, SUPPORT_PHONE, SUPPORT_TEL } from "../lib/contact";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { ThemeToggle } from "../components/theme-toggle";
 import { OnboardingFlow, type Workflow } from "../components/onboarding-flow";
 import { preloadTurnstile, Turnstile, TURNSTILE_SITE_KEY, type CaptchaState } from "../components/turnstile";
 import { api, apiErrorCode, apiMessage, apiRetryAfter } from "../lib/api";
@@ -321,7 +320,6 @@ export default function Home() {
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
-            <ThemeToggle />
             <button
               onClick={openLogin}
               className="h-10 rounded-xl border border-[#d2ded6] px-4 text-sm font-semibold text-[#183b2f] transition hover:bg-[#f1f6f3] dark:border-[#1a3827] dark:text-white dark:hover:bg-[#0e2116]"
@@ -338,7 +336,6 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            <ThemeToggle />
             <button
               onClick={() => setMenuOpen((value) => !value)}
               className="grid size-9 place-items-center rounded-xl border border-[#d2ded6] text-[#4d6356] dark:border-[#1a3827] dark:text-[#a0b8ab]"

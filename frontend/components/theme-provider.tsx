@@ -8,6 +8,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     <NextThemeProvider
       attribute="class"
       defaultTheme="light"
+      forcedTheme="light" // light only: the dark theme was removed, and this also overrides a saved "dark" choice
       enableSystem={false}
       disableTransitionOnChange
       storageKey="relive-theme"
