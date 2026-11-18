@@ -19,14 +19,35 @@ export function MyReportsView({ overview, onRefreshReport, refreshing }: ViewPro
   // A current report is reused by the backend until it expires: refreshing earlier changes nothing.
   const locked = overview?.status === "CURRENT" && !!overview?.expiresAt;
   const [pdfError, setPdfError] = useState("");
-  // The bureau's own PDF, via the link stored with the report.
+  const [pdfBusy, setPdfBusy] = useState(false);
+  // The bureau's own PDF, from the copy the backend saved with the report.
   const openReportPdf = async () => {
     setPdfError("");
+    setPdfBusy(true);
     try {
-      const { data } = await api.get<{ url: string }>("/credit/report-pdf");
-      window.open(data.url, "_blank", "noopener,noreferrer");
+      const { data } = await api.get<Blob>("/credit/report-pdf", { responseType: "blob" });
+      const url = URL.createObjectURL(data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Relive-${bureau.replace(/\s+/g, "-")}-credit-report.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (error) {
-      setPdfError(apiMessage(error));
+      // With a file request, the API's JSON error arrives as a Blob too.
+      const body = (error as { response?: { data?: unknown } }).response?.data;
+      let message = "";
+      if (body instanceof Blob) {
+        try {
+          message = JSON.parse(await body.text())?.error?.message ?? "";
+        } catch {
+          /* not JSON: use the generic message */
+        }
+      }
+      setPdfError(message || apiMessage(error));
+    } finally {
+      setPdfBusy(false);
     }
   };
   const score = overview?.score;
@@ -81,10 +102,11 @@ export function MyReportsView({ overview, onRefreshReport, refreshing }: ViewPro
             <button
               type="button"
               onClick={() => void openReportPdf()}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#216b49] px-5 text-sm font-medium text-white shadow-sm transition hover:bg-[#155438] sm:w-auto dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
+              disabled={pdfBusy}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#216b49] px-5 text-sm font-medium text-white shadow-sm transition hover:bg-[#155438] disabled:opacity-60 sm:w-auto dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
             >
               <Download className="size-4" />
-              <span>Download PDF Report</span>
+              <span>{pdfBusy ? "Preparing PDF…" : "Download PDF Report"}</span>
             </button>
             {pdfError && <p className="w-full text-xs text-red-600 dark:text-red-400">{pdfError}</p>}
           </div>

@@ -21,6 +21,7 @@ import { getCreditOverview } from "./services/credit-score.js";
 import { getDashboardInsight } from "./services/dashboard-insight.js";
 import { emailLead } from "./services/lead-email.js";
 import { echoedRequestIdentity, extractReportIdentity, matchReportIdentity } from "./services/report-identity.js";
+import { reportPdfLink, saveReportPdf } from "./services/report-pdf.js";
 
 const app = express();
 app.disable("x-powered-by");
@@ -501,10 +502,12 @@ app.post("/api/v1/credit/report", requireAuth, sensitiveLimiter, async (req, res
           false);
       }
     }
-    await production.creditReport.create({ data: {
+    const saved = await production.creditReport.create({ data: {
       userId, bureau: pull.bureau, score: pull.report.score, reportJson: pull.report, rawResponse: pull.raw as object,
       providerRef: pull.providerRef, idempotencyKey, status: "CURRENT", expiresAt: new Date(Date.now() + REPORT_TTL_MS),
     }});
+    // The bureau's PDF link is temporary: copy the file now, in the background, so "Download PDF" keeps working.
+    void saveReportPdf(saved.id, pull.raw);
     await trackJourney({
       userRef: userId, eventType: "REPORT_FETCHED", step: "DASHBOARD", outcome: "SUCCESS", requestId: req.requestId, transactionId: idempotencyKey,
       metadata: {
@@ -592,15 +595,21 @@ app.post("/api/v1/credit/no-history", requireAuth, sensitiveLimiter, async (req,
   res.json(await getWorkflow(userId));
 });
 
-// The bureau's own PDF of the latest report (link comes from the stored IndiConnect response).
+// The bureau's own PDF of the latest report, as a file. Served from our stored copy: the bureau's link is
+// temporary, so it is only used (and copied) if it still happens to work.
 app.get("/api/v1/credit/report-pdf", requireAuth, sensitiveLimiter, async (req, res) => {
   const userId = userContext(req);
   const report = await production.creditReport.findFirst({ where: { userId, status: "CURRENT" }, orderBy: { retrievedAt: "desc" } });
-  const raw = report?.rawResponse as { experian_report_link?: unknown; credit_report_link?: unknown } | null | undefined;
-  const url = [raw?.experian_report_link, raw?.credit_report_link].find((link): link is string => typeof link === "string" && /^https:\/\//.test(link));
-  if (!url) throw new HttpError(404, "REPORT_PDF_UNAVAILABLE", "The bureau did not provide a PDF for this report");
-  await writeAudit({ eventType: "REPORT_PDF_OPENED", userRef: userId, status: "SUCCESS", requestId: req.requestId, metadata: { bureau: report!.bureau } });
-  res.json({ url });
+  if (!report || !reportPdfLink(report.rawResponse)) throw new HttpError(404, "REPORT_PDF_UNAVAILABLE", "The bureau did not provide a PDF for this report");
+  const stored = await production.creditReportPdf.findUnique({ where: { reportId: report.id } });
+  const pdf = stored ? Buffer.from(stored.content) : await saveReportPdf(report.id, report.rawResponse);
+  if (!pdf) {
+    throw new HttpError(410, "REPORT_PDF_EXPIRED", "The bureau's PDF for this report is no longer available. It will be available again after your next report update");
+  }
+  await writeAudit({ eventType: "REPORT_PDF_OPENED", userRef: userId, status: "SUCCESS", requestId: req.requestId, metadata: { bureau: report.bureau } });
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename="Relive-${report.bureau === "CRIF" ? "CRIF" : "Experian"}-credit-report.pdf"`);
+  res.send(pdf);
 });
 
 app.get("/api/v1/dashboard", requireAuth, async (req, res) => {

@@ -258,6 +258,7 @@ export type CreditReportWhereInput = {
   expiresAt?: Prisma.DateTimeFilter<"CreditReport"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   insights?: Prisma.DashboardInsightListRelationFilter
+  pdf?: Prisma.XOR<Prisma.CreditReportPdfNullableScalarRelationFilter, Prisma.CreditReportPdfWhereInput> | null
 }
 
 export type CreditReportOrderByWithRelationInput = {
@@ -274,6 +275,7 @@ export type CreditReportOrderByWithRelationInput = {
   expiresAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   insights?: Prisma.DashboardInsightOrderByRelationAggregateInput
+  pdf?: Prisma.CreditReportPdfOrderByWithRelationInput
 }
 
 export type CreditReportWhereUniqueInput = Prisma.AtLeast<{
@@ -293,6 +295,7 @@ export type CreditReportWhereUniqueInput = Prisma.AtLeast<{
   expiresAt?: Prisma.DateTimeFilter<"CreditReport"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   insights?: Prisma.DashboardInsightListRelationFilter
+  pdf?: Prisma.XOR<Prisma.CreditReportPdfNullableScalarRelationFilter, Prisma.CreditReportPdfWhereInput> | null
 }, "id" | "idempotencyKey">
 
 export type CreditReportOrderByWithAggregationInput = {
@@ -344,6 +347,7 @@ export type CreditReportCreateInput = {
   expiresAt: Date | string
   user: Prisma.UserCreateNestedOneWithoutReportsInput
   insights?: Prisma.DashboardInsightCreateNestedManyWithoutReportInput
+  pdf?: Prisma.CreditReportPdfCreateNestedOneWithoutReportInput
 }
 
 export type CreditReportUncheckedCreateInput = {
@@ -359,6 +363,7 @@ export type CreditReportUncheckedCreateInput = {
   retrievedAt?: Date | string
   expiresAt: Date | string
   insights?: Prisma.DashboardInsightUncheckedCreateNestedManyWithoutReportInput
+  pdf?: Prisma.CreditReportPdfUncheckedCreateNestedOneWithoutReportInput
 }
 
 export type CreditReportUpdateInput = {
@@ -374,6 +379,7 @@ export type CreditReportUpdateInput = {
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutReportsNestedInput
   insights?: Prisma.DashboardInsightUpdateManyWithoutReportNestedInput
+  pdf?: Prisma.CreditReportPdfUpdateOneWithoutReportNestedInput
 }
 
 export type CreditReportUncheckedUpdateInput = {
@@ -389,6 +395,7 @@ export type CreditReportUncheckedUpdateInput = {
   retrievedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   insights?: Prisma.DashboardInsightUncheckedUpdateManyWithoutReportNestedInput
+  pdf?: Prisma.CreditReportPdfUncheckedUpdateOneWithoutReportNestedInput
 }
 
 export type CreditReportCreateManyInput = {
@@ -539,6 +546,20 @@ export type EnumReportStatusFieldUpdateOperationsInput = {
   set?: $Enums.ReportStatus
 }
 
+export type CreditReportCreateNestedOneWithoutPdfInput = {
+  create?: Prisma.XOR<Prisma.CreditReportCreateWithoutPdfInput, Prisma.CreditReportUncheckedCreateWithoutPdfInput>
+  connectOrCreate?: Prisma.CreditReportCreateOrConnectWithoutPdfInput
+  connect?: Prisma.CreditReportWhereUniqueInput
+}
+
+export type CreditReportUpdateOneRequiredWithoutPdfNestedInput = {
+  create?: Prisma.XOR<Prisma.CreditReportCreateWithoutPdfInput, Prisma.CreditReportUncheckedCreateWithoutPdfInput>
+  connectOrCreate?: Prisma.CreditReportCreateOrConnectWithoutPdfInput
+  upsert?: Prisma.CreditReportUpsertWithoutPdfInput
+  connect?: Prisma.CreditReportWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CreditReportUpdateToOneWithWhereWithoutPdfInput, Prisma.CreditReportUpdateWithoutPdfInput>, Prisma.CreditReportUncheckedUpdateWithoutPdfInput>
+}
+
 export type CreditReportCreateNestedOneWithoutInsightsInput = {
   create?: Prisma.XOR<Prisma.CreditReportCreateWithoutInsightsInput, Prisma.CreditReportUncheckedCreateWithoutInsightsInput>
   connectOrCreate?: Prisma.CreditReportCreateOrConnectWithoutInsightsInput
@@ -565,6 +586,7 @@ export type CreditReportCreateWithoutUserInput = {
   retrievedAt?: Date | string
   expiresAt: Date | string
   insights?: Prisma.DashboardInsightCreateNestedManyWithoutReportInput
+  pdf?: Prisma.CreditReportPdfCreateNestedOneWithoutReportInput
 }
 
 export type CreditReportUncheckedCreateWithoutUserInput = {
@@ -579,6 +601,7 @@ export type CreditReportUncheckedCreateWithoutUserInput = {
   retrievedAt?: Date | string
   expiresAt: Date | string
   insights?: Prisma.DashboardInsightUncheckedCreateNestedManyWithoutReportInput
+  pdf?: Prisma.CreditReportPdfUncheckedCreateNestedOneWithoutReportInput
 }
 
 export type CreditReportCreateOrConnectWithoutUserInput = {
@@ -624,6 +647,82 @@ export type CreditReportScalarWhereInput = {
   expiresAt?: Prisma.DateTimeFilter<"CreditReport"> | Date | string
 }
 
+export type CreditReportCreateWithoutPdfInput = {
+  id?: string
+  bureau?: string
+  score: number
+  reportJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status?: $Enums.ReportStatus
+  providerRef?: string | null
+  idempotencyKey: string
+  retrievedAt?: Date | string
+  expiresAt: Date | string
+  user: Prisma.UserCreateNestedOneWithoutReportsInput
+  insights?: Prisma.DashboardInsightCreateNestedManyWithoutReportInput
+}
+
+export type CreditReportUncheckedCreateWithoutPdfInput = {
+  id?: string
+  userId: string
+  bureau?: string
+  score: number
+  reportJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status?: $Enums.ReportStatus
+  providerRef?: string | null
+  idempotencyKey: string
+  retrievedAt?: Date | string
+  expiresAt: Date | string
+  insights?: Prisma.DashboardInsightUncheckedCreateNestedManyWithoutReportInput
+}
+
+export type CreditReportCreateOrConnectWithoutPdfInput = {
+  where: Prisma.CreditReportWhereUniqueInput
+  create: Prisma.XOR<Prisma.CreditReportCreateWithoutPdfInput, Prisma.CreditReportUncheckedCreateWithoutPdfInput>
+}
+
+export type CreditReportUpsertWithoutPdfInput = {
+  update: Prisma.XOR<Prisma.CreditReportUpdateWithoutPdfInput, Prisma.CreditReportUncheckedUpdateWithoutPdfInput>
+  create: Prisma.XOR<Prisma.CreditReportCreateWithoutPdfInput, Prisma.CreditReportUncheckedCreateWithoutPdfInput>
+  where?: Prisma.CreditReportWhereInput
+}
+
+export type CreditReportUpdateToOneWithWhereWithoutPdfInput = {
+  where?: Prisma.CreditReportWhereInput
+  data: Prisma.XOR<Prisma.CreditReportUpdateWithoutPdfInput, Prisma.CreditReportUncheckedUpdateWithoutPdfInput>
+}
+
+export type CreditReportUpdateWithoutPdfInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  bureau?: Prisma.StringFieldUpdateOperationsInput | string
+  score?: Prisma.IntFieldUpdateOperationsInput | number
+  reportJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+  providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  retrievedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutReportsNestedInput
+  insights?: Prisma.DashboardInsightUpdateManyWithoutReportNestedInput
+}
+
+export type CreditReportUncheckedUpdateWithoutPdfInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  bureau?: Prisma.StringFieldUpdateOperationsInput | string
+  score?: Prisma.IntFieldUpdateOperationsInput | number
+  reportJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  rawResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+  providerRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  retrievedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  insights?: Prisma.DashboardInsightUncheckedUpdateManyWithoutReportNestedInput
+}
+
 export type CreditReportCreateWithoutInsightsInput = {
   id?: string
   bureau?: string
@@ -636,6 +735,7 @@ export type CreditReportCreateWithoutInsightsInput = {
   retrievedAt?: Date | string
   expiresAt: Date | string
   user: Prisma.UserCreateNestedOneWithoutReportsInput
+  pdf?: Prisma.CreditReportPdfCreateNestedOneWithoutReportInput
 }
 
 export type CreditReportUncheckedCreateWithoutInsightsInput = {
@@ -650,6 +750,7 @@ export type CreditReportUncheckedCreateWithoutInsightsInput = {
   idempotencyKey: string
   retrievedAt?: Date | string
   expiresAt: Date | string
+  pdf?: Prisma.CreditReportPdfUncheckedCreateNestedOneWithoutReportInput
 }
 
 export type CreditReportCreateOrConnectWithoutInsightsInput = {
@@ -680,6 +781,7 @@ export type CreditReportUpdateWithoutInsightsInput = {
   retrievedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutReportsNestedInput
+  pdf?: Prisma.CreditReportPdfUpdateOneWithoutReportNestedInput
 }
 
 export type CreditReportUncheckedUpdateWithoutInsightsInput = {
@@ -694,6 +796,7 @@ export type CreditReportUncheckedUpdateWithoutInsightsInput = {
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   retrievedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  pdf?: Prisma.CreditReportPdfUncheckedUpdateOneWithoutReportNestedInput
 }
 
 export type CreditReportCreateManyUserInput = {
@@ -721,6 +824,7 @@ export type CreditReportUpdateWithoutUserInput = {
   retrievedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   insights?: Prisma.DashboardInsightUpdateManyWithoutReportNestedInput
+  pdf?: Prisma.CreditReportPdfUpdateOneWithoutReportNestedInput
 }
 
 export type CreditReportUncheckedUpdateWithoutUserInput = {
@@ -735,6 +839,7 @@ export type CreditReportUncheckedUpdateWithoutUserInput = {
   retrievedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   insights?: Prisma.DashboardInsightUncheckedUpdateManyWithoutReportNestedInput
+  pdf?: Prisma.CreditReportPdfUncheckedUpdateOneWithoutReportNestedInput
 }
 
 export type CreditReportUncheckedUpdateManyWithoutUserInput = {
@@ -795,6 +900,7 @@ export type CreditReportSelect<ExtArgs extends runtime.Types.Extensions.Internal
   expiresAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   insights?: boolean | Prisma.CreditReport$insightsArgs<ExtArgs>
+  pdf?: boolean | Prisma.CreditReport$pdfArgs<ExtArgs>
   _count?: boolean | Prisma.CreditReportCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["creditReport"]>
 
@@ -846,6 +952,7 @@ export type CreditReportOmit<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type CreditReportInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   insights?: boolean | Prisma.CreditReport$insightsArgs<ExtArgs>
+  pdf?: boolean | Prisma.CreditReport$pdfArgs<ExtArgs>
   _count?: boolean | Prisma.CreditReportCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CreditReportIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -860,6 +967,7 @@ export type $CreditReportPayload<ExtArgs extends runtime.Types.Extensions.Intern
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
     insights: Prisma.$DashboardInsightPayload<ExtArgs>[]
+    pdf: Prisma.$CreditReportPdfPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1269,6 +1377,7 @@ export interface Prisma__CreditReportClient<T, Null = never, ExtArgs extends run
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   insights<T extends Prisma.CreditReport$insightsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CreditReport$insightsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DashboardInsightPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  pdf<T extends Prisma.CreditReport$pdfArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CreditReport$pdfArgs<ExtArgs>>): Prisma.Prisma__CreditReportPdfClient<runtime.Types.Result.GetResult<Prisma.$CreditReportPdfPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1731,6 +1840,25 @@ export type CreditReport$insightsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.DashboardInsightScalarFieldEnum | Prisma.DashboardInsightScalarFieldEnum[]
+}
+
+/**
+ * CreditReport.pdf
+ */
+export type CreditReport$pdfArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CreditReportPdf
+   */
+  select?: Prisma.CreditReportPdfSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CreditReportPdf
+   */
+  omit?: Prisma.CreditReportPdfOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CreditReportPdfInclude<ExtArgs> | null
+  where?: Prisma.CreditReportPdfWhereInput
 }
 
 /**

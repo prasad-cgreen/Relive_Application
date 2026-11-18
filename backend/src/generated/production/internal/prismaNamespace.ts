@@ -404,6 +404,7 @@ export const ModelName = {
   UserSession: 'UserSession',
   KycVerification: 'KycVerification',
   CreditReport: 'CreditReport',
+  CreditReportPdf: 'CreditReportPdf',
   UserConcern: 'UserConcern',
   DashboardInsight: 'DashboardInsight',
   ApiTransaction: 'ApiTransaction',
@@ -423,7 +424,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userProfile" | "userConsent" | "otpTransaction" | "userSession" | "kycVerification" | "creditReport" | "userConcern" | "dashboardInsight" | "apiTransaction" | "supportRequest"
+    modelProps: "user" | "userProfile" | "userConsent" | "otpTransaction" | "userSession" | "kycVerification" | "creditReport" | "creditReportPdf" | "userConcern" | "dashboardInsight" | "apiTransaction" | "supportRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -945,6 +946,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CreditReportPdf: {
+      payload: Prisma.$CreditReportPdfPayload<ExtArgs>
+      fields: Prisma.CreditReportPdfFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CreditReportPdfFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreditReportPdfPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CreditReportPdfFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreditReportPdfPayload>
+        }
+        findFirst: {
+          args: Prisma.CreditReportPdfFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreditReportPdfPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CreditReportPdfFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreditReportPdfPayload>
+        }
+        findMany: {
+          args: Prisma.CreditReportPdfFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreditReportPdfPayload>[]
+        }
+        create: {
+          args: Prisma.CreditReportPdfCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreditReportPdfPayload>
+        }
+        createMany: {
+          args: Prisma.CreditReportPdfCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CreditReportPdfCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreditReportPdfPayload>[]
+        }
+        delete: {
+          args: Prisma.CreditReportPdfDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreditReportPdfPayload>
+        }
+        update: {
+          args: Prisma.CreditReportPdfUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreditReportPdfPayload>
+        }
+        deleteMany: {
+          args: Prisma.CreditReportPdfDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CreditReportPdfUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CreditReportPdfUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreditReportPdfPayload>[]
+        }
+        upsert: {
+          args: Prisma.CreditReportPdfUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreditReportPdfPayload>
+        }
+        aggregate: {
+          args: Prisma.CreditReportPdfAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCreditReportPdf>
+        }
+        groupBy: {
+          args: Prisma.CreditReportPdfGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CreditReportPdfGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CreditReportPdfCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CreditReportPdfCountAggregateOutputType> | number
+        }
+      }
+    }
     UserConcern: {
       payload: Prisma.$UserConcernPayload<ExtArgs>
       fields: Prisma.UserConcernFieldRefs
@@ -1390,6 +1465,15 @@ export const CreditReportScalarFieldEnum = {
 export type CreditReportScalarFieldEnum = (typeof CreditReportScalarFieldEnum)[keyof typeof CreditReportScalarFieldEnum]
 
 
+export const CreditReportPdfScalarFieldEnum = {
+  reportId: 'reportId',
+  content: 'content',
+  createdAt: 'createdAt'
+} as const
+
+export type CreditReportPdfScalarFieldEnum = (typeof CreditReportPdfScalarFieldEnum)[keyof typeof CreditReportPdfScalarFieldEnum]
+
+
 export const UserConcernScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -1674,6 +1758,20 @@ export type ListEnumReportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'Bytes'
+ */
+export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
+    
+
+
+/**
+ * Reference to a field of type 'Bytes[]'
+ */
+export type ListBytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes[]'>
+    
+
+
+/**
  * Reference to a field of type 'TransactionStatus'
  */
 export type EnumTransactionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TransactionStatus'>
@@ -1886,6 +1984,7 @@ export type GlobalOmitConfig = {
   userSession?: Prisma.UserSessionOmit
   kycVerification?: Prisma.KycVerificationOmit
   creditReport?: Prisma.CreditReportOmit
+  creditReportPdf?: Prisma.CreditReportPdfOmit
   userConcern?: Prisma.UserConcernOmit
   dashboardInsight?: Prisma.DashboardInsightOmit
   apiTransaction?: Prisma.ApiTransactionOmit

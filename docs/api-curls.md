@@ -194,12 +194,12 @@ curl --location '{{baseUrl}}/dashboard' \
 --header 'Cookie: relive_session={{sessionToken}}'
 ```
 
-### 10. Official bureau report (PDF link)
+### 10. Official bureau report (PDF file)
 ```bash
 curl --location '{{baseUrl}}/credit/report-pdf' \
---header 'Cookie: relive_session={{sessionToken}}'
+--header 'Cookie: relive_session={{sessionToken}}' --output report.pdf
 ```
-Response: `{ "url": "https://…" }`, the bureau's own PDF link.
+Response: the PDF file itself (`application/pdf`), from the copy saved when the report was fetched. `410 REPORT_PDF_EXPIRED` if no copy exists and the bureau's temporary link has expired.
 
 ### 11. "Get help" request (creates a lead)
 Saves a lead and emails it to `LEADS_EMAIL` (relive@cgreen.in), when `SMTP_URL` is set.

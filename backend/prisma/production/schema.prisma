@@ -177,8 +177,19 @@ model CreditReport {
   expiresAt      DateTime @map("expires_at") @db.Timestamptz(3)
   user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
   insights       DashboardInsight[]
+  pdf            CreditReportPdf?
   @@index([userId, status, expiresAt])
   @@map("credit_reports")
+}
+
+/// The bureau's own PDF of a report, copied while its temporary link still works. Kept apart from
+/// credit_reports so report queries never load the file.
+model CreditReportPdf {
+  reportId  String   @id @map("report_id") @db.Uuid
+  content   Bytes
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  report    CreditReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  @@map("credit_report_pdfs")
 }
 
 /// The customer's answers to "What brings you to Relive today?" (latest wins).

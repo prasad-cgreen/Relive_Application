@@ -53,6 +53,12 @@ export type KycVerification = Prisma.KycVerificationModel
  */
 export type CreditReport = Prisma.CreditReportModel
 /**
+ * Model CreditReportPdf
+ * The bureau's own PDF of a report, copied while its temporary link still works. Kept apart from
+ * credit_reports so report queries never load the file.
+ */
+export type CreditReportPdf = Prisma.CreditReportPdfModel
+/**
  * Model UserConcern
  * The customer's answers to "What brings you to Relive today?" (latest wins).
  */
