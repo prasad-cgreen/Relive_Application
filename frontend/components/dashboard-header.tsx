@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, LogOut, Menu, UserRound } from "lucide-react";
+import { ChevronDown, Headset, LogOut, Menu, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -12,6 +12,8 @@ interface DashboardHeaderProps {
   onOpenMobileMenu: () => void;
   onLogout: () => void;
   onOpenProfile?: () => void;
+  /** Opens the Get help tab; the button is hidden without it. */
+  onGetHelp?: () => void;
   bureau?: string | null;
 }
 
@@ -23,6 +25,7 @@ export function DashboardHeader({
   onOpenMobileMenu,
   onLogout,
   onOpenProfile,
+  onGetHelp,
   bureau,
 }: DashboardHeaderProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -60,6 +63,18 @@ export function DashboardHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
+        {onGetHelp && (
+          <button
+            type="button"
+            onClick={onGetHelp}
+            aria-label="Get help"
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-emerald-600 px-2.5 text-xs font-semibold text-white transition hover:bg-emerald-700 sm:px-3.5 dark:bg-emerald-500 dark:text-[#04130b] dark:hover:bg-emerald-400"
+          >
+            <Headset className="size-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Get help</span>
+          </button>
+        )}
+
         {bureau && (
           <span className="hidden items-center gap-1.5 rounded-full border border-[#e1e9e4] px-3 py-1 text-xs font-medium text-[#3d5246] md:inline-flex dark:border-[#1d3427] dark:text-[#b0c8bb]">
             <span className="size-1.5 rounded-full bg-emerald-500" />

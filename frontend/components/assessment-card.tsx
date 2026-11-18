@@ -71,6 +71,9 @@ export function buildAssessment(accounts: AccountItem[], summary: Summary) {
   };
 }
 
+/** One placeholder bar of the loading skeleton. */
+const BONE = "rounded-md bg-[#183b2f]/10 dark:bg-white/10";
+
 /** AI-written from the customer's answers (selected_concern, customer_text) and their report: GET /credit/insight. */
 export type PersonalInsight = { title: string; insights: string[]; recommendations: string[] };
 
@@ -93,6 +96,8 @@ export function AssessmentCard({ accounts, summary, bureau, retrievedAt, insight
   const title = insight?.title ?? rules.title;
   const body: ReactNode[] = insight?.insights ?? rules.body;
   const steps = insight?.recommendations ?? [];
+  // The AI summary takes a while: show a text skeleton until it arrives.
+  const generating = !!personalizing && !insight;
   // Names arrive in capitals from PAN ("PRASAD"); greet as "Prasad".
   const name = firstName?.trim().split(/\s+/)[0]?.toLowerCase().replace(/^./, (c) => c.toUpperCase());
 
@@ -114,12 +119,35 @@ export function AssessmentCard({ accounts, summary, bureau, retrievedAt, insight
                 : "bg-white/70 text-[#216b49] dark:bg-emerald-500/15 dark:text-emerald-300"
           }`}
         >
-          {insight ? "Personalised for you" : personalizing ? "Personalising…" : "Initial review"}
+          {insight ? "Personalised for you" : generating ? "Personalising…" : "Initial review"}
         </span>
       </div>
 
       {name && <p className="mt-5 text-base font-medium text-[#216b49] dark:text-emerald-300">Hi, {name}</p>}
 
+      {generating ? (
+        // Text skeleton in the shape of the assessment: title, paragraph, next steps
+        <div role="status" aria-label="Generating your personalised insights" className={`${name ? "mt-3" : "mt-5"} animate-pulse motion-reduce:animate-none`}>
+          <div className="max-w-lg space-y-2.5">
+            <div className={`h-7 w-full ${BONE}`} />
+            <div className={`h-7 w-3/5 ${BONE}`} />
+          </div>
+          <div className="mt-6 max-w-xl space-y-2.5">
+            {["w-full", "w-11/12", "w-full", "w-2/3"].map((width, i) => (
+              <div key={i} className={`h-3.5 ${width} ${BONE}`} />
+            ))}
+          </div>
+          <div className={`mt-7 h-3 w-28 ${BONE}`} />
+          <div className="mt-3.5 max-w-xl space-y-3.5">
+            {["w-10/12", "w-9/12", "w-11/12"].map((width, i) => (
+              <div key={i} className="flex items-center gap-2.5">
+                <div className={`size-5 shrink-0 rounded-full ${BONE}`} />
+                <div className={`h-3.5 ${width} ${BONE}`} />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
       <div key={insight ? "personal" : "rules"} className="animate-in fade-in duration-500">
         <h2 className={`${name ? "mt-1.5" : "mt-5"} max-w-lg text-2xl font-semibold leading-tight tracking-tight text-[#183b2f] sm:text-[28px] dark:text-white`}>{title}</h2>
 
@@ -145,8 +173,9 @@ export function AssessmentCard({ accounts, summary, bureau, retrievedAt, insight
           </div>
         )}
       </div>
+      )}
 
-      {action && (
+      {action && !generating && (
         <button
           type="button"
           onClick={onViewAccounts}

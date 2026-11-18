@@ -265,6 +265,7 @@ export default function PortalPage() {
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
           onLogout={logout}
           onOpenProfile={() => changeTab("profile")}
+          onGetHelp={overview?.score != null && activeTab !== "support" ? () => changeTab("support") : undefined}
         />
 
         <main className="mx-auto w-full max-w-[1400px] flex-1 space-y-4 p-4 pb-24 sm:space-y-6 sm:p-6 sm:pb-24 lg:p-8">
