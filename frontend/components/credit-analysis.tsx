@@ -135,7 +135,7 @@ export function CreditAnalysisView({ overview }: { workflow?: unknown; overview:
       {/* Summary: score, the split, and the one thing to do first */}
       <div className="space-y-5">
         <section className={CARD}>
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
             <div className="min-w-0">
               <p className={EYEBROW}>
                 Your {bureauLabel} report{overview?.retrievedAt ? ` · ${formatDay(overview.retrievedAt)}` : ""}
@@ -259,7 +259,7 @@ export function CreditAnalysisView({ overview }: { workflow?: unknown; overview:
         </div>
       </section>
 
-      <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-6">
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-6">
         {/* Card utilisation */}
         <section id="factor-utilization" className="scroll-mt-24 space-y-3">
           <SectionHeading
@@ -359,7 +359,7 @@ export function CreditAnalysisView({ overview }: { workflow?: unknown; overview:
           title="Credit age and mix"
           why="Lenders trust a long track record and experience handling different kinds of credit."
         />
-        <div className={`${CARD} grid gap-6 md:grid-cols-2 md:gap-8`}>
+        <div className={`${CARD} grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8`}>
           <div>
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-sm font-semibold text-[#183b2f] dark:text-white">Credit age</h3>
@@ -369,7 +369,7 @@ export function CreditAnalysisView({ overview }: { workflow?: unknown; overview:
             {ends.length === 0 ? (
               <p className={`mt-3 text-sm ${MUTED}`}>No account opening dates were reported.</p>
             ) : (
-              <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+              <dl className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {ends.map(([label, a]) => (
                   <div key={label} className={TILE}>
                     <dt className={`text-xs ${MUTED}`}>{label}</dt>

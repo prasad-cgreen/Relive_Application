@@ -390,7 +390,7 @@ export default function Home() {
         {/* Glow ambient background accents */}
         <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 size-[650px] rounded-full bg-emerald-400/10 blur-[120px] dark:bg-emerald-500/10" />
 
-        <div className="relative mx-auto grid w-full max-w-7xl items-center gap-8 px-4 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
+        <div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 px-4 sm:px-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-16">
           {/* Intro */}
           <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 lg:pr-4">
             <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[1.5px] text-emerald-700 dark:text-emerald-400">
@@ -443,7 +443,7 @@ export default function Home() {
             <fieldset className="mt-3">
               <legend className="text-[17px] font-semibold tracking-tight text-[#183b2f] dark:text-white">What brings you to Relive today?</legend>
               <p className="mt-0.5 text-xs text-[#63776b] dark:text-[#8ba295]">Choose what fits best. You do not need to have all the answers.</p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {concerns.map((option) => (
                   <label
                     key={option}
@@ -546,7 +546,7 @@ export default function Home() {
 
       {/* Security & privacy */}
       <section id="security" className="scroll-mt-20 border-t border-[#e5ece7] py-14 sm:py-20 dark:border-[#14261c]">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 sm:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-16">
           <div className="reveal">
             <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[1.5px] text-emerald-700 dark:text-emerald-400">
               <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
@@ -560,7 +560,7 @@ export default function Home() {
             </p>
           </div>
 
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {privacyPoints.map(({ icon: Icon, title, text }) => (
               <li key={title} className="reveal flex gap-3.5 rounded-2xl border border-[#e1e9e4] bg-white p-4 sm:p-5 dark:border-[#162a1f] dark:bg-[#0c1a12]">
                 <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#e9f1e2] text-[#216b49] dark:bg-emerald-950 dark:text-emerald-300">
@@ -617,7 +617,7 @@ export default function Home() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="login-title"
-            className="animate-in slide-in-from-bottom-10 duration-300 sm:fade-in sm:zoom-in-95 sm:slide-in-from-bottom-0 relative w-full max-w-[440px] rounded-t-[26px] bg-white p-6 shadow-2xl sm:rounded-[26px] sm:p-8 dark:bg-[#0c1a12] dark:border dark:border-[#162a1f]"
+            className="animate-in slide-in-from-bottom-10 duration-300 sm:fade-in sm:zoom-in-95 sm:slide-in-from-bottom-0 relative max-h-[100dvh] w-full max-w-[440px] overflow-y-auto overscroll-contain rounded-t-[26px] bg-white p-6 shadow-2xl sm:rounded-[26px] sm:p-8 dark:bg-[#0c1a12] dark:border dark:border-[#162a1f]"
           >
             {/* Close button sits in the corner, so every step uses the full dialog width */}
             <button

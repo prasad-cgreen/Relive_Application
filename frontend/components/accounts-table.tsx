@@ -250,11 +250,11 @@ export function AccountsTable({ accounts: reported, enquiries, bureauLabel, defa
                 <thead className="border-b border-[#e7efe1] bg-[#f7faf3] text-xs text-[#62776c] dark:border-[#162a1f] dark:bg-[#09160f] dark:text-[#8ba295]">
                   <tr>
                     <th className="px-4 py-3 font-medium">Lender</th>
-                    <th className="px-4 py-3 font-medium">Type</th>
+                    <th className="px-4 py-3 font-medium lg:max-xl:hidden">Type</th>
                     <th className="px-4 py-3 font-medium">Account</th>
                     <th className="px-4 py-3 text-right font-medium">Balance</th>
-                    <th className="hidden px-4 py-3 text-right font-medium lg:table-cell">Limit / sanctioned</th>
-                    <th className="hidden px-4 py-3 font-medium lg:table-cell">Opened</th>
+                    <th className="hidden px-4 py-3 text-right font-medium xl:table-cell">Limit / sanctioned</th>
+                    <th className="hidden px-4 py-3 font-medium xl:table-cell">Opened</th>
                     <th className="px-4 py-3 font-medium">Status</th>
                     <th className="w-10 px-3 py-3"><span className="sr-only">Expand</span></th>
                   </tr>
@@ -271,17 +271,21 @@ export function AccountsTable({ accounts: reported, enquiries, bureauLabel, defa
                         <td className={`px-4 py-3 ${open ? "shadow-[inset_3px_0_0_#216b49] dark:shadow-[inset_3px_0_0_#34d399]" : ""}`}>
                           <div className="flex items-center gap-3">
                             <LenderAvatar name={account.lender} />
-                            <span className="font-medium text-[#0c1a13] dark:text-white">{account.lender}</span>
+                            <span className="min-w-0">
+                              <span className="block font-medium text-[#0c1a13] dark:text-white">{account.lender}</span>
+                              {/* Small laptops: the sidebar takes the room of the Type column, so the type sits here */}
+                              <span className="hidden text-xs font-normal text-[#63786d] lg:max-xl:block dark:text-[#8ba295]">{account.type}</span>
+                            </span>
                           </div>
                         </td>
-                        <td className="px-4 py-3.5 text-[#3d5246] dark:text-[#b0c8bb]">{account.type}</td>
+                        <td className="px-4 py-3.5 text-[#3d5246] lg:max-xl:hidden dark:text-[#b0c8bb]">{account.type}</td>
                         <td className="px-4 py-3.5 font-mono text-xs text-[#586c62] dark:text-[#8ba295]">{account.accountNumber || "—"}</td>
                         <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-[#0c1a13] dark:text-white">
                           {rupees(account.balance)}
                           <div className="flex justify-end"><CardUsage account={account} /></div>
                         </td>
-                        <td className="hidden px-4 py-3.5 text-right tabular-nums text-[#586c62] lg:table-cell dark:text-[#8ba295]">{rupees(account.creditLimit ?? account.sanctionedAmount)}</td>
-                        <td className="hidden whitespace-nowrap px-4 py-3.5 text-[#586c62] lg:table-cell dark:text-[#8ba295]">{formatDate(account.openDate)}</td>
+                        <td className="hidden px-4 py-3.5 text-right tabular-nums text-[#586c62] xl:table-cell dark:text-[#8ba295]">{rupees(account.creditLimit ?? account.sanctionedAmount)}</td>
+                        <td className="hidden whitespace-nowrap px-4 py-3.5 text-[#586c62] xl:table-cell dark:text-[#8ba295]">{formatDate(account.openDate)}</td>
                         <td className="px-4 py-3.5">
                           <span className="flex flex-wrap items-center gap-1.5">
                             {statusPill(account)}

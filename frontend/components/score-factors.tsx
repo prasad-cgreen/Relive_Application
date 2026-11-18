@@ -115,7 +115,7 @@ export const focusFactor = (factors: Factor[]) =>
 /** One card per factor: value, rating, a bar (100 = best) and what it means. */
 export function ScoreFactorGrid({ factors }: { factors: Factor[] }) {
   return (
-    <ul className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
       {factors.map((f) => {
         const Icon = f.icon;
         const style = RATING_STYLE[f.rating];

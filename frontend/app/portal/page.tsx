@@ -255,7 +255,7 @@ export default function PortalPage() {
         }}
       />
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-x-clip">
         <DashboardHeader
           title={heading.title}
           description={heading.description}
@@ -291,7 +291,7 @@ export default function PortalPage() {
 
           {loading && (
             <div className="space-y-4 animate-pulse sm:space-y-6" aria-busy="true" aria-label="Loading dashboard">
-              <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[1.45fr_1fr]">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-[1.45fr_1fr]">
                 <div className="h-80 rounded-3xl bg-black/5 sm:h-96 dark:bg-white/5" />
                 <div className="h-80 rounded-3xl bg-black/5 sm:h-96 dark:bg-white/5" />
               </div>
@@ -309,7 +309,7 @@ export default function PortalPage() {
               <p className="text-[11px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Your credit profile</p>
               <h2 className="mt-1 text-xl font-semibold text-[#0c1a13] dark:text-white">No credit history yet</h2>
               <p className="mt-2 max-w-2xl text-sm text-[#5d7367] dark:text-[#8ba295]">{overview.insight}</p>
-              <ul className="mt-6 grid gap-3 text-sm text-[#2d4236] sm:grid-cols-3 dark:text-[#b0c8bb]">
+              <ul className="mt-6 grid grid-cols-1 gap-3 text-sm text-[#2d4236] sm:grid-cols-3 dark:text-[#b0c8bb]">
                 {[
                   ["Start small", "A secured credit card against a fixed deposit is the easiest first step."],
                   ["Pay on time, every time", "Your payment history is the biggest factor in your score."],
@@ -337,7 +337,7 @@ export default function PortalPage() {
             <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-2 space-y-4 duration-300 sm:space-y-6">
               {activeTab === "overview" && (
                 <div className="space-y-4 sm:space-y-6">
-                  <div className="grid grid-cols-1 items-stretch gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
+                  <div className="grid grid-cols-1 items-stretch gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
                     <AssessmentCard
                       accounts={accounts}
                       summary={summary}
@@ -399,8 +399,8 @@ export default function PortalPage() {
                     ))}
                   </dl>
 
-                  <div className="grid grid-cols-1 items-start gap-4 sm:gap-6 lg:grid-cols-12">
-                    <section className={`lg:col-span-8 ${CARD} ${FLAT_ON_PHONE}`}>
+                  <div className="grid grid-cols-1 items-start gap-4 sm:gap-6 xl:grid-cols-12">
+                    <section className={`min-w-0 xl:col-span-8 ${CARD} ${FLAT_ON_PHONE}`}>
                       <div className="flex items-center justify-between gap-2 border-b border-[#eef3f0] pb-4 dark:border-[#16291e]">
                         <div>
                           <h2 className="text-base font-semibold text-[#0c1a13] dark:text-white">My accounts</h2>
@@ -415,7 +415,7 @@ export default function PortalPage() {
                       </div>
                     </section>
 
-                    <div className="lg:col-span-4">
+                    <div className="min-w-0 xl:col-span-4">
                       <DebtSummaryCard totalBalance={totalBalance} accounts={accounts} />
                     </div>
                   </div>

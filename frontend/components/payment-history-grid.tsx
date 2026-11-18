@@ -44,8 +44,8 @@ export function PaymentHistoryGrid({
 
   return (
     <div className={embedded ? "" : "rounded-2xl border border-[#e1e9e4] bg-white p-4 shadow-xs sm:p-6 dark:border-[#162a1f] dark:bg-[#0c1a12]"}>
-      {/* Embedded, the row/card right above already shows this; kept on tablets, where the table hides Limit and Opened */}
-      <div className={`flex flex-wrap items-center justify-between gap-3 border-b border-[#eef3f0] pb-4 dark:border-[#16291e] ${embedded ? "max-md:hidden lg:hidden" : ""}`}>
+      {/* Embedded, the row/card right above already shows this; kept below xl, where the table hides Limit and Opened */}
+      <div className={`flex flex-wrap items-center justify-between gap-3 border-b border-[#eef3f0] pb-4 dark:border-[#16291e] ${embedded ? "max-md:hidden xl:hidden" : ""}`}>
         <div className="min-w-0">
           <span className="text-base font-semibold text-[#0c1a13] dark:text-white">{title}</span>
           <p className="mt-0.5 text-xs text-[#63786d] dark:text-[#8ba295]">
@@ -64,7 +64,7 @@ export function PaymentHistoryGrid({
         </div>
       </div>
 
-      <div className={`grid gap-6 lg:grid-cols-[1.3fr_0.9fr] ${embedded ? "md:mt-5 lg:mt-0" : "mt-5"}`}>
+      <div className={`grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)] ${embedded ? "md:mt-5 xl:mt-0" : "mt-5"}`}>
         <div>
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-[#0c1a13] dark:text-white">Payment history</h3>

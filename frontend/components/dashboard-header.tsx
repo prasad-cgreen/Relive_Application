@@ -68,10 +68,10 @@ export function DashboardHeader({
             type="button"
             onClick={onGetHelp}
             aria-label="Get help"
-            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-emerald-600 px-2.5 text-xs font-semibold text-white transition hover:bg-emerald-700 sm:px-3.5 dark:bg-emerald-500 dark:text-[#04130b] dark:hover:bg-emerald-400"
+            className="hidden h-9 items-center gap-1.5 rounded-full bg-emerald-600 px-3.5 text-xs font-semibold text-white transition hover:bg-emerald-700 md:inline-flex dark:bg-emerald-500 dark:text-[#04130b] dark:hover:bg-emerald-400"
           >
             <Headset className="size-4" aria-hidden="true" />
-            <span className="hidden sm:inline">Get help</span>
+            Get help
           </button>
         )}
 

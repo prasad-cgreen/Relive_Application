@@ -96,12 +96,12 @@ export function SupportRequestView({ accounts, account, mobileLast4, onBack }: P
   }
 
   return (
-    <div className="grid items-start gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 items-start gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
       <form onSubmit={submit} className="rounded-2xl border border-[#e1e9e4] bg-white p-5 shadow-xs sm:p-7 dark:border-[#162a1f] dark:bg-[#0c1a12]">
         <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-emerald-700 dark:text-emerald-400">Talk to the Relive team</p>
         <h2 className="mt-2 text-xl font-semibold tracking-tight text-[#183b2f] sm:text-2xl dark:text-white">What would you like help with?</h2>
 
-        <fieldset className="mt-5 grid gap-2.5">
+        <fieldset className="mt-5 grid min-w-0 grid-cols-1 gap-2.5">
           <legend className="sr-only">Type of help</legend>
           {TOPICS.map((option) => (
             <label
@@ -146,7 +146,7 @@ export function SupportRequestView({ accounts, account, mobileLast4, onBack }: P
         />
         <p className="mt-1 text-[11px] text-[#7c8a80] dark:text-[#688274]">Please do not include your PAN, full account numbers, passwords or OTPs.</p>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="support-time" className={LABEL}>Preferred time to speak</label>
             <select id="support-time" value={time} onChange={(e) => setTime(e.target.value as (typeof TIMES)[number])} className={`${FIELD} h-11`}>

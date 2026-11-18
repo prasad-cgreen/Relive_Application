@@ -39,7 +39,7 @@ export function AccountSummaryCards({ accounts, limit = 6, onView }: Props) {
   }
 
   return (
-    <ul className="grid gap-3 sm:grid-cols-2">
+    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {shown.map((account, i) => {
         const priority = priorityOf(account);
         const badge = BADGE[priority];
