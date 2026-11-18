@@ -223,7 +223,7 @@ function postForm(url: string, form: URLSearchParams, timeoutMs: number, ipv4Onl
 }
 
 /** Cloudflare Turnstile check, so bots cannot trigger billed OTP SMS. Skipped when TURNSTILE_SECRET_KEY is unset. */
-async function assertHuman(token: string | undefined) {
+async function assertHuman(token: string | undefined, requestId?: string) {
   if (!env.TURNSTILE_SECRET_KEY) return;
   if (!token) throw new HttpError(400, "CAPTCHA_REQUIRED", "Please wait for the security check to finish, then try again");
   // A token can be checked only once, so the retries share an idempotency key: Cloudflare then answers a
@@ -231,12 +231,12 @@ async function assertHuman(token: string | undefined) {
   const body = new URLSearchParams({ secret: env.TURNSTILE_SECRET_KEY, response: token, idempotency_key: randomUUID() });
   let result: { success?: boolean; "error-codes"?: string[] } | undefined;
   // The call from the server to Cloudflare has been failing about half the time in production (it normally
-  // answers in well under a second). Try up to 4 times, about 10 s in total; the retries go over IPv4 only,
+  // answers in well under a second). Try up to 4 times, about 8 s in total; the retries go over IPv4 only,
   // because challenges.cloudflare.com also has IPv6 addresses and a host without working IPv6 fails on those.
   const ATTEMPTS = 4;
   for (let attempt = 1; attempt <= ATTEMPTS && !result; attempt += 1) {
     try {
-      const answer = await postForm("https://challenges.cloudflare.com/turnstile/v0/siteverify", body, 2_500, attempt > 1);
+      const answer = await postForm("https://challenges.cloudflare.com/turnstile/v0/siteverify", body, 2_000, attempt > 1);
       if (answer.status >= 500) throw new Error(`siteverify answered ${answer.status}`);
       result = answer.json as typeof result;
     } catch (error) {
@@ -245,7 +245,16 @@ async function assertHuman(token: string | undefined) {
       if (attempt < ATTEMPTS) await new Promise((resolve) => setTimeout(resolve, 200));
     }
   }
-  if (!result) throw new HttpError(503, "CAPTCHA_UNAVAILABLE", "We could not run the security check. Please try again");
+  if (!result) {
+    // Cloudflare could not be reached at all: let the login through instead of locking real users out. The
+    // browser still had to produce a token, and the per-IP and per-number OTP limits still apply. A token
+    // Cloudflare actually rejects is still blocked below.
+    console.warn("Turnstile could not be reached: allowing this OTP request without the check");
+    try {
+      await writeAudit({ eventType: "CAPTCHA_SKIPPED", status: "CAPTCHA_UNAVAILABLE", requestId });
+    } catch { /* the audit entry must never block a login */ }
+    return;
+  }
   if (!result.success) {
     console.warn("Turnstile rejected the token:", result["error-codes"]?.join(", ") ?? "no error code");
     throw new HttpError(400, "CAPTCHA_FAILED", "The security check failed. Please try again");
@@ -254,7 +263,7 @@ async function assertHuman(token: string | undefined) {
 
 app.post("/api/v1/auth/request-otp", authLimiter, async (req, res) => {
   const data = requestOtpSchema.parse(req.body);
-  await assertHuman(data.turnstileToken);
+  await assertHuman(data.turnstileToken, req.requestId);
   const mobileHash = hashMobile(data.mobile);
   // New numbers are allowed: the "existing user?" decision happens after OTP verification.
   const user = await production.user.upsert({ where: { mobileHash }, update: { mobileEncrypted: encrypt(data.mobile) }, create: { mobileHash, mobileLast4: data.mobile.slice(-4), mobileEncrypted: encrypt(data.mobile) } });
