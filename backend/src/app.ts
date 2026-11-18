@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { request as httpsRequest } from "node:https";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import express, { type NextFunction, type Request, type Response } from "express";
@@ -193,22 +194,62 @@ async function consumeOtp(req: Request, data: { transactionId: string; otp: stri
   return transaction;
 }
 
+/** POSTs a form and parses the JSON answer. `ipv4Only` skips the host's IPv6 addresses. Rejects on any network error or timeout. */
+function postForm(url: string, form: URLSearchParams, timeoutMs: number, ipv4Only: boolean): Promise<{ status: number; json: unknown }> {
+  return new Promise((resolve, reject) => {
+    const payload = form.toString();
+    const request = httpsRequest(url, {
+      method: "POST",
+      ...(ipv4Only && { family: 4 }),
+      headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": Buffer.byteLength(payload) },
+    }, (response) => {
+      let text = "";
+      response.setEncoding("utf8");
+      response.on("data", (chunk) => { text += chunk; });
+      response.on("end", () => {
+        try {
+          resolve({ status: response.statusCode ?? 0, json: JSON.parse(text) });
+        } catch {
+          reject(new Error(`answered ${response.statusCode} with a non-JSON body`));
+        }
+      });
+    });
+    // One deadline for the whole exchange: DNS, connect, TLS and the answer.
+    const timer = setTimeout(() => request.destroy(new Error(`timed out after ${timeoutMs} ms`)), timeoutMs);
+    request.on("close", () => clearTimeout(timer));
+    request.on("error", reject);
+    request.end(payload);
+  });
+}
+
 /** Cloudflare Turnstile check, so bots cannot trigger billed OTP SMS. Skipped when TURNSTILE_SECRET_KEY is unset. */
 async function assertHuman(token: string | undefined) {
   if (!env.TURNSTILE_SECRET_KEY) return;
   if (!token) throw new HttpError(400, "CAPTCHA_REQUIRED", "Please wait for the security check to finish, then try again");
-  let result: { success?: boolean };
-  try {
-    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "POST",
-      body: new URLSearchParams({ secret: env.TURNSTILE_SECRET_KEY, response: token }),
-      signal: AbortSignal.timeout(10_000),
-    });
-    result = await response.json();
-  } catch {
-    throw new HttpError(503, "CAPTCHA_UNAVAILABLE", "We could not run the security check. Please try again");
+  // A token can be checked only once, so the retries share an idempotency key: Cloudflare then answers a
+  // repeat of the same check instead of rejecting it as a duplicate.
+  const body = new URLSearchParams({ secret: env.TURNSTILE_SECRET_KEY, response: token, idempotency_key: randomUUID() });
+  let result: { success?: boolean; "error-codes"?: string[] } | undefined;
+  // The call from the server to Cloudflare has been failing about half the time in production (it normally
+  // answers in well under a second). Try up to 4 times, about 10 s in total; the retries go over IPv4 only,
+  // because challenges.cloudflare.com also has IPv6 addresses and a host without working IPv6 fails on those.
+  const ATTEMPTS = 4;
+  for (let attempt = 1; attempt <= ATTEMPTS && !result; attempt += 1) {
+    try {
+      const answer = await postForm("https://challenges.cloudflare.com/turnstile/v0/siteverify", body, 2_500, attempt > 1);
+      if (answer.status >= 500) throw new Error(`siteverify answered ${answer.status}`);
+      result = answer.json as typeof result;
+    } catch (error) {
+      const code = (error as { code?: string })?.code;
+      console.warn(`Turnstile siteverify attempt ${attempt} failed:`, code ?? (error instanceof Error ? error.message : error));
+      if (attempt < ATTEMPTS) await new Promise((resolve) => setTimeout(resolve, 200));
+    }
   }
-  if (!result.success) throw new HttpError(400, "CAPTCHA_FAILED", "The security check failed. Please try again");
+  if (!result) throw new HttpError(503, "CAPTCHA_UNAVAILABLE", "We could not run the security check. Please try again");
+  if (!result.success) {
+    console.warn("Turnstile rejected the token:", result["error-codes"]?.join(", ") ?? "no error code");
+    throw new HttpError(400, "CAPTCHA_FAILED", "The security check failed. Please try again");
+  }
 }
 
 app.post("/api/v1/auth/request-otp", authLimiter, async (req, res) => {

@@ -19,7 +19,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { ThemeToggle } from "../components/theme-toggle";
 import { OnboardingFlow, type Workflow } from "../components/onboarding-flow";
-import { Turnstile, TURNSTILE_SITE_KEY, type CaptchaState } from "../components/turnstile";
+import { preloadTurnstile, Turnstile, TURNSTILE_SITE_KEY, type CaptchaState } from "../components/turnstile";
 import { api, apiErrorCode, apiMessage, apiRetryAfter } from "../lib/api";
 import { getSession, setSignedInHint, type Session } from "../lib/session";
 
@@ -105,6 +105,8 @@ export default function Home() {
       document.body.style.overflow = "";
     };
   }, [loginOpen]);
+
+  useEffect(preloadTurnstile, []);
 
   // Unfinished onboarding is kept in the URL, so a refresh reopens the dialog at the saved step.
   useEffect(() => {

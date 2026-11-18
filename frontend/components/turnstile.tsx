@@ -25,6 +25,11 @@ const loadTurnstile = () =>
     document.head.appendChild(tag);
   }));
 
+/** Fetches Cloudflare's script ahead of time, so the check is ready sooner once the login dialog opens. */
+export function preloadTurnstile() {
+  if (TURNSTILE_SITE_KEY) loadTurnstile().catch(() => undefined);
+}
+
 /**
  * Cloudflare Turnstile bot check. Invisible unless Cloudflare wants the visitor to click.
  * Tokens are single-use: re-key the component (key={n}) after each use to get a fresh one.
