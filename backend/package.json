@@ -11,7 +11,10 @@
     "db:generate": "prisma generate --config prisma.production.config.ts && prisma generate --config prisma.audit.config.ts",
     "db:migrate": "prisma migrate deploy --config prisma.production.config.ts && prisma migrate deploy --config prisma.audit.config.ts",
     "db:seed": "tsx src/database/seed.ts",
-    "journey": "tsx src/database/journey.ts"
+    "journey": "tsx src/database/journey.ts",
+    "mobile": "tsx src/database/mobile.ts",
+    "export-users": "tsx src/database/export-users.ts",
+    "report-pdf": "tsx src/database/report-pdf.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",

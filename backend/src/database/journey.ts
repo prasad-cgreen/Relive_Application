@@ -4,6 +4,10 @@
 import { audit, production } from "./clients.js";
 import { hashMobile } from "../lib/crypto.js";
 
+// Indian time, 12-hour clock: "19 Nov 2026, 1:05 pm" (the database itself stores UTC instants).
+const istTime = (date: Date, seconds = false) =>
+  date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", ...(seconds && { second: "2-digit" }), hour12: true });
+
 const mobile = process.argv[2]?.replace(/\D/g, "");
 
 if (mobile) {
@@ -17,7 +21,7 @@ if (mobile) {
     ]);
     console.log("Journey:", journey ?? "(none recorded)");
     console.table(events.map((event) => ({
-      at: event.createdAt.toISOString().replace("T", " ").slice(0, 19),
+      at: istTime(event.createdAt, true),
       event: event.eventType,
       outcome: event.status,
       step: (event.metadata as { step?: string } | null)?.step ?? "",
@@ -35,7 +39,7 @@ if (mobile) {
     otpSends: journey.otpSends,
     panTries: journey.panAttempts,
     reportTries: journey.reportAttempts,
-    lastActivity: journey.lastActivityAt.toISOString().replace("T", " ").slice(0, 16),
+    lastActivity: istTime(journey.lastActivityAt),
   })));
 }
 

@@ -6,3 +6,5 @@ dist/
 coverage/
 *.log
 .DS_Store
+# User exports hold personal data (full mobile numbers): never commit them
+backend/exports/

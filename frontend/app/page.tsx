@@ -17,6 +17,7 @@ import {
 import { SUPPORT_EMAIL, SUPPORT_PHONE, SUPPORT_TEL } from "../lib/contact";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import { HeroCarousel } from "../components/hero-carousel";
 import { OnboardingFlow, type Workflow } from "../components/onboarding-flow";
 import { preloadTurnstile, Turnstile, TURNSTILE_SITE_KEY, type CaptchaState } from "../components/turnstile";
 import { api, apiErrorCode, apiMessage, apiRetryAfter } from "../lib/api";
@@ -52,6 +53,7 @@ const steps = [
   },
 ];
 
+const heroIntro = "Your credit report is the starting point. We will turn the details into a clear picture of your debt and the next steps worth exploring.";
 const trust = ["No impact on your credit score", "About three minutes", "Real people to help"];
 
 const privacyPoints = [
@@ -389,38 +391,37 @@ export default function Home() {
         {/* Glow ambient background accents */}
         <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 size-[650px] rounded-full bg-emerald-400/10 blur-[120px] dark:bg-emerald-500/10" />
 
-        <div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 px-4 sm:px-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-16">
-          {/* Intro */}
-          <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 lg:pr-4">
-            <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[1.5px] text-emerald-700 dark:text-emerald-400">
-              <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
-              A fresh start begins with clarity
-            </p>
-            <h1 className="mt-4 max-w-xl text-[clamp(2rem,3.4vw,3rem)] font-bold leading-[1.1] tracking-[-0.03em] text-[#183b2f] dark:text-white">
-              Let’s understand{" "}
-              <span className="block text-emerald-700 dark:text-emerald-400">what is weighing on you.</span>
-            </h1>
-            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#4f6358] dark:text-[#8ba295]">
-              Your credit report is the starting point. We will turn the details into a clear picture of your debt and the next steps worth exploring.
-            </p>
-            <div className="mt-6 flex max-w-md items-start gap-3 border-t border-[#dce5d8] pt-5 dark:border-[#1a3827]">
-              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#e6efdc] text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                <ShieldCheck className="size-4.5" aria-hidden="true" />
-              </span>
-              <p className="text-sm leading-relaxed text-[#183b2f] dark:text-[#c3d6cb]">
-                Start with a clear picture of your debt —<br />
-                <strong className="font-semibold">not just your credit score.</strong>
+        <div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 px-4 sm:px-8 lg:grid-cols-2 lg:gap-6 xl:items-stretch 2xl:max-w-[1500px]">
+          {/* Intro with the hero pictures, like a pamphlet: text beside the artwork (under it on narrow columns), never on top of it.
+              Left column only; full width above the form on phones and tablets */}
+          <HeroCarousel className="animate-in fade-in slide-in-from-bottom-3 min-w-0 duration-500 lg:self-stretch">
+            <div className="px-5 pt-7 sm:max-w-[49%] sm:pt-[5cqw] sm:pr-0 sm:pb-14 sm:pl-[5cqw] lg:max-w-none lg:px-8 lg:pt-9 lg:pb-0 xl:max-w-[49%] xl:pt-[5cqw] xl:pr-0 xl:pb-14 xl:pl-[5cqw]">
+              <p className="flex items-start gap-2 text-[11px] font-bold uppercase leading-snug tracking-[1.5px] text-emerald-700">
+                <span className="mt-[0.4em] size-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden="true" />
+                A fresh start begins with clarity
               </p>
+              <h1 className="mt-3 text-[2rem] font-bold leading-[1.1] tracking-[-0.03em] text-[#183b2f] sm:text-[clamp(1.375rem,4.5cqw,2.5rem)] lg:text-[1.875rem] xl:text-[clamp(1.375rem,4.5cqw,2.5rem)]">
+                Let’s understand <span className="block text-emerald-700">what is weighing on you.</span>
+              </h1>
+              <p className="mt-3.5 text-[15px] leading-relaxed text-[#3f5447] sm:text-[clamp(0.8125rem,2.3cqw,1.0625rem)] lg:text-[15px] xl:text-[clamp(0.8125rem,2.3cqw,1.0625rem)]">{heroIntro}</p>
+              <div className="mt-5 flex items-start gap-3 border-t border-[#d9e5dd] pt-4">
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#e6efdc] text-emerald-700">
+                  <ShieldCheck className="size-4.5" aria-hidden="true" />
+                </span>
+                <p className="text-sm leading-relaxed text-[#183b2f] sm:text-[clamp(0.8125rem,2.2cqw,1rem)] lg:text-sm xl:text-[clamp(0.8125rem,2.2cqw,1rem)]">
+                  Start with a clear picture of your debt — <strong className="font-semibold">not just your credit score.</strong>
+                </p>
+              </div>
+              <ul className="mt-4 flex flex-col gap-2 text-xs font-medium text-[#3f5447] sm:text-[clamp(0.75rem,2cqw,0.9375rem)] lg:text-xs xl:text-[clamp(0.75rem,2cqw,0.9375rem)]">
+                {trust.map((item) => (
+                  <li key={item} className="inline-flex items-center gap-1.5">
+                    <Check className="size-3.5 stroke-[3] text-emerald-600" aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="mt-5 flex max-w-md flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-[#4f6358] dark:text-[#a0b8ab]">
-              {trust.map((item) => (
-                <li key={item} className="inline-flex items-center gap-1.5">
-                  <Check className="size-3.5 stroke-[3] text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
+          </HeroCarousel>
 
           {/* Concern form: every field optional; submitting starts the normal login/signup flow */}
           <form
@@ -429,7 +430,7 @@ export default function Home() {
               e.preventDefault();
               openLogin();
             }}
-            className="animate-in fade-in slide-in-from-bottom-3 fill-mode-both delay-150 duration-500 relative scroll-mt-24 rounded-[22px] border border-[#d9e3d3] bg-white p-5 shadow-[0_10px_35px_rgba(28,62,44,0.06)] sm:px-6 sm:py-5 dark:border-[#162a1f] dark:bg-[#0c1a12]"
+            className="animate-in fade-in slide-in-from-bottom-3 fill-mode-both delay-150 duration-500 relative scroll-mt-24 rounded-[22px] border border-[#d9e3d3] bg-white p-5 shadow-[0_10px_35px_rgba(28,62,44,0.06)] sm:px-6 sm:py-5 xl:flex xl:flex-col dark:border-[#162a1f] dark:bg-[#0c1a12]"
           >
             <span className="absolute -top-px left-7 h-[3px] w-12 rounded-full bg-[#8db66b]" aria-hidden="true" />
             <div className="flex items-center justify-between gap-3">
@@ -472,7 +473,7 @@ export default function Home() {
               onChange={(e) => setConcernDetails(e.target.value)}
               placeholder="For example: I want to close my debts, but I do not know which lender to approach first."
               maxLength={800}
-              className="mt-1.5 block w-full resize-y rounded-[10px] border border-[#dce5d8] bg-white px-3.5 py-2.5 text-xs leading-relaxed outline-none transition placeholder:text-[#a3b8ad] focus:border-emerald-500 focus:ring-3 focus:ring-emerald-100 dark:border-[#1e3829] dark:bg-[#07120b] dark:text-white dark:focus:ring-emerald-950"
+              className="mt-1.5 block w-full resize-y rounded-[10px] border border-[#dce5d8] bg-white px-3.5 py-2.5 text-xs xl:min-h-16 xl:flex-1 leading-relaxed outline-none transition placeholder:text-[#a3b8ad] focus:border-emerald-500 focus:ring-3 focus:ring-emerald-100 dark:border-[#1e3829] dark:bg-[#07120b] dark:text-white dark:focus:ring-emerald-950"
             />
 
             <div className="mt-4 grid gap-2">
