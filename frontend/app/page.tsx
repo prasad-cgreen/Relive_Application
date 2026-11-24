@@ -53,7 +53,6 @@ const steps = [
   },
 ];
 
-const heroIntro = "Your credit report is the starting point. We will turn the details into a clear picture of your debt and the next steps worth exploring.";
 const trust = ["No impact on your credit score", "About three minutes", "Real people to help"];
 
 const privacyPoints = [
@@ -391,36 +390,18 @@ export default function Home() {
         {/* Glow ambient background accents */}
         <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 size-[650px] rounded-full bg-emerald-400/10 blur-[120px] dark:bg-emerald-500/10" />
 
-        <div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 px-4 sm:px-8 lg:grid-cols-2 lg:gap-6 xl:items-stretch 2xl:max-w-[1500px]">
-          {/* Intro with the hero pictures, like a pamphlet: text beside the artwork (under it on narrow columns), never on top of it.
-              Left column only; full width above the form on phones and tablets */}
+        <div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 px-4 sm:px-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-6 xl:items-stretch 2xl:max-w-[1500px]">
+          {/* Hero slides (text + photo, changing together) with the trust points under them. Left 60% on desktop, the form the
+              narrower 40%; full width above the form on phones and tablets */}
           <HeroCarousel className="animate-in fade-in slide-in-from-bottom-3 min-w-0 duration-500 lg:self-stretch">
-            <div className="px-5 pt-7 sm:max-w-[49%] sm:pt-[5cqw] sm:pr-0 sm:pb-14 sm:pl-[5cqw] lg:max-w-none lg:px-8 lg:pt-9 lg:pb-0 xl:max-w-[49%] xl:pt-[5cqw] xl:pr-0 xl:pb-14 xl:pl-[5cqw]">
-              <p className="flex items-start gap-2 text-[11px] font-bold uppercase leading-snug tracking-[1.5px] text-emerald-700">
-                <span className="mt-[0.4em] size-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden="true" />
-                A fresh start begins with clarity
-              </p>
-              <h1 className="mt-3 text-[2rem] font-bold leading-[1.1] tracking-[-0.03em] text-[#183b2f] sm:text-[clamp(1.375rem,4.5cqw,2.5rem)] lg:text-[1.875rem] xl:text-[clamp(1.375rem,4.5cqw,2.5rem)]">
-                Let’s understand <span className="block text-emerald-700">what is weighing on you.</span>
-              </h1>
-              <p className="mt-3.5 text-[15px] leading-relaxed text-[#3f5447] sm:text-[clamp(0.8125rem,2.3cqw,1.0625rem)] lg:text-[15px] xl:text-[clamp(0.8125rem,2.3cqw,1.0625rem)]">{heroIntro}</p>
-              <div className="mt-5 flex items-start gap-3 border-t border-[#d9e5dd] pt-4">
-                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#e6efdc] text-emerald-700">
-                  <ShieldCheck className="size-4.5" aria-hidden="true" />
-                </span>
-                <p className="text-sm leading-relaxed text-[#183b2f] sm:text-[clamp(0.8125rem,2.2cqw,1rem)] lg:text-sm xl:text-[clamp(0.8125rem,2.2cqw,1rem)]">
-                  Start with a clear picture of your debt — <strong className="font-semibold">not just your credit score.</strong>
-                </p>
-              </div>
-              <ul className="mt-4 flex flex-col gap-2 text-xs font-medium text-[#3f5447] sm:text-[clamp(0.75rem,2cqw,0.9375rem)] lg:text-xs xl:text-[clamp(0.75rem,2cqw,0.9375rem)]">
-                {trust.map((item) => (
-                  <li key={item} className="inline-flex items-center gap-1.5">
-                    <Check className="size-3.5 stroke-[3] text-emerald-600" aria-hidden="true" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <ul className="mt-4 flex flex-col gap-2 text-xs font-medium text-[#3f5447] sm:text-[clamp(0.75rem,2cqw,0.9375rem)] lg:text-xs xl:text-[clamp(0.75rem,2cqw,0.9375rem)]">
+              {trust.map((item) => (
+                <li key={item} className="inline-flex items-center gap-1.5">
+                  <Check className="size-3.5 stroke-[3] text-emerald-600" aria-hidden="true" />
+                  {item}
+                </li>
+              ))}
+            </ul>
           </HeroCarousel>
 
           {/* Concern form: every field optional; submitting starts the normal login/signup flow */}
