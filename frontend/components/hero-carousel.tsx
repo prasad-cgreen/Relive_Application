@@ -64,7 +64,7 @@ const SLIDES = [
 const AUTOPLAY_MS = 5000;
 const SWIPE_PX = 40;
 
-/** The cross-fading pictures; fills its (positioned) parent, cropped to fill it and kept on the faces near the top. */
+/** The cross-fading pictures; fills its (positioned) parent, cropped to fill it from near the top so heads are not cut off. */
 function Slides({ index }: { index: number }) {
   return (
     <>
@@ -79,7 +79,7 @@ function Slides({ index }: { index: number }) {
           loading={i === 0 ? "eager" : "lazy"}
           draggable={false}
           aria-hidden={i !== index}
-          className={`absolute inset-0 size-full select-none object-cover object-[50%_30%] transition-[opacity,transform] duration-[1200ms] ease-out motion-reduce:transition-none ${
+          className={`absolute inset-0 size-full select-none object-cover object-[50%_15%] transition-[opacity,transform] duration-[1200ms] ease-out motion-reduce:transition-none ${
             i === index ? "scale-100 opacity-100" : "scale-[1.03] opacity-0"
           }`}
         />
@@ -92,7 +92,8 @@ function Slides({ index }: { index: number }) {
  * Hero panel: each slide's text and photo, cross-fading together, then `children` (shown under every slide's text).
  * The text never sits on the photo:
  *  - side by side (tablets, and desktops from 1280px): the photo fills the right half of the panel, next to the text;
- *  - stacked (phones, and small desktops where the column is narrow): the picture sits under the text.
+ *  - phones: the photo is a short banner above the text;
+ *  - small desktops (1024-1279px, where the column is narrow): the photo sits under the text.
  * The photos keep their own proportions (cropped, never stretched); their inner edges fade into the panel's background.
  * It advances by itself; dots, swipe and (with a dot focused) the arrow keys also change the slide.
  */
@@ -148,8 +149,10 @@ export function HeroCarousel({ children, className = "" }: { children: ReactNode
         <Slides index={index} />
       </div>
 
-      <div className="relative min-w-0 px-5 pt-7 sm:my-auto sm:max-w-[49%] sm:pt-[5cqw] sm:pr-0 sm:pb-14 sm:pl-[5cqw] lg:my-0 lg:max-w-none lg:px-8 lg:pt-9 lg:pb-0 xl:my-auto xl:max-w-[49%] xl:pt-[5cqw] xl:pr-0 xl:pb-14 xl:pl-[5cqw]">
-        {/* Every slide's text sits in the same grid cell, so the panel is as tall as the longest one and does not jump as they change */}
+      <div className="relative min-w-0 px-5 pt-2 sm:my-auto sm:max-w-[49%] sm:pt-[5cqw] sm:pr-0 sm:pb-14 sm:pl-[5cqw] lg:my-0 lg:max-w-none lg:px-8 lg:pt-9 lg:pb-0 xl:my-auto xl:max-w-[49%] xl:pt-[5cqw] xl:pr-0 xl:pb-14 xl:pl-[5cqw]">
+        {/* Every slide's text sits in the same grid cell, so the panel is as tall as the longest one and does not jump as they change.
+            Shorter slides put the spare room where it reads as breathing space, keeping the note right on top of `children`:
+            on phones above the label (under the photo's fade), wider up above the divider. */}
         <div className="grid">
           {SLIDES.map((slide, i) => {
             const Title = i === index ? "h1" : "p"; // one h1 on the page: the shown slide's
@@ -157,19 +160,19 @@ export function HeroCarousel({ children, className = "" }: { children: ReactNode
               <div
                 key={slide.src}
                 aria-hidden={i !== index}
-                className={`[grid-area:1/1] transition-[opacity,visibility] duration-700 motion-reduce:transition-none ${i === index ? "opacity-100" : "invisible opacity-0"}`}
+                className={`flex flex-col justify-end [grid-area:1/1] sm:justify-start transition-[opacity,visibility] duration-700 motion-reduce:transition-none ${i === index ? "opacity-100" : "invisible opacity-0"}`}
               >
                 <p className="flex items-start gap-2 text-[11px] font-bold uppercase leading-snug tracking-[1.5px] text-emerald-700">
                   <span className="mt-[0.4em] size-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden="true" />
                   {slide.tag}
                 </p>
-                <Title className="mt-3 text-[2rem] font-bold leading-[1.1] tracking-[-0.03em] text-[#183b2f] sm:text-[clamp(1.375rem,4.5cqw,2.5rem)] lg:text-[1.875rem] xl:text-[clamp(1.375rem,4.5cqw,2.5rem)]">
+                <Title className="mt-3 text-[1.75rem] font-bold leading-[1.1] tracking-[-0.03em] text-[#183b2f] sm:text-[clamp(1.375rem,4.5cqw,2.5rem)] lg:text-[1.875rem] xl:text-[clamp(1.375rem,4.5cqw,2.5rem)]">
                   {slide.title} <span className="block text-emerald-700">{slide.accent}</span>
                 </Title>
-                <p className="mt-3.5 text-[15px] leading-relaxed text-[#3f5447] sm:text-[clamp(0.8125rem,2.3cqw,1.0625rem)] lg:text-[15px] xl:text-[clamp(0.8125rem,2.3cqw,1.0625rem)]">
+                <p className="mt-3 mb-5 text-[15px] leading-relaxed text-[#3f5447] sm:text-[clamp(0.8125rem,2.3cqw,1.0625rem)] lg:text-[15px] xl:text-[clamp(0.8125rem,2.3cqw,1.0625rem)]">
                   {slide.body}
                 </p>
-                <div className="mt-5 flex items-center gap-3 border-t border-[#d9e5dd] pt-4">
+                <div className="flex items-center gap-3 border-t sm:mt-auto border-[#d9e5dd] pt-4">
                   <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#e6efdc] text-emerald-700">
                     <ShieldCheck className="size-4.5" aria-hidden="true" />
                   </span>
@@ -184,8 +187,9 @@ export function HeroCarousel({ children, className = "" }: { children: ReactNode
         {children}
       </div>
 
-      {/* Stacked: the picture in its own space under the text; its top and bottom edges fade into the panel */}
-      <div className="relative mt-4 aspect-[4/3] w-full [mask-image:linear-gradient(to_bottom,transparent,#000_14%,#000_88%,transparent)] sm:hidden lg:block lg:aspect-[3/2] xl:hidden">
+      {/* Stacked, in its own space: on phones a square banner above the text (square shows most of each portrait photo), its
+          bottom edge fading into the panel; on small desktops under the text, its top and bottom edges fading */}
+      <div className="relative order-first aspect-square w-full [mask-image:linear-gradient(to_bottom,#000_70%,transparent)] sm:order-none sm:hidden lg:mt-4 lg:block lg:aspect-[3/2] lg:[mask-image:linear-gradient(to_bottom,transparent,#000_14%,#000_88%,transparent)] xl:hidden">
         <Slides index={index} />
       </div>
 
