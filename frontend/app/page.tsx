@@ -21,7 +21,7 @@ import { HeroCarousel } from "../components/hero-carousel";
 import { OnboardingFlow, type Workflow } from "../components/onboarding-flow";
 import { preloadTurnstile, Turnstile, TURNSTILE_SITE_KEY, type CaptchaState } from "../components/turnstile";
 import { api, apiErrorCode, apiMessage, apiRetryAfter } from "../lib/api";
-import { getSession, setSignedInHint, type Session } from "../lib/session";
+import { getSession, hasSignedInHint, setSignedInHint, type Session } from "../lib/session";
 
 type LoginStep = "mobile" | "otp" | "onboarding";
 
@@ -177,12 +177,23 @@ export default function Home() {
       return null;
     }
     if (session && !session.authenticated) setSignedInHint(false);
-    document.documentElement.removeAttribute("data-auth-check");
+    // Signed out with ?login=1: the login dialog is about to open and shows the page itself, so it doesn't flash first.
+    const openingLogin = session?.authenticated === false && new URLSearchParams(window.location.search).has("login");
+    if (!openingLogin) document.documentElement.removeAttribute("data-auth-check");
     return session;
   };
 
+  // Arriving to log in (?login=1) keeps the landing page hidden (app/layout.tsx) until the dialog is up; then it shows behind it.
+  useEffect(() => {
+    if (loginOpen) document.documentElement.removeAttribute("data-auth-check");
+  }, [loginOpen]);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    // ?login=1 opens the dialog straight away rather than after the session check below, except in a browser that
+    // reached the dashboard: that check sends it on to /portal instead.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the URL is browser-only: reading it while rendering would mismatch the server HTML
+    if (params.has("login") && !hasSignedInHint()) setLoginOpen(true);
     void guardLanding().then((session) => {
       if (!session) return; // redirecting, or API unreachable
       if (params.has("expired")) setSessionNotice("Your session has expired. Please log in again to continue.");
@@ -327,13 +338,14 @@ export default function Home() {
             >
               Log in
             </button>
-            <a
-              href="#start"
+            <button
+              type="button"
+              onClick={openLogin}
               className="group inline-flex h-10 items-center gap-2 rounded-xl bg-[#216b49] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#155438] dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
             >
               Get started
               <ArrowRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden="true" />
-            </a>
+            </button>
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
@@ -366,13 +378,13 @@ export default function Home() {
                   <ChevronRight className="size-4 text-[#9aaba1]" aria-hidden="true" />
                 </a>
               ))}
-              <a
-                href="#start"
-                onClick={() => setMenuOpen(false)}
+              <button
+                type="button"
+                onClick={openLogin}
                 className="mt-4 grid h-12 w-full place-items-center rounded-xl bg-[#216b49] text-sm font-semibold text-white transition hover:bg-[#155438] dark:bg-emerald-500 dark:text-[#07130c]"
               >
                 Get started
-              </a>
+              </button>
               <button
                 onClick={openLogin}
                 className="mt-2.5 h-12 w-full rounded-xl border border-[#d2ded6] text-sm font-semibold text-[#183b2f] transition hover:bg-[#f1f6f3] dark:border-[#1a3827] dark:text-white"
@@ -462,7 +474,7 @@ export default function Home() {
                 type="submit"
                 className="group inline-flex h-11 w-full items-center justify-between rounded-[10px] bg-[#216b49] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#155438] dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
               >
-                Get my credit report
+                Start My Journey
                 <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
               </button>
               <Link
