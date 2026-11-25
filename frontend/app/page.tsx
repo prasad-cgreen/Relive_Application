@@ -474,11 +474,7 @@ export default function Home() {
                 type="submit"
                 className="group inline-flex h-11 w-full items-center justify-between rounded-[10px] bg-[#216b49] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#155438] dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
               >
-<<<<<<< HEAD
-                Start your Journey
-=======
                 Start My Journey
->>>>>>> 38353539e5104133109d1a139d204cc0fd20acc3
                 <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
               </button>
               <Link
