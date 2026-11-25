@@ -462,7 +462,7 @@ export default function Home() {
                 type="submit"
                 className="group inline-flex h-11 w-full items-center justify-between rounded-[10px] bg-[#216b49] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#155438] dark:bg-emerald-500 dark:text-[#07130c] dark:hover:bg-emerald-400"
               >
-                Get my credit report
+                Start your Journey
                 <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
               </button>
               <Link
