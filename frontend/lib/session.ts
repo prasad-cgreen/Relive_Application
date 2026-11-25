@@ -12,6 +12,14 @@ export type Session = { authenticated: true; stage: "PROFILE" | "REPORT" | "DASH
  */
 export const SIGNED_IN_HINT = "relive:signed-in";
 
+export function hasSignedInHint() {
+  try {
+    return localStorage.getItem(SIGNED_IN_HINT) === "1";
+  } catch {
+    return false; // storage blocked
+  }
+}
+
 export function setSignedInHint(on: boolean) {
   try {
     if (on) localStorage.setItem(SIGNED_IN_HINT, "1");
@@ -36,12 +44,7 @@ let redirecting = false; // several 401s can arrive together: only the first one
 export function redirectToLogin() {
   if (redirecting) return;
   redirecting = true;
-  let wasSignedIn = false;
-  try {
-    wasSignedIn = localStorage.getItem(SIGNED_IN_HINT) === "1";
-  } catch {
-    /* storage blocked */
-  }
+  const wasSignedIn = hasSignedInHint();
   setSignedInHint(false);
   window.location.replace(wasSignedIn ? "/?login=1&expired=1" : "/?login=1");
 }
