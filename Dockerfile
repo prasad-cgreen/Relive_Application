@@ -80,8 +80,11 @@ COPY frontend ./
 # NEXT_PUBLIC_* values are compiled into the browser code, so they are build arguments, not run-time env.
 ARG NEXT_PUBLIC_API_URL=http://localhost:4100/api/v1
 ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+# Google Tag Manager container (public id) that carries Google Analytics. Blank = no tracking.
+ARG NEXT_PUBLIC_GTM_ID=GTM-WSP875VS
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
-    NEXT_PUBLIC_TURNSTILE_SITE_KEY=${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY=${NEXT_PUBLIC_TURNSTILE_SITE_KEY} \
+    NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}
 RUN npm run build
 
 FROM ${NODE_IMAGE} AS frontend
