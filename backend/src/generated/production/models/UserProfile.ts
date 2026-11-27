@@ -458,10 +458,6 @@ export type EnumProfileSourceFieldUpdateOperationsInput = {
   set?: $Enums.ProfileSource
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type UserProfileCreateWithoutUserInput = {
   id?: string
   firstName: string

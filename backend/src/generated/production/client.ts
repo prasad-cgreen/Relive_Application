@@ -47,6 +47,17 @@ export { Prisma }
  */
 export type User = Prisma.UserModel
 /**
+ * Model Agent
+ * A company agent. The referral code is a mobile number: an agent's earns the agent a referral benefit; any other
+ * Relive user's is recorded without one. Managed with `npm run agent -w backend` (which also makes the agent's QR code).
+ */
+export type Agent = Prisma.AgentModel
+/**
+ * Model Referral
+ * Who referred a user: given once, during onboarding. Either agentId (benefit) or referrerUserId (no benefit) is set.
+ */
+export type Referral = Prisma.ReferralModel
+/**
  * Model UserProfile
  * 
  */

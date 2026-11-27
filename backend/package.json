@@ -12,6 +12,7 @@
     "db:migrate": "prisma migrate deploy --config prisma.production.config.ts && prisma migrate deploy --config prisma.audit.config.ts",
     "db:seed": "tsx src/database/seed.ts",
     "journey": "tsx src/database/journey.ts",
+    "agent": "tsx src/database/agent.ts",
     "mobile": "tsx src/database/mobile.ts",
     "export-users": "tsx src/database/export-users.ts",
     "report-pdf": "tsx src/database/report-pdf.ts"
@@ -30,6 +31,7 @@
     "helmet": "^8.3.0",
     "nodemailer": "^10.5.0",
     "openai": "^7.57.0",
+    "qrcode": "^1.5.4",
     "zod": "4.6.7"
   },
   "devDependencies": {
@@ -38,6 +40,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.6",
     "@types/nodemailer": "^8.0.2",
+    "@types/qrcode": "^1.5.6",
     "@types/supertest": "^7.2.1",
     "prisma": "^7.10.1",
     "supertest": "^7.3.1",

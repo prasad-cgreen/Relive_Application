@@ -87,6 +87,14 @@ export const TransactionStatus = {
 export type TransactionStatus = (typeof TransactionStatus)[keyof typeof TransactionStatus]
 
 
+export const ReferralSource = {
+  QR: 'QR',
+  MANUAL: 'MANUAL'
+} as const
+
+export type ReferralSource = (typeof ReferralSource)[keyof typeof ReferralSource]
+
+
 export const SupportTopic = {
   OPTIONS: 'OPTIONS',
   LENDER_DISCUSSION: 'LENDER_DISCUSSION',

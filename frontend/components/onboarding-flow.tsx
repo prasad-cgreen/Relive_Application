@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowRight, CircleAlert, LoaderCircle, RefreshCw, ShieldCheck, Smartphone, UserRound } from "lucide-react";
+import { ArrowRight, CircleAlert, LoaderCircle, Lock, RefreshCw, ShieldCheck, Smartphone, UserRound } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { api, apiErrorCode, apiMessage } from "../lib/api";
+import { forgetQrReferral, isReferralMobile, qrReferral } from "../lib/referral";
 
 export type Workflow = {
   stage: "PROFILE" | "REPORT" | "DASHBOARD";
@@ -67,11 +68,32 @@ export function OnboardingFlow({ initial, onComplete }: { initial: Workflow; onC
   // Alternate-mobile sub-flow
   const [alt, setAlt] = useState<{ mobile: string; transactionId?: string; devOtp?: string }>({ mobile: "" });
   const [altBusy, setAltBusy] = useState(false);
+  // Optional referral code (the referrer's mobile number), shared by the PAN and name-as-on-PAN forms.
+  // From an agent's QR code it is filled in and locked; otherwise the user may type one.
+  const [referral, setReferral] = useState(qrReferral);
+  const [referralLocked, setReferralLocked] = useState(() => referral !== "");
+  // What was last typed in the PAN / details forms: they are replaced by a spinner while saving, so after an error
+  // (e.g. a referral number not found) they come back with the user's input instead of empty.
+  const [draft, setDraft] = useState<Record<string, string>>({});
 
   const busy = phase !== null;
   const showError = (requestError: unknown) => {
     const code = apiErrorCode(requestError) ?? "";
+    // A rejected QR number (e.g. a deactivated agent) must not block signup: let the user change or clear it.
+    if (code.startsWith("REFERRAL_") && referralLocked) {
+      forgetQrReferral();
+      setReferralLocked(false);
+    }
     setError({ code, message: apiMessage(requestError), actions: ACTIONS[code] ?? ["retry"] });
+  };
+  /** The referral for a PAN / details request, or null (with the error shown) when the typed number isn't valid. */
+  const referralBody = () => {
+    if (!referral) return {};
+    if (!isReferralMobile(referral)) {
+      setError({ code: "REFERRAL_INVALID", message: "Enter the referrer's 10-digit mobile number, or leave the referral code blank", actions: ["retry"] });
+      return null;
+    }
+    return { referral: { mobile: referral, source: referralLocked ? "QR" : "MANUAL" } };
   };
   const switchView = (next: View) => {
     setView(next);
@@ -112,15 +134,51 @@ export function OnboardingFlow({ initial, onComplete }: { initial: Workflow; onC
 
   const submitPan = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const pan = new FormData(event.currentTarget).get("pan");
-    void run("pan", () => api.post("/kyc/verify", { pan }));
+    const pan = String(new FormData(event.currentTarget).get("pan") ?? "");
+    setDraft((current) => ({ ...current, pan }));
+    const extra = referralBody();
+    if (extra) void run("pan", () => api.post("/kyc/verify", { pan, ...extra }));
   };
 
   const submitDetails = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const details = Object.fromEntries(new FormData(event.currentTarget).entries());
-    void run("details", () => api.post("/profile/manual", details));
+    const details = Object.fromEntries([...new FormData(event.currentTarget).entries()].map(([key, value]) => [key, String(value)]));
+    setDraft((current) => ({ ...current, ...details }));
+    const extra = referralBody();
+    if (extra) void run("details", () => api.post("/profile/manual", { ...details, ...extra }));
   };
+
+  const referralField = (
+    <div>
+      <label htmlFor="referral" className={labelClass}>
+        Referral code <span className="font-normal text-[#71867a]">(optional)</span>
+      </label>
+      <div
+        className={`mt-1.5 flex h-11 items-center rounded-xl border border-[#d8e2dc] dark:border-[#1e3829] ${
+          referralLocked ? "bg-[#f3f6f4] dark:bg-[#0c1a12]" : "bg-white focus-within:border-emerald-500 dark:bg-[#07120b]"
+        }`}
+      >
+        <span className="border-r border-[#e5ece7] px-3 text-xs font-bold text-[#556b5e] dark:border-[#1e3829] dark:text-[#8ba295]">+91</span>
+        {/* No name attribute: sent as { referral: { mobile, source } }, not as a form field */}
+        <input
+          id="referral"
+          inputMode="numeric"
+          autoComplete="off"
+          maxLength={10}
+          value={referral}
+          readOnly={referralLocked}
+          onChange={(e) => setReferral(e.target.value.replace(/\D/g, ""))}
+          placeholder="Mobile number of who referred you"
+          aria-describedby="referral-help"
+          className="h-full min-w-0 flex-1 bg-transparent px-3 text-xs font-semibold outline-none placeholder:font-normal dark:text-white"
+        />
+        {referralLocked && <Lock className="mr-3 size-4 shrink-0 text-[#71867a]" aria-label="Locked" />}
+      </div>
+      <p id="referral-help" className="mt-1 text-[11px] text-[#71867a] dark:text-[#8ba295]">
+        {referralLocked ? "Added from the QR code you scanned." : "Were you referred? Enter their mobile number."}
+      </p>
+    </div>
+  );
 
   const sendAltOtp = async (mobile: string) => {
     setError(null);
@@ -219,10 +277,12 @@ export function OnboardingFlow({ initial, onComplete }: { initial: Workflow; onC
             title="10 characters, e.g. ABCDE1234F"
             maxLength={10}
             autoComplete="off"
+            defaultValue={draft.pan ?? ""}
             onInput={(e) => (e.currentTarget.value = e.currentTarget.value.toUpperCase())}
             placeholder="ABCDE1234F"
             className={`${inputClass} px-4 font-mono text-sm uppercase tracking-wider`}
           />
+          <div className="mt-4">{referralField}</div>
           {(!error || error.actions.includes("retry")) && (
             <button type="submit" className={`mt-5 ${primaryButton}`}>
               {error ? "Try again" : "Verify PAN"} <ArrowRight className="size-4" />
@@ -251,20 +311,21 @@ export function OnboardingFlow({ initial, onComplete }: { initial: Workflow; onC
         <form onSubmit={submitDetails} className="mt-6 grid gap-3">
           <label className={labelClass}>
             First name
-            <input required name="firstName" autoComplete="given-name" defaultValue={workflow.profile?.firstName ?? ""} className={inputClass} />
+            <input required name="firstName" autoComplete="given-name" defaultValue={draft.firstName ?? workflow.profile?.firstName ?? ""} className={inputClass} />
           </label>
           <label className={labelClass}>
             Middle and last name <span className="font-normal text-[#71867a]">(as on PAN)</span>
-            <input name="lastName" autoComplete="family-name" defaultValue={workflow.profile?.lastName ?? ""} className={inputClass} />
+            <input name="lastName" autoComplete="family-name" defaultValue={draft.lastName ?? workflow.profile?.lastName ?? ""} className={inputClass} />
           </label>
           <label className={labelClass}>
             Date of birth <span className="font-normal text-[#71867a]">(optional)</span>
-            <input type="date" name="dateOfBirth" autoComplete="bday" max={new Date().toISOString().slice(0, 10)} defaultValue={workflow.profile?.dateOfBirth ?? ""} className={inputClass} />
+            <input type="date" name="dateOfBirth" autoComplete="bday" max={new Date().toISOString().slice(0, 10)} defaultValue={draft.dateOfBirth ?? workflow.profile?.dateOfBirth ?? ""} className={inputClass} />
           </label>
           <label className={labelClass}>
             Email <span className="font-normal text-[#71867a]">(optional)</span>
-            <input type="email" name="email" autoComplete="email" defaultValue={workflow.profile?.email ?? ""} className={inputClass} />
+            <input type="email" name="email" autoComplete="email" defaultValue={draft.email ?? workflow.profile?.email ?? ""} className={inputClass} />
           </label>
+          {referralField}
           <button type="submit" className={`mt-2 ${primaryButton}`}>
             Fetch my credit report <ArrowRight className="size-4" />
           </button>

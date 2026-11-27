@@ -45,6 +45,9 @@ const schema = z.object({
   // OpenAI key for the personalised dashboard summary (prompt: prompts/dashboard-summary.md). Unset = rule-based summary.
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_MODEL: z.string().min(1).default("gpt-5.4-mini"),
+  // One shared password for the agents admin page (/admin/agents). Unset = the admin page is switched off.
+  // Any length locally; 12+ characters in production (checked below).
+  ADMIN_PASSWORD: z.string().min(1).optional(),
   // Set by the root `npm run dev` (scripts/dev.mjs): in development, sessions from earlier runs are ignored.
   RELIVE_DEV_RUN_STARTED_AT: z.coerce.number().int().positive().optional(),
 }).superRefine((value, ctx) => {
@@ -63,6 +66,7 @@ const schema = z.object({
     for (const service of services) {
       if (value[service] === "mock") ctx.addIssue({ code: "custom", path: [service], message: `${service}=mock cannot run in production` });
     }
+    if (value.ADMIN_PASSWORD && value.ADMIN_PASSWORD.length < 12) ctx.addIssue({ code: "custom", path: ["ADMIN_PASSWORD"], message: "ADMIN_PASSWORD must be at least 12 characters in production" });
     if (!value.TURNSTILE_SECRET_KEY) ctx.addIssue({ code: "custom", path: ["TURNSTILE_SECRET_KEY"], message: "Set TURNSTILE_SECRET_KEY in production" });
     for (const key of ["SESSION_SECRET", "OTP_PEPPER", "DATA_ENCRYPTION_KEY"] as const) {
       if (value[key].includes("change-me")) ctx.addIssue({ code: "custom", path: [key], message: `Set a real ${key} in production` });

@@ -3,9 +3,10 @@ import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { app } from "./app.js";
 import { audit, production } from "./database/clients.js";
-import { hashMobile, hashPan } from "./lib/crypto.js";
+import { encrypt, hashMobile, hashPan } from "./lib/crypto.js";
 import { ProviderError } from "./lib/errors.js";
 import { providers } from "./services/providers.js";
+import { listAgents } from "./services/referral.js";
 
 const mobile = "9123456789";
 let userId = "";
@@ -107,6 +108,101 @@ describe("Relive end-to-end member workflow", () => {
       await audit.auditLog.deleteMany({ where: { userRef: noPanUser.id } });
     await audit.onboardingJourney.deleteMany({ where: { userRef: noPanUser.id } });
       await production.user.delete({ where: { id: noPanUser.id } });
+    }
+  }, 30_000);
+
+  it("records referrals: an agent's number earns a benefit, another user's is recorded without one", async () => {
+    const agentMobile = "9123456790";
+    const agentRow = await production.agent.upsert({
+      where: { mobileHash: hashMobile(agentMobile) },
+      create: { name: "E2E Agent", mobileHash: hashMobile(agentMobile), mobileLast4: agentMobile.slice(-4), mobileEncrypted: encrypt(agentMobile) },
+      update: { active: true },
+    });
+    const signIn = async (number: string) => {
+      const client = request.agent(app);
+      const otp = await client.post("/api/v1/auth/request-otp").send({ mobile: number, consent: true }).expect(201);
+      await client.post("/api/v1/auth/verify-otp").send({ transactionId: otp.body.transactionId, otp: "123456" }).expect(200);
+      return { client, user: await production.user.findUniqueOrThrow({ where: { mobileHash: hashMobile(number) } }) };
+    };
+    const details = { firstName: "Asha", lastName: "Rao", dateOfBirth: "" };
+    const users: string[] = [];
+    try {
+      const a = await signIn("9123456783");
+      users.push(a.user.id);
+      const own = await a.client.post("/api/v1/profile/manual").send({ ...details, referral: { mobile: "9123456783" } }).expect(422);
+      expect(own.body.error.code).toBe("REFERRAL_SELF");
+      const unknown = await a.client.post("/api/v1/profile/manual").send({ ...details, referral: { mobile: "9000000001" } }).expect(422);
+      expect(unknown.body.error.code).toBe("REFERRAL_NOT_FOUND");
+      // A bad code is rejected before the billed PAN lookup.
+      await a.client.post("/api/v1/kyc/verify").send({ pan: "ABCDE1234F", referral: { mobile: "9000000001" } }).expect(422);
+      expect(await production.kycVerification.count({ where: { userId: a.user.id } })).toBe(0);
+
+      // An agent's number from their QR code: saved with the agent. A later referral doesn't replace it.
+      await a.client.post("/api/v1/profile/manual").send({ ...details, referral: { mobile: agentMobile, source: "QR" } }).expect(200);
+      await a.client.post("/api/v1/profile/manual").send({ ...details, referral: { mobile } }).expect(200);
+      expect(await production.referral.findUnique({ where: { referredUserId: a.user.id } })).toMatchObject({ agentMobileHash: agentRow.mobileHash, agentMobileLast4: "6790", agentUserId: null, source: "QR" });
+
+      // Another user's number, typed: recorded with no agent (no benefit).
+      const b = await signIn("9123456784");
+      users.push(b.user.id);
+      await b.client.post("/api/v1/profile/manual").send({ ...details, referral: { mobile } }).expect(200);
+      expect(await production.referral.findUnique({ where: { referredUserId: b.user.id } })).toMatchObject({ agentMobileHash: hashMobile(mobile), agentUserId: userId, source: "MANUAL" });
+      // The agent's referral shows on the admin page's count.
+      expect((await listAgents()).find((agent) => agent.id === agentRow.id)).toMatchObject({ referrals: 1, viaQr: 1 });
+    } finally {
+      await audit.auditLog.deleteMany({ where: { userRef: { in: users } } });
+      await audit.onboardingJourney.deleteMany({ where: { userRef: { in: users } } });
+      await production.user.deleteMany({ where: { id: { in: users } } }); // cascades to their referrals
+      await production.agent.delete({ where: { id: agentRow.id } });
+    }
+  }, 30_000);
+
+  it("agents admin page: shared password, add agent, QR code, deactivate", async () => {
+    const agentMobile = "9123456791";
+    await request(app).get("/api/v1/admin/agents").expect(401);
+    await request(app).post("/api/v1/admin/login").send({ password: "wrong-password" }).expect(401);
+    await request(app).get("/api/v1/admin/agents").set("Cookie", "relive_admin=99999999999999.forged").expect(401);
+
+    const staff = request.agent(app);
+    await staff.post("/api/v1/admin/login").send({ password: "test-admin-password" }).expect(204);
+    const added = await staff.post("/api/v1/admin/agents").send({ name: "  Admin Agent ", mobile: agentMobile }).expect(201);
+    try {
+      await staff.post("/api/v1/admin/agents").send({ name: "A", mobile: "12345" }).expect(400);
+      const { body } = await staff.get("/api/v1/admin/agents").expect(200);
+      expect(body.agents.find((a: { id: string }) => a.id === added.body.id)).toMatchObject({ name: "Admin Agent", mobile: agentMobile, active: true, referrals: 0 });
+
+      const qr = await staff.get(`/api/v1/admin/agents/${added.body.id}/qr`).set("Origin", "http://127.0.0.1:5173").expect(200);
+      expect(qr.body.link).toBe(`http://127.0.0.1:5173/?login=1&ref=${agentMobile}`);
+      expect(qr.body.image).toMatch(/^data:image\/png;base64,/);
+      await staff.get("/api/v1/admin/agents/not-an-id/qr").expect(400);
+
+      await staff.post(`/api/v1/admin/agents/${added.body.id}/active`).send({ active: false }).expect(204);
+      expect(await production.agent.findUnique({ where: { id: added.body.id } })).toMatchObject({ active: false });
+      // Adding the same number again reactivates (and renames) the agent rather than duplicating it.
+      const again = await staff.post("/api/v1/admin/agents").send({ name: "Admin Agent Two", mobile: agentMobile }).expect(201);
+      expect(again.body.id).toBe(added.body.id);
+      expect(await production.agent.findUnique({ where: { id: added.body.id } })).toMatchObject({ active: true, name: "Admin Agent Two" });
+
+      // CSV upload: good rows are saved, bad rows reported by row number; uploading again updates instead of duplicating.
+      const rows = [
+        { row: 2, name: "Bulk One", mobile: "9123456792" },
+        { row: 3, name: "", mobile: "9123456793" },
+        { row: 4, name: "Bulk Two", mobile: "12345" },
+        { row: 5, name: "Bulk One Renamed", mobile: "9123456792" },
+        { row: 6, name: "Bulk Three", mobile: "9123456794" },
+      ];
+      const imported = await staff.post("/api/v1/admin/agents/import").send({ rows }).expect(200);
+      expect(imported.body).toEqual({ added: 2, updated: 0, errors: [{ row: 3, message: "Enter the agent's name" }, { row: 4, message: "Enter a valid mobile number" }] });
+      expect(await production.agent.findUnique({ where: { mobileHash: hashMobile("9123456792") } })).toMatchObject({ name: "Bulk One Renamed" });
+      const reimported = await staff.post("/api/v1/admin/agents/import").send({ rows }).expect(200);
+      expect(reimported.body).toMatchObject({ added: 0, updated: 2 });
+      await staff.post("/api/v1/admin/agents/import").send({ rows: [] }).expect(400);
+
+      await staff.post("/api/v1/admin/logout").expect(204);
+      await request(app).post("/api/v1/admin/agents/import").send({ rows }).expect(401);
+      await staff.get("/api/v1/admin/agents").expect(401);
+    } finally {
+      await production.agent.deleteMany({ where: { mobileHash: { in: [agentMobile, "9123456792", "9123456794"].map(hashMobile) } } });
     }
   }, 30_000);
 

@@ -41,6 +41,7 @@ export type UserMinAggregateOutputType = {
   mobileEncrypted: string | null
   bureauMobileEncrypted: string | null
   bureauMobileLast4: string | null
+  referralCode: string | null
   status: $Enums.UserStatus | null
   failedOtpWindow: number | null
   blockedUntil: Date | null
@@ -55,6 +56,7 @@ export type UserMaxAggregateOutputType = {
   mobileEncrypted: string | null
   bureauMobileEncrypted: string | null
   bureauMobileLast4: string | null
+  referralCode: string | null
   status: $Enums.UserStatus | null
   failedOtpWindow: number | null
   blockedUntil: Date | null
@@ -69,6 +71,7 @@ export type UserCountAggregateOutputType = {
   mobileEncrypted: number
   bureauMobileEncrypted: number
   bureauMobileLast4: number
+  referralCode: number
   status: number
   failedOtpWindow: number
   blockedUntil: number
@@ -93,6 +96,7 @@ export type UserMinAggregateInputType = {
   mobileEncrypted?: true
   bureauMobileEncrypted?: true
   bureauMobileLast4?: true
+  referralCode?: true
   status?: true
   failedOtpWindow?: true
   blockedUntil?: true
@@ -107,6 +111,7 @@ export type UserMaxAggregateInputType = {
   mobileEncrypted?: true
   bureauMobileEncrypted?: true
   bureauMobileLast4?: true
+  referralCode?: true
   status?: true
   failedOtpWindow?: true
   blockedUntil?: true
@@ -121,6 +126,7 @@ export type UserCountAggregateInputType = {
   mobileEncrypted?: true
   bureauMobileEncrypted?: true
   bureauMobileLast4?: true
+  referralCode?: true
   status?: true
   failedOtpWindow?: true
   blockedUntil?: true
@@ -222,6 +228,7 @@ export type UserGroupByOutputType = {
   mobileEncrypted: string | null
   bureauMobileEncrypted: string | null
   bureauMobileLast4: string | null
+  referralCode: string | null
   status: $Enums.UserStatus
   failedOtpWindow: number
   blockedUntil: Date | null
@@ -259,6 +266,7 @@ export type UserWhereInput = {
   mobileEncrypted?: Prisma.StringNullableFilter<"User"> | string | null
   bureauMobileEncrypted?: Prisma.StringNullableFilter<"User"> | string | null
   bureauMobileLast4?: Prisma.StringNullableFilter<"User"> | string | null
+  referralCode?: Prisma.StringNullableFilter<"User"> | string | null
   status?: Prisma.EnumUserStatusFilter<"User"> | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFilter<"User"> | number
   blockedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -273,6 +281,8 @@ export type UserWhereInput = {
   transactions?: Prisma.ApiTransactionListRelationFilter
   supportRequests?: Prisma.SupportRequestListRelationFilter
   concern?: Prisma.XOR<Prisma.UserConcernNullableScalarRelationFilter, Prisma.UserConcernWhereInput> | null
+  referredBy?: Prisma.XOR<Prisma.ReferralNullableScalarRelationFilter, Prisma.ReferralWhereInput> | null
+  referralsMade?: Prisma.ReferralListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -282,6 +292,7 @@ export type UserOrderByWithRelationInput = {
   mobileEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   bureauMobileEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   bureauMobileLast4?: Prisma.SortOrderInput | Prisma.SortOrder
+  referralCode?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   failedOtpWindow?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -296,11 +307,14 @@ export type UserOrderByWithRelationInput = {
   transactions?: Prisma.ApiTransactionOrderByRelationAggregateInput
   supportRequests?: Prisma.SupportRequestOrderByRelationAggregateInput
   concern?: Prisma.UserConcernOrderByWithRelationInput
+  referredBy?: Prisma.ReferralOrderByWithRelationInput
+  referralsMade?: Prisma.ReferralOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   mobileHash?: string
+  referralCode?: string
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
@@ -322,7 +336,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   transactions?: Prisma.ApiTransactionListRelationFilter
   supportRequests?: Prisma.SupportRequestListRelationFilter
   concern?: Prisma.XOR<Prisma.UserConcernNullableScalarRelationFilter, Prisma.UserConcernWhereInput> | null
-}, "id" | "mobileHash">
+  referredBy?: Prisma.XOR<Prisma.ReferralNullableScalarRelationFilter, Prisma.ReferralWhereInput> | null
+  referralsMade?: Prisma.ReferralListRelationFilter
+}, "id" | "mobileHash" | "referralCode">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -331,6 +347,7 @@ export type UserOrderByWithAggregationInput = {
   mobileEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   bureauMobileEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   bureauMobileLast4?: Prisma.SortOrderInput | Prisma.SortOrder
+  referralCode?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   failedOtpWindow?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -353,6 +370,7 @@ export type UserScalarWhereWithAggregatesInput = {
   mobileEncrypted?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   bureauMobileEncrypted?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   bureauMobileLast4?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  referralCode?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   status?: Prisma.EnumUserStatusWithAggregatesFilter<"User"> | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntWithAggregatesFilter<"User"> | number
   blockedUntil?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
@@ -367,6 +385,7 @@ export type UserCreateInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -381,6 +400,8 @@ export type UserCreateInput = {
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -390,6 +411,7 @@ export type UserUncheckedCreateInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -404,6 +426,8 @@ export type UserUncheckedCreateInput = {
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralUncheckedCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralUncheckedCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserUpdateInput = {
@@ -413,6 +437,7 @@ export type UserUpdateInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -427,6 +452,8 @@ export type UserUpdateInput = {
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -436,6 +463,7 @@ export type UserUncheckedUpdateInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -450,6 +478,8 @@ export type UserUncheckedUpdateInput = {
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUncheckedUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUncheckedUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -459,6 +489,7 @@ export type UserCreateManyInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -473,6 +504,7 @@ export type UserUpdateManyMutationInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -487,6 +519,7 @@ export type UserUncheckedUpdateManyInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -501,6 +534,7 @@ export type UserCountOrderByAggregateInput = {
   mobileEncrypted?: Prisma.SortOrder
   bureauMobileEncrypted?: Prisma.SortOrder
   bureauMobileLast4?: Prisma.SortOrder
+  referralCode?: Prisma.SortOrder
   status?: Prisma.SortOrder
   failedOtpWindow?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrder
@@ -519,6 +553,7 @@ export type UserMaxOrderByAggregateInput = {
   mobileEncrypted?: Prisma.SortOrder
   bureauMobileEncrypted?: Prisma.SortOrder
   bureauMobileLast4?: Prisma.SortOrder
+  referralCode?: Prisma.SortOrder
   status?: Prisma.SortOrder
   failedOtpWindow?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrder
@@ -533,6 +568,7 @@ export type UserMinOrderByAggregateInput = {
   mobileEncrypted?: Prisma.SortOrder
   bureauMobileEncrypted?: Prisma.SortOrder
   bureauMobileLast4?: Prisma.SortOrder
+  referralCode?: Prisma.SortOrder
   status?: Prisma.SortOrder
   failedOtpWindow?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrder
@@ -580,6 +616,36 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type UserCreateNestedOneWithoutReferredByInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReferredByInput, Prisma.UserUncheckedCreateWithoutReferredByInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReferredByInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutReferralsMadeInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReferralsMadeInput, Prisma.UserUncheckedCreateWithoutReferralsMadeInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReferralsMadeInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutReferredByNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReferredByInput, Prisma.UserUncheckedCreateWithoutReferredByInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReferredByInput
+  upsert?: Prisma.UserUpsertWithoutReferredByInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReferredByInput, Prisma.UserUpdateWithoutReferredByInput>, Prisma.UserUncheckedUpdateWithoutReferredByInput>
+}
+
+export type UserUpdateOneWithoutReferralsMadeNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReferralsMadeInput, Prisma.UserUncheckedCreateWithoutReferralsMadeInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReferralsMadeInput
+  upsert?: Prisma.UserUpsertWithoutReferralsMadeInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReferralsMadeInput, Prisma.UserUpdateWithoutReferralsMadeInput>, Prisma.UserUncheckedUpdateWithoutReferralsMadeInput>
 }
 
 export type UserCreateNestedOneWithoutProfileInput = {
@@ -710,6 +776,238 @@ export type UserUpdateOneRequiredWithoutSupportRequestsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSupportRequestsInput, Prisma.UserUpdateWithoutSupportRequestsInput>, Prisma.UserUncheckedUpdateWithoutSupportRequestsInput>
 }
 
+export type UserCreateWithoutReferredByInput = {
+  id?: string
+  mobileHash: string
+  mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
+  referralCode?: string | null
+  status?: $Enums.UserStatus
+  failedOtpWindow?: number
+  blockedUntil?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  profile?: Prisma.UserProfileCreateNestedOneWithoutUserInput
+  consents?: Prisma.UserConsentCreateNestedManyWithoutUserInput
+  otps?: Prisma.OtpTransactionCreateNestedManyWithoutUserInput
+  sessions?: Prisma.UserSessionCreateNestedManyWithoutUserInput
+  kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
+  reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
+  transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
+  referralsMade?: Prisma.ReferralCreateNestedManyWithoutAgentUserInput
+}
+
+export type UserUncheckedCreateWithoutReferredByInput = {
+  id?: string
+  mobileHash: string
+  mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
+  referralCode?: string | null
+  status?: $Enums.UserStatus
+  failedOtpWindow?: number
+  blockedUntil?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  profile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput
+  consents?: Prisma.UserConsentUncheckedCreateNestedManyWithoutUserInput
+  otps?: Prisma.OtpTransactionUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.UserSessionUncheckedCreateNestedManyWithoutUserInput
+  kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
+  reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
+  transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
+  referralsMade?: Prisma.ReferralUncheckedCreateNestedManyWithoutAgentUserInput
+}
+
+export type UserCreateOrConnectWithoutReferredByInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutReferredByInput, Prisma.UserUncheckedCreateWithoutReferredByInput>
+}
+
+export type UserCreateWithoutReferralsMadeInput = {
+  id?: string
+  mobileHash: string
+  mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
+  referralCode?: string | null
+  status?: $Enums.UserStatus
+  failedOtpWindow?: number
+  blockedUntil?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  profile?: Prisma.UserProfileCreateNestedOneWithoutUserInput
+  consents?: Prisma.UserConsentCreateNestedManyWithoutUserInput
+  otps?: Prisma.OtpTransactionCreateNestedManyWithoutUserInput
+  sessions?: Prisma.UserSessionCreateNestedManyWithoutUserInput
+  kycs?: Prisma.KycVerificationCreateNestedManyWithoutUserInput
+  reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
+  transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralCreateNestedOneWithoutReferredUserInput
+}
+
+export type UserUncheckedCreateWithoutReferralsMadeInput = {
+  id?: string
+  mobileHash: string
+  mobileLast4: string
+  mobileEncrypted?: string | null
+  bureauMobileEncrypted?: string | null
+  bureauMobileLast4?: string | null
+  referralCode?: string | null
+  status?: $Enums.UserStatus
+  failedOtpWindow?: number
+  blockedUntil?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  profile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput
+  consents?: Prisma.UserConsentUncheckedCreateNestedManyWithoutUserInput
+  otps?: Prisma.OtpTransactionUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.UserSessionUncheckedCreateNestedManyWithoutUserInput
+  kycs?: Prisma.KycVerificationUncheckedCreateNestedManyWithoutUserInput
+  reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
+  transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
+  concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralUncheckedCreateNestedOneWithoutReferredUserInput
+}
+
+export type UserCreateOrConnectWithoutReferralsMadeInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutReferralsMadeInput, Prisma.UserUncheckedCreateWithoutReferralsMadeInput>
+}
+
+export type UserUpsertWithoutReferredByInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutReferredByInput, Prisma.UserUncheckedUpdateWithoutReferredByInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutReferredByInput, Prisma.UserUncheckedCreateWithoutReferredByInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutReferredByInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutReferredByInput, Prisma.UserUncheckedUpdateWithoutReferredByInput>
+}
+
+export type UserUpdateWithoutReferredByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
+  blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  profile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput
+  consents?: Prisma.UserConsentUpdateManyWithoutUserNestedInput
+  otps?: Prisma.OtpTransactionUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUpdateManyWithoutUserNestedInput
+  kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
+  reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
+  transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
+  referralsMade?: Prisma.ReferralUpdateManyWithoutAgentUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutReferredByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
+  blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  profile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput
+  consents?: Prisma.UserConsentUncheckedUpdateManyWithoutUserNestedInput
+  otps?: Prisma.OtpTransactionUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
+  kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
+  reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
+  transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
+  referralsMade?: Prisma.ReferralUncheckedUpdateManyWithoutAgentUserNestedInput
+}
+
+export type UserUpsertWithoutReferralsMadeInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutReferralsMadeInput, Prisma.UserUncheckedUpdateWithoutReferralsMadeInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutReferralsMadeInput, Prisma.UserUncheckedCreateWithoutReferralsMadeInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutReferralsMadeInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutReferralsMadeInput, Prisma.UserUncheckedUpdateWithoutReferralsMadeInput>
+}
+
+export type UserUpdateWithoutReferralsMadeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
+  blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  profile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput
+  consents?: Prisma.UserConsentUpdateManyWithoutUserNestedInput
+  otps?: Prisma.OtpTransactionUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUpdateManyWithoutUserNestedInput
+  kycs?: Prisma.KycVerificationUpdateManyWithoutUserNestedInput
+  reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
+  transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUpdateOneWithoutReferredUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutReferralsMadeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileHash?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
+  mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
+  blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  profile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput
+  consents?: Prisma.UserConsentUncheckedUpdateManyWithoutUserNestedInput
+  otps?: Prisma.OtpTransactionUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
+  kycs?: Prisma.KycVerificationUncheckedUpdateManyWithoutUserNestedInput
+  reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
+  transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
+  concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUncheckedUpdateOneWithoutReferredUserNestedInput
+}
+
 export type UserCreateWithoutProfileInput = {
   id?: string
   mobileHash: string
@@ -717,6 +1015,7 @@ export type UserCreateWithoutProfileInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -730,6 +1029,8 @@ export type UserCreateWithoutProfileInput = {
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserUncheckedCreateWithoutProfileInput = {
@@ -739,6 +1040,7 @@ export type UserUncheckedCreateWithoutProfileInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -752,6 +1054,8 @@ export type UserUncheckedCreateWithoutProfileInput = {
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralUncheckedCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralUncheckedCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserCreateOrConnectWithoutProfileInput = {
@@ -777,6 +1081,7 @@ export type UserUpdateWithoutProfileInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -790,6 +1095,8 @@ export type UserUpdateWithoutProfileInput = {
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProfileInput = {
@@ -799,6 +1106,7 @@ export type UserUncheckedUpdateWithoutProfileInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -812,6 +1120,8 @@ export type UserUncheckedUpdateWithoutProfileInput = {
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUncheckedUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUncheckedUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserCreateWithoutConsentsInput = {
@@ -821,6 +1131,7 @@ export type UserCreateWithoutConsentsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -834,6 +1145,8 @@ export type UserCreateWithoutConsentsInput = {
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserUncheckedCreateWithoutConsentsInput = {
@@ -843,6 +1156,7 @@ export type UserUncheckedCreateWithoutConsentsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -856,6 +1170,8 @@ export type UserUncheckedCreateWithoutConsentsInput = {
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralUncheckedCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralUncheckedCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserCreateOrConnectWithoutConsentsInput = {
@@ -881,6 +1197,7 @@ export type UserUpdateWithoutConsentsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -894,6 +1211,8 @@ export type UserUpdateWithoutConsentsInput = {
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConsentsInput = {
@@ -903,6 +1222,7 @@ export type UserUncheckedUpdateWithoutConsentsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -916,6 +1236,8 @@ export type UserUncheckedUpdateWithoutConsentsInput = {
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUncheckedUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUncheckedUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserCreateWithoutOtpsInput = {
@@ -925,6 +1247,7 @@ export type UserCreateWithoutOtpsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -938,6 +1261,8 @@ export type UserCreateWithoutOtpsInput = {
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserUncheckedCreateWithoutOtpsInput = {
@@ -947,6 +1272,7 @@ export type UserUncheckedCreateWithoutOtpsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -960,6 +1286,8 @@ export type UserUncheckedCreateWithoutOtpsInput = {
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralUncheckedCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralUncheckedCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserCreateOrConnectWithoutOtpsInput = {
@@ -985,6 +1313,7 @@ export type UserUpdateWithoutOtpsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -998,6 +1327,8 @@ export type UserUpdateWithoutOtpsInput = {
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOtpsInput = {
@@ -1007,6 +1338,7 @@ export type UserUncheckedUpdateWithoutOtpsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1020,6 +1352,8 @@ export type UserUncheckedUpdateWithoutOtpsInput = {
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUncheckedUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUncheckedUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1029,6 +1363,7 @@ export type UserCreateWithoutSessionsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1042,6 +1377,8 @@ export type UserCreateWithoutSessionsInput = {
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1051,6 +1388,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1064,6 +1402,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralUncheckedCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralUncheckedCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1089,6 +1429,7 @@ export type UserUpdateWithoutSessionsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1102,6 +1443,8 @@ export type UserUpdateWithoutSessionsInput = {
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1111,6 +1454,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1124,6 +1468,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUncheckedUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUncheckedUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserCreateWithoutKycsInput = {
@@ -1133,6 +1479,7 @@ export type UserCreateWithoutKycsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1146,6 +1493,8 @@ export type UserCreateWithoutKycsInput = {
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserUncheckedCreateWithoutKycsInput = {
@@ -1155,6 +1504,7 @@ export type UserUncheckedCreateWithoutKycsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1168,6 +1518,8 @@ export type UserUncheckedCreateWithoutKycsInput = {
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralUncheckedCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralUncheckedCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserCreateOrConnectWithoutKycsInput = {
@@ -1193,6 +1545,7 @@ export type UserUpdateWithoutKycsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1206,6 +1559,8 @@ export type UserUpdateWithoutKycsInput = {
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutKycsInput = {
@@ -1215,6 +1570,7 @@ export type UserUncheckedUpdateWithoutKycsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1228,6 +1584,8 @@ export type UserUncheckedUpdateWithoutKycsInput = {
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUncheckedUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUncheckedUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserCreateWithoutReportsInput = {
@@ -1237,6 +1595,7 @@ export type UserCreateWithoutReportsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1250,6 +1609,8 @@ export type UserCreateWithoutReportsInput = {
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserUncheckedCreateWithoutReportsInput = {
@@ -1259,6 +1620,7 @@ export type UserUncheckedCreateWithoutReportsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1272,6 +1634,8 @@ export type UserUncheckedCreateWithoutReportsInput = {
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralUncheckedCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralUncheckedCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserCreateOrConnectWithoutReportsInput = {
@@ -1297,6 +1661,7 @@ export type UserUpdateWithoutReportsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1310,6 +1675,8 @@ export type UserUpdateWithoutReportsInput = {
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReportsInput = {
@@ -1319,6 +1686,7 @@ export type UserUncheckedUpdateWithoutReportsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1332,6 +1700,8 @@ export type UserUncheckedUpdateWithoutReportsInput = {
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUncheckedUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUncheckedUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserCreateWithoutConcernInput = {
@@ -1341,6 +1711,7 @@ export type UserCreateWithoutConcernInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1354,6 +1725,8 @@ export type UserCreateWithoutConcernInput = {
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
+  referredBy?: Prisma.ReferralCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserUncheckedCreateWithoutConcernInput = {
@@ -1363,6 +1736,7 @@ export type UserUncheckedCreateWithoutConcernInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1376,6 +1750,8 @@ export type UserUncheckedCreateWithoutConcernInput = {
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
+  referredBy?: Prisma.ReferralUncheckedCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralUncheckedCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserCreateOrConnectWithoutConcernInput = {
@@ -1401,6 +1777,7 @@ export type UserUpdateWithoutConcernInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1414,6 +1791,8 @@ export type UserUpdateWithoutConcernInput = {
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConcernInput = {
@@ -1423,6 +1802,7 @@ export type UserUncheckedUpdateWithoutConcernInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1436,6 +1816,8 @@ export type UserUncheckedUpdateWithoutConcernInput = {
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUncheckedUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUncheckedUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserCreateWithoutTransactionsInput = {
@@ -1445,6 +1827,7 @@ export type UserCreateWithoutTransactionsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1458,6 +1841,8 @@ export type UserCreateWithoutTransactionsInput = {
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserUncheckedCreateWithoutTransactionsInput = {
@@ -1467,6 +1852,7 @@ export type UserUncheckedCreateWithoutTransactionsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1480,6 +1866,8 @@ export type UserUncheckedCreateWithoutTransactionsInput = {
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralUncheckedCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralUncheckedCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserCreateOrConnectWithoutTransactionsInput = {
@@ -1505,6 +1893,7 @@ export type UserUpdateWithoutTransactionsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1518,6 +1907,8 @@ export type UserUpdateWithoutTransactionsInput = {
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTransactionsInput = {
@@ -1527,6 +1918,7 @@ export type UserUncheckedUpdateWithoutTransactionsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1540,6 +1932,8 @@ export type UserUncheckedUpdateWithoutTransactionsInput = {
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUncheckedUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUncheckedUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserCreateWithoutSupportRequestsInput = {
@@ -1549,6 +1943,7 @@ export type UserCreateWithoutSupportRequestsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1562,6 +1957,8 @@ export type UserCreateWithoutSupportRequestsInput = {
   reports?: Prisma.CreditReportCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserUncheckedCreateWithoutSupportRequestsInput = {
@@ -1571,6 +1968,7 @@ export type UserUncheckedCreateWithoutSupportRequestsInput = {
   mobileEncrypted?: string | null
   bureauMobileEncrypted?: string | null
   bureauMobileLast4?: string | null
+  referralCode?: string | null
   status?: $Enums.UserStatus
   failedOtpWindow?: number
   blockedUntil?: Date | string | null
@@ -1584,6 +1982,8 @@ export type UserUncheckedCreateWithoutSupportRequestsInput = {
   reports?: Prisma.CreditReportUncheckedCreateNestedManyWithoutUserInput
   transactions?: Prisma.ApiTransactionUncheckedCreateNestedManyWithoutUserInput
   concern?: Prisma.UserConcernUncheckedCreateNestedOneWithoutUserInput
+  referredBy?: Prisma.ReferralUncheckedCreateNestedOneWithoutReferredUserInput
+  referralsMade?: Prisma.ReferralUncheckedCreateNestedManyWithoutAgentUserInput
 }
 
 export type UserCreateOrConnectWithoutSupportRequestsInput = {
@@ -1609,6 +2009,7 @@ export type UserUpdateWithoutSupportRequestsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1622,6 +2023,8 @@ export type UserUpdateWithoutSupportRequestsInput = {
   reports?: Prisma.CreditReportUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUpdateManyWithoutAgentUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSupportRequestsInput = {
@@ -1631,6 +2034,7 @@ export type UserUncheckedUpdateWithoutSupportRequestsInput = {
   mobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bureauMobileLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   failedOtpWindow?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1644,6 +2048,8 @@ export type UserUncheckedUpdateWithoutSupportRequestsInput = {
   reports?: Prisma.CreditReportUncheckedUpdateManyWithoutUserNestedInput
   transactions?: Prisma.ApiTransactionUncheckedUpdateManyWithoutUserNestedInput
   concern?: Prisma.UserConcernUncheckedUpdateOneWithoutUserNestedInput
+  referredBy?: Prisma.ReferralUncheckedUpdateOneWithoutReferredUserNestedInput
+  referralsMade?: Prisma.ReferralUncheckedUpdateManyWithoutAgentUserNestedInput
 }
 
 
@@ -1659,6 +2065,7 @@ export type UserCountOutputType = {
   reports: number
   transactions: number
   supportRequests: number
+  referralsMade: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1669,6 +2076,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   reports?: boolean | UserCountOutputTypeCountReportsArgs
   transactions?: boolean | UserCountOutputTypeCountTransactionsArgs
   supportRequests?: boolean | UserCountOutputTypeCountSupportRequestsArgs
+  referralsMade?: boolean | UserCountOutputTypeCountReferralsMadeArgs
 }
 
 /**
@@ -1730,6 +2138,13 @@ export type UserCountOutputTypeCountSupportRequestsArgs<ExtArgs extends runtime.
   where?: Prisma.SupportRequestWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountReferralsMadeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReferralWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1738,6 +2153,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   mobileEncrypted?: boolean
   bureauMobileEncrypted?: boolean
   bureauMobileLast4?: boolean
+  referralCode?: boolean
   status?: boolean
   failedOtpWindow?: boolean
   blockedUntil?: boolean
@@ -1752,6 +2168,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   transactions?: boolean | Prisma.User$transactionsArgs<ExtArgs>
   supportRequests?: boolean | Prisma.User$supportRequestsArgs<ExtArgs>
   concern?: boolean | Prisma.User$concernArgs<ExtArgs>
+  referredBy?: boolean | Prisma.User$referredByArgs<ExtArgs>
+  referralsMade?: boolean | Prisma.User$referralsMadeArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1762,6 +2180,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   mobileEncrypted?: boolean
   bureauMobileEncrypted?: boolean
   bureauMobileLast4?: boolean
+  referralCode?: boolean
   status?: boolean
   failedOtpWindow?: boolean
   blockedUntil?: boolean
@@ -1776,6 +2195,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   mobileEncrypted?: boolean
   bureauMobileEncrypted?: boolean
   bureauMobileLast4?: boolean
+  referralCode?: boolean
   status?: boolean
   failedOtpWindow?: boolean
   blockedUntil?: boolean
@@ -1790,6 +2210,7 @@ export type UserSelectScalar = {
   mobileEncrypted?: boolean
   bureauMobileEncrypted?: boolean
   bureauMobileLast4?: boolean
+  referralCode?: boolean
   status?: boolean
   failedOtpWindow?: boolean
   blockedUntil?: boolean
@@ -1797,7 +2218,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "mobileHash" | "mobileLast4" | "mobileEncrypted" | "bureauMobileEncrypted" | "bureauMobileLast4" | "status" | "failedOtpWindow" | "blockedUntil" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "mobileHash" | "mobileLast4" | "mobileEncrypted" | "bureauMobileEncrypted" | "bureauMobileLast4" | "referralCode" | "status" | "failedOtpWindow" | "blockedUntil" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   profile?: boolean | Prisma.User$profileArgs<ExtArgs>
   consents?: boolean | Prisma.User$consentsArgs<ExtArgs>
@@ -1808,6 +2229,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   transactions?: boolean | Prisma.User$transactionsArgs<ExtArgs>
   supportRequests?: boolean | Prisma.User$supportRequestsArgs<ExtArgs>
   concern?: boolean | Prisma.User$concernArgs<ExtArgs>
+  referredBy?: boolean | Prisma.User$referredByArgs<ExtArgs>
+  referralsMade?: boolean | Prisma.User$referralsMadeArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1825,6 +2248,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     transactions: Prisma.$ApiTransactionPayload<ExtArgs>[]
     supportRequests: Prisma.$SupportRequestPayload<ExtArgs>[]
     concern: Prisma.$UserConcernPayload<ExtArgs> | null
+    referredBy: Prisma.$ReferralPayload<ExtArgs> | null
+    referralsMade: Prisma.$ReferralPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1833,6 +2258,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     mobileEncrypted: string | null
     bureauMobileEncrypted: string | null
     bureauMobileLast4: string | null
+    referralCode: string | null
     status: $Enums.UserStatus
     failedOtpWindow: number
     blockedUntil: Date | null
@@ -2241,6 +2667,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   transactions<T extends Prisma.User$transactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApiTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   supportRequests<T extends Prisma.User$supportRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$supportRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   concern<T extends Prisma.User$concernArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$concernArgs<ExtArgs>>): Prisma.Prisma__UserConcernClient<runtime.Types.Result.GetResult<Prisma.$UserConcernPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  referredBy<T extends Prisma.User$referredByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$referredByArgs<ExtArgs>>): Prisma.Prisma__ReferralClient<runtime.Types.Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  referralsMade<T extends Prisma.User$referralsMadeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$referralsMadeArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2276,6 +2704,7 @@ export interface UserFieldRefs {
   readonly mobileEncrypted: Prisma.FieldRef<"User", 'String'>
   readonly bureauMobileEncrypted: Prisma.FieldRef<"User", 'String'>
   readonly bureauMobileLast4: Prisma.FieldRef<"User", 'String'>
+  readonly referralCode: Prisma.FieldRef<"User", 'String'>
   readonly status: Prisma.FieldRef<"User", 'UserStatus'>
   readonly failedOtpWindow: Prisma.FieldRef<"User", 'Int'>
   readonly blockedUntil: Prisma.FieldRef<"User", 'DateTime'>
@@ -2877,6 +3306,49 @@ export type User$concernArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    */
   include?: Prisma.UserConcernInclude<ExtArgs> | null
   where?: Prisma.UserConcernWhereInput
+}
+
+/**
+ * User.referredBy
+ */
+export type User$referredByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Referral
+   */
+  select?: Prisma.ReferralSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Referral
+   */
+  omit?: Prisma.ReferralOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReferralInclude<ExtArgs> | null
+  where?: Prisma.ReferralWhereInput
+}
+
+/**
+ * User.referralsMade
+ */
+export type User$referralsMadeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Referral
+   */
+  select?: Prisma.ReferralSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Referral
+   */
+  omit?: Prisma.ReferralOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReferralInclude<ExtArgs> | null
+  where?: Prisma.ReferralWhereInput
+  orderBy?: Prisma.ReferralOrderByWithRelationInput | Prisma.ReferralOrderByWithRelationInput[]
+  cursor?: Prisma.ReferralWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReferralScalarFieldEnum | Prisma.ReferralScalarFieldEnum[]
 }
 
 /**

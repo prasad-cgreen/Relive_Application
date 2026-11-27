@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { request as httpsRequest } from "node:https";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -6,18 +6,19 @@ import express, { type NextFunction, type Request, type Response } from "express
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import {
-  bureauMobileSchema, concernSchema, kycSchema, manualProfileSchema, requestOtpSchema,
+  agentImportSchema, agentSchema, bureauMobileSchema, concernSchema, kycSchema, manualProfileSchema, requestOtpSchema,
   reportRequestSchema, supportRequestSchema, verifyOtpSchema,
 } from "@relive/shared";
 import { z, ZodError } from "zod";
 import { env } from "./config/env.js";
 import { audit, production } from "./database/clients.js";
-import { findSession, requireAuth, SESSION_COOKIE } from "./middleware/auth.js";
+import { ADMIN_COOKIE, ADMIN_TTL_MS, adminToken, findSession, requireAdmin, requireAuth, SESSION_COOKIE } from "./middleware/auth.js";
 import { decrypt, encrypt, hashMobile, hashOtp, hashPan, hashToken, newToken, secureEqual } from "./lib/crypto.js";
 import { HttpError, ProviderError } from "./lib/errors.js";
 import { stepForStage, trackJourney, writeAudit } from "./services/audit.js";
 import { maskPanPhone, panPhoneMatches, providers, type MockScenario } from "./services/providers.js";
 import { getWorkflow } from "./services/workflow.js";
+import { agentQr, listAgents, referralLink, resolveReferral, saveAgent, saveReferral } from "./services/referral.js";
 import { getCreditOverview } from "./services/credit-score.js";
 import { getDashboardInsight } from "./services/dashboard-insight.js";
 import { emailLead } from "./services/lead-email.js";
@@ -356,7 +357,8 @@ app.get("/api/v1/credit/insight", requireAuth, async (req, res) => {
 
 app.post("/api/v1/profile/manual", requireAuth, sensitiveLimiter, async (req, res) => {
   const userId = userContext(req);
-  const data = manualProfileSchema.parse(req.body);
+  const { referral: referralInput, ...data } = manualProfileSchema.parse(req.body);
+  const referral = await resolveReferral(userId, referralInput);
   const dateOfBirth = data.dateOfBirth ? new Date(data.dateOfBirth) : null; // optional
   const profile = await production.userProfile.upsert({
     where: { userId },
@@ -367,12 +369,14 @@ app.post("/api/v1/profile/manual", requireAuth, sensitiveLimiter, async (req, re
     userRef: userId, eventType: "DETAILS_SAVED", step: "REPORT", outcome: "SUCCESS", requestId: req.requestId,
     metadata: { source: profile.source, hasEmail: Boolean(profile.email), hasDob: Boolean(profile.dateOfBirth) }, set: { identitySource: "MANUAL" },
   });
+  await saveReferral(userId, referral, req.requestId);
   res.json(await getWorkflow(userId));
 });
 
 app.post("/api/v1/kyc/verify", requireAuth, sensitiveLimiter, async (req, res) => {
   const userId = userContext(req);
-  const { pan } = kycSchema.parse(req.body);
+  const { pan, referral: referralInput } = kycSchema.parse(req.body);
+  const referral = await resolveReferral(userId, referralInput); // before the billed PAN lookup
   const panHash = hashPan(pan);
   const [linkedElsewhere, recentAttempts] = await Promise.all([
     production.kycVerification.findFirst({ where: { panHash, status: "VERIFIED", userId: { not: userId } } }),
@@ -434,6 +438,7 @@ app.post("/api/v1/kyc/verify", requireAuth, sensitiveLimiter, async (req, res) =
     increment: ["panAttempts"],
     set: { identitySource: "PAN", panLast4: pan.slice(-4) },
   });
+  await saveReferral(userId, referral, req.requestId);
   res.json(await getWorkflow(userId));
 });
 
@@ -667,6 +672,73 @@ app.get("/api/v1/dashboard", requireAuth, async (req, res) => {
   const report = await production.creditReport.findFirst({ where: { userId, status: "CURRENT", expiresAt: { gt: new Date() } }, orderBy: { retrievedAt: "desc" } });
   if (!report) throw new HttpError(404, "REPORT_NOT_FOUND", "No current credit report is available");
   res.json(await getCreditOverview(userId));
+});
+
+// Agents admin page (/admin/agents), for staff: one shared password (ADMIN_PASSWORD). Strict cookie, scoped to these routes.
+const adminCookie = () => ({ httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "strict" as const, path: "/api/v1/admin" });
+const adminLoginLimiter = rateLimit({ windowMs: 15 * 60_000, limit: 10, standardHeaders: "draft-8", legacyHeaders: false, skip: skipInTests });
+const agentId = z.string().uuid("Unknown agent");
+const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
+
+app.post("/api/v1/admin/login", adminLoginLimiter, async (req, res) => {
+  if (!env.ADMIN_PASSWORD) throw new HttpError(404, "ADMIN_DISABLED", "The admin page is switched off. Set ADMIN_PASSWORD on the server to switch it on");
+  const { password } = z.object({ password: z.string().max(200) }).parse(req.body);
+  const ok = secureEqual(sha256(password), sha256(env.ADMIN_PASSWORD));
+  await writeAudit({ eventType: "ADMIN_LOGIN", status: ok ? "SUCCESS" : "WRONG_PASSWORD", requestId: req.requestId, metadata: { ipAddress: req.ip ?? null } });
+  if (!ok) throw new HttpError(401, "ADMIN_PASSWORD_WRONG", "That password isn't right");
+  res.cookie(ADMIN_COOKIE, adminToken(Date.now() + ADMIN_TTL_MS), { ...adminCookie(), maxAge: ADMIN_TTL_MS });
+  res.status(204).end();
+});
+
+app.post("/api/v1/admin/logout", (_req, res) => {
+  res.clearCookie(ADMIN_COOKIE, adminCookie());
+  res.status(204).end();
+});
+
+app.get("/api/v1/admin/agents", requireAdmin, async (_req, res) => res.json({ agents: await listAgents() }));
+
+app.post("/api/v1/admin/agents", requireAdmin, async (req, res) => {
+  const { name, mobile } = agentSchema.parse(req.body);
+  const agent = await saveAgent(name, mobile);
+  await writeAudit({ eventType: "AGENT_SAVED", status: "SUCCESS", requestId: req.requestId, metadata: { agentId: agent.id, mobileLast4: agent.mobileLast4 } });
+  res.status(201).json({ id: agent.id });
+});
+
+// CSV upload: the browser reads the file and sends it in batches. Each row is checked on its own, so a bad row is
+// reported (by spreadsheet row number) without stopping the rest. Uploading the same file again is safe.
+app.post("/api/v1/admin/agents/import", requireAdmin, async (req, res) => {
+  const { rows } = agentImportSchema.parse(req.body);
+  const errors: { row: number; message: string }[] = [];
+  const valid = new Map<string, { name: string; mobile: string }>(); // by number: listed twice, the last name wins
+  for (const { row, ...fields } of rows) {
+    const parsed = agentSchema.safeParse(fields);
+    if (parsed.success) valid.set(parsed.data.mobile, parsed.data);
+    else errors.push({ row, message: parsed.error.issues[0]?.message ?? "Invalid row" });
+  }
+  const updated = await production.agent.count({ where: { mobileHash: { in: [...valid.keys()].map(hashMobile) } } });
+  await production.$transaction([...valid.values()].map(({ name, mobile }) => saveAgent(name, mobile)));
+  const added = valid.size - updated;
+  await writeAudit({ eventType: "AGENTS_IMPORTED", status: "SUCCESS", requestId: req.requestId, metadata: { added, updated, skipped: errors.length } });
+  res.json({ added, updated, errors });
+});
+
+app.post("/api/v1/admin/agents/:id/active", requireAdmin, async (req, res) => {
+  const id = agentId.parse(req.params.id);
+  const { active } = z.object({ active: z.boolean() }).parse(req.body);
+  const { count } = await production.agent.updateMany({ where: { id }, data: { active } });
+  if (!count) throw new HttpError(404, "AGENT_NOT_FOUND", "This agent no longer exists");
+  await writeAudit({ eventType: active ? "AGENT_ACTIVATED" : "AGENT_DEACTIVATED", status: "SUCCESS", requestId: req.requestId, metadata: { agentId: id } });
+  res.status(204).end();
+});
+
+// The QR code points at the site the admin page is open on (an allowed origin), so a local test gets a local link.
+app.get("/api/v1/admin/agents/:id/qr", requireAdmin, async (req, res) => {
+  const agent = await production.agent.findUnique({ where: { id: agentId.parse(req.params.id) } });
+  if (!agent) throw new HttpError(404, "AGENT_NOT_FOUND", "This agent no longer exists");
+  const origin = req.header("origin");
+  const site = origin && env.FRONTEND_ORIGIN.split(",").map((v) => v.trim()).includes(origin) ? origin : "https://relive.co.in";
+  const mobile = decrypt(agent.mobileEncrypted);
+  res.json({ link: referralLink(site, mobile), image: await agentQr(site, mobile) });
 });
 
 app.use((_req, _res, next) => next(new HttpError(404, "NOT_FOUND", "Route not found")));

@@ -62,122 +62,173 @@ enum TransactionStatus {
 }
 
 model User {
-  id              String   @id @default(uuid()) @db.Uuid
-  mobileHash      String   @unique @map("mobile_hash")
-  mobileLast4     String   @map("mobile_last4")
-  mobileEncrypted String?  @map("mobile_encrypted") // AES-256-GCM; bureau APIs need the raw number
-  bureauMobileEncrypted String? @map("bureau_mobile_encrypted") // OTP-verified alternate number used for bureau pulls
-  bureauMobileLast4     String? @map("bureau_mobile_last4")
-  status          UserStatus @default(ACTIVE)
-  failedOtpWindow Int      @default(0) @map("failed_otp_window")
-  blockedUntil    DateTime? @map("blocked_until") @db.Timestamptz(3)
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  profile         UserProfile?
-  consents        UserConsent[]
-  otps            OtpTransaction[]
-  sessions        UserSession[]
-  kycs            KycVerification[]
-  reports         CreditReport[]
-  transactions    ApiTransaction[]
-  supportRequests SupportRequest[]
-  concern         UserConcern?
+  id                    String            @id @default(uuid()) @db.Uuid
+  mobileHash            String            @unique @map("mobile_hash")
+  mobileLast4           String            @map("mobile_last4")
+  mobileEncrypted       String?           @map("mobile_encrypted") // AES-256-GCM; bureau APIs need the raw number
+  bureauMobileEncrypted String?           @map("bureau_mobile_encrypted") // OTP-verified alternate number used for bureau pulls
+  bureauMobileLast4     String?           @map("bureau_mobile_last4")
+  referralCode          String?           @unique @map("referral_code") // set by the other referral work on production; not used by this code
+  status                UserStatus        @default(ACTIVE)
+  failedOtpWindow       Int               @default(0) @map("failed_otp_window")
+  blockedUntil          DateTime?         @map("blocked_until") @db.Timestamptz(3)
+  createdAt             DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  profile               UserProfile?
+  consents              UserConsent[]
+  otps                  OtpTransaction[]
+  sessions              UserSession[]
+  kycs                  KycVerification[]
+  reports               CreditReport[]
+  transactions          ApiTransaction[]
+  supportRequests       SupportRequest[]
+  concern               UserConcern?
+  referredBy            Referral?         @relation("ReferredUser")
+  referralsMade         Referral[]        @relation("ReferrerUser") // as the referrer (any user, agent or not)
+
   @@map("users")
 }
 
+/// A company agent. The referral code is a mobile number: an agent's earns the agent a referral benefit; any other
+/// Relive user's is recorded without one. Managed with `npm run agent -w backend` (which also makes the agent's QR code).
+// Company agents: a referral whose number (referrals.agent_mobile_hash) matches an active agent earns them a benefit.
+model Agent {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String
+  mobileHash      String   @unique @map("mobile_hash")
+  mobileLast4     String   @map("mobile_last4")
+  mobileEncrypted String   @map("mobile_encrypted") // AES-256-GCM: the QR code carries the number
+  active          Boolean  @default(true) // inactive: the number no longer counts as an agent's
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("agents")
+}
+
+enum ReferralSource {
+  QR // prefilled from the agent's QR code
+  MANUAL // typed by the user
+}
+
+/// Who referred a user: given once, during onboarding. Either agentId (benefit) or referrerUserId (no benefit) is set.
+// Who referred each user (first referral only). The referral code is the referrer's mobile number, stored like the
+// user's own: hash (for matching agents.mobile_hash), last 4 digits and AES-encrypted. agentUserId is the referrer's
+// Relive account, if they have one. A DB check (see the migration) stops a user referring themselves.
+model Referral {
+  id                   String         @id @default(uuid()) @db.Uuid
+  referredUserId       String         @unique @map("referred_user_id") @db.Uuid
+  agentUserId          String?        @map("agent_user_id") @db.Uuid
+  agentMobileHash      String         @map("agent_mobile_hash")
+  agentMobileEncrypted String?        @map("agent_mobile_encrypted")
+  agentMobileLast4     String         @map("agent_mobile_last4")
+  source               ReferralSource
+  createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  referredUser         User           @relation("ReferredUser", fields: [referredUserId], references: [id], onDelete: Cascade)
+  agentUser            User?          @relation("ReferrerUser", fields: [agentUserId], references: [id], onDelete: SetNull)
+
+  @@index([agentUserId, createdAt])
+  @@index([agentMobileHash])
+  @@map("referrals")
+}
+
 model UserProfile {
-  id          String @id @default(uuid()) @db.Uuid
-  userId      String @unique @map("user_id") @db.Uuid
-  firstName   String @map("first_name")
-  lastName    String @map("last_name")
+  id          String        @id @default(uuid()) @db.Uuid
+  userId      String        @unique @map("user_id") @db.Uuid
+  firstName   String        @map("first_name")
+  lastName    String        @map("last_name")
   email       String
-  dateOfBirth DateTime? @map("date_of_birth") @db.Date
+  dateOfBirth DateTime?     @map("date_of_birth") @db.Date
   source      ProfileSource
-  verified    Boolean @default(false)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified    Boolean       @default(false)
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("user_profiles")
 }
 
 /// Kept per purpose with status/withdrawn_at so a consent can be withdrawn later (DPDP).
 model UserConsent {
-  id          String @id @default(uuid()) @db.Uuid
-  userId      String @map("user_id") @db.Uuid
+  id          String         @id @default(uuid()) @db.Uuid
+  userId      String         @map("user_id") @db.Uuid
   purpose     ConsentPurpose
   version     String
-  status      ConsentStatus @default(GRANTED)
-  grantedAt   DateTime @default(now()) @map("granted_at") @db.Timestamptz(3)
-  withdrawnAt DateTime? @map("withdrawn_at") @db.Timestamptz(3)
-  ipAddress   String? @map("ip_address")
-  userAgent   String? @map("user_agent")
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      ConsentStatus  @default(GRANTED)
+  grantedAt   DateTime       @default(now()) @map("granted_at") @db.Timestamptz(3)
+  withdrawnAt DateTime?      @map("withdrawn_at") @db.Timestamptz(3)
+  ipAddress   String?        @map("ip_address")
+  userAgent   String?        @map("user_agent")
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, purpose, grantedAt])
   @@map("user_consents")
 }
 
 /// One OTP sent by SMS. Wrong attempts are counted per user (users.failed_otp_window), not per OTP.
 model OtpTransaction {
-  id             String @id @default(uuid()) @db.Uuid
-  userId         String @map("user_id") @db.Uuid
-  otpHash        String? @map("otp_hash")
-  providerRef    String? @map("provider_ref")
-  purpose        OtpPurpose @default(LOGIN)
-  targetMobileEncrypted String? @map("target_mobile_encrypted") // set for BUREAU_MOBILE
-  status         OtpStatus @default(PENDING)
-  expiresAt      DateTime @map("expires_at") @db.Timestamptz(3)
-  resendAfter    DateTime @map("resend_after") @db.Timestamptz(3)
-  verifiedAt     DateTime? @map("verified_at") @db.Timestamptz(3)
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String     @id @default(uuid()) @db.Uuid
+  userId                String     @map("user_id") @db.Uuid
+  otpHash               String?    @map("otp_hash")
+  providerRef           String?    @map("provider_ref")
+  purpose               OtpPurpose @default(LOGIN)
+  targetMobileEncrypted String?    @map("target_mobile_encrypted") // set for BUREAU_MOBILE
+  status                OtpStatus  @default(PENDING)
+  expiresAt             DateTime   @map("expires_at") @db.Timestamptz(3)
+  resendAfter           DateTime   @map("resend_after") @db.Timestamptz(3)
+  verifiedAt            DateTime?  @map("verified_at") @db.Timestamptz(3)
+  createdAt             DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  user                  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, createdAt])
   @@map("otp_transactions")
 }
 
 model UserSession {
-  id        String @id @default(uuid()) @db.Uuid
-  userId    String @map("user_id") @db.Uuid
-  tokenHash String @unique @map("token_hash")
-  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
   revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, expiresAt])
   @@map("user_sessions")
 }
 
 /// One row per PAN lookup (attempts per day = rows per day).
 model KycVerification {
-  id            String @id @default(uuid()) @db.Uuid
-  userId        String @map("user_id") @db.Uuid
-  panHash       String @map("pan_hash")
-  panLast4      String @map("pan_last4")
-  panEncrypted  String? @map("pan_encrypted") // AES-256-GCM, VERIFIED rows only: bureau pulls send the verified PAN
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  panHash       String    @map("pan_hash")
+  panLast4      String    @map("pan_last4")
+  panEncrypted  String?   @map("pan_encrypted") // AES-256-GCM, VERIFIED rows only: bureau pulls send the verified PAN
   status        KycStatus
-  providerRef   String? @map("provider_ref")
-  failureReason String? @map("failure_reason")
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  providerRef   String?   @map("provider_ref")
+  failureReason String?   @map("failure_reason")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   verifiedAt    DateTime? @map("verified_at") @db.Timestamptz(3)
-  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, createdAt])
   @@map("kyc_verifications")
 }
 
 model CreditReport {
-  id             String @id @default(uuid()) @db.Uuid
-  userId         String @map("user_id") @db.Uuid
-  bureau         String @default("EXPERIAN") // EXPERIAN | CRIF | NONE (no record)
+  id             String             @id @default(uuid()) @db.Uuid
+  userId         String             @map("user_id") @db.Uuid
+  bureau         String             @default("EXPERIAN") // EXPERIAN | CRIF | NONE (no record)
   score          Int
-  reportJson     Json @map("report_json")
-  rawResponse    Json? @map("raw_response") // full bureau payload, never sent to the browser
-  status         ReportStatus @default(CURRENT)
-  providerRef    String? @map("provider_ref")
-  idempotencyKey String @unique @map("idempotency_key") @db.Uuid
-  retrievedAt    DateTime @default(now()) @map("retrieved_at") @db.Timestamptz(3)
-  expiresAt      DateTime @map("expires_at") @db.Timestamptz(3)
-  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reportJson     Json               @map("report_json")
+  rawResponse    Json?              @map("raw_response") // full bureau payload, never sent to the browser
+  status         ReportStatus       @default(CURRENT)
+  providerRef    String?            @map("provider_ref")
+  idempotencyKey String             @unique @map("idempotency_key") @db.Uuid
+  retrievedAt    DateTime           @default(now()) @map("retrieved_at") @db.Timestamptz(3)
+  expiresAt      DateTime           @map("expires_at") @db.Timestamptz(3)
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   insights       DashboardInsight[]
   pdf            CreditReportPdf?
+
   @@index([userId, status, expiresAt])
   @@map("credit_reports")
 }
@@ -185,10 +236,11 @@ model CreditReport {
 /// The bureau's own PDF of a report, copied while its temporary link still works. Kept apart from
 /// credit_reports so report queries never load the file.
 model CreditReportPdf {
-  reportId  String   @id @map("report_id") @db.Uuid
+  reportId  String       @id @map("report_id") @db.Uuid
   content   Bytes
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
   report    CreditReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
   @@map("credit_report_pdfs")
 }
 
@@ -199,36 +251,39 @@ model UserConcern {
   selectedConcern       String[] @map("selected_concern")
   customerTextEncrypted String?  @map("customer_text_encrypted") // AES-256-GCM: free text can hold personal details
   updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  user                  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("user_concerns")
 }
 
 /// AI-written dashboard summary, cached per report and per set of answers (inputHash), so each costs one model call.
 model DashboardInsight {
-  id        String   @id @default(uuid()) @db.Uuid
-  reportId  String   @map("report_id") @db.Uuid
-  inputHash String   @map("input_hash")
+  id        String       @id @default(uuid()) @db.Uuid
+  reportId  String       @map("report_id") @db.Uuid
+  inputHash String       @map("input_hash")
   content   Json
   model     String
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
   report    CreditReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
   @@unique([reportId, inputHash])
   @@map("dashboard_insights")
 }
 
 /// Every external provider call (OTP, PAN, bureau): the billing and outage record.
 model ApiTransaction {
-  id             String @id @default(uuid()) @db.Uuid
-  userId         String? @map("user_id") @db.Uuid
+  id             String            @id @default(uuid()) @db.Uuid
+  userId         String?           @map("user_id") @db.Uuid
   provider       String
   operation      String
   status         TransactionStatus
-  attempt        Int @default(1)
-  idempotencyKey String? @map("idempotency_key")
-  errorCode      String? @map("error_code")
-  durationMs     Int @map("duration_ms")
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  user           User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  attempt        Int               @default(1)
+  idempotencyKey String?           @map("idempotency_key")
+  errorCode      String?           @map("error_code")
+  durationMs     Int               @map("duration_ms")
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  user           User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   @@index([provider, operation, createdAt])
   @@map("api_transactions")
 }
@@ -258,6 +313,7 @@ model SupportRequest {
   status            SupportStatus @default(NEW)
   createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
   user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([status, createdAt])
   @@map("support_requests")
 }

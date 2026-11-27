@@ -21,7 +21,49 @@ export const verifyOtpSchema = z.object({
   otp: z.string().regex(/^\d{6}$/, "Enter the 6-digit OTP"),
 });
 
+// Optional referral, sent with the PAN or the name-as-on-PAN form. The code is the referrer's mobile number:
+// a company agent's (benefit) or another Relive user's (no benefit). QR = prefilled from an agent's QR code.
+export const referralSchema = z.object({
+  mobile: mobileSchema,
+  source: z.enum(["QR", "MANUAL"]).default("MANUAL"),
+});
+
+// A company agent, added on the admin page (/admin/agents). Their mobile number is their referral code.
+export const agentSchema = z.object({
+  name: z.string().trim().min(2, "Enter the agent's name").max(80),
+  mobile: mobileSchema,
+});
+
+// Several agents from a CSV file (admin page), sent in batches. Each row is checked on its own with agentSchema.
+export const AGENT_IMPORT_BATCH = 200;
+export const agentImportSchema = z.object({
+  rows: z.array(z.object({ row: z.number().int().positive(), name: z.string().max(200), mobile: z.string().max(40) })).min(1).max(AGENT_IMPORT_BATCH),
+});
+
+/**
+ * Reads agents from a CSV file's text: a name column and a mobile column. With a header row (one cell says mobile,
+ * phone or number) the columns are found by name, in any order; without one, name is column 1 and mobile column 2.
+ * `row` is the spreadsheet row number. Mobiles lose spaces, dashes, +91 and a leading 0. Quoted cells are allowed.
+ */
+export function agentCsvRows(text: string) {
+  // Split on commas outside quotes (an even number of quotes follows them).
+  const lines = text.replace(/^﻿/, "").split(/\r?\n/).map((line) =>
+    line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map((cell) => cell.trim().replace(/^"([\s\S]*)"$/, "$1").replace(/""/g, '"').trim()));
+  const header = lines[0] ?? [];
+  const mobileAt = header.findIndex((cell) => /mobile|phone|number/i.test(cell));
+  const nameAt = mobileAt >= 0 ? Math.max(0, header.findIndex((cell) => /name/i.test(cell))) : 0;
+  const mobile = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    return digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : digits.length === 11 && digits.startsWith("0") ? digits.slice(1) : digits;
+  };
+  return lines
+    .map((cells, index) => ({ row: index + 1, name: cells[nameAt] ?? "", mobile: mobile(cells[mobileAt >= 0 ? mobileAt : 1] ?? "") }))
+    .slice(mobileAt >= 0 ? 1 : 0)
+    .filter((row) => row.name || row.mobile);
+}
+
 export const manualProfileSchema = z.object({
+  referral: referralSchema.optional(),
   // Bureaus match on the full name as on PAN; single-name PANs have no last name.
   firstName: z.string().trim().min(1, "Enter your first name").max(80),
   lastName: z.string().trim().max(120).default(""),
@@ -32,7 +74,7 @@ export const manualProfileSchema = z.object({
 
 export const panSchema = z.string().trim().toUpperCase().regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/, "Enter a valid PAN");
 
-export const kycSchema = z.object({ pan: panSchema });
+export const kycSchema = z.object({ pan: panSchema, referral: referralSchema.optional() });
 
 export const reportRequestSchema = z.object({ idempotencyKey: z.string().uuid() });
 

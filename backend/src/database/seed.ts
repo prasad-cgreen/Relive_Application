@@ -46,12 +46,21 @@ await production.userConsent.create({ data: { userId: partial.id, purpose: "CRED
 // 3. New user -> nothing stored, so login starts at "Enter PAN"
 await resetUser("9876543212");
 
+// 4. A company agent: their number as the referral code earns them a benefit (any user's number works, without one)
+const agentMobile = "9876500000";
+await production.agent.upsert({
+  where: { mobileHash: hashMobile(agentMobile) },
+  create: { name: "Test Agent", mobileHash: hashMobile(agentMobile), mobileLast4: agentMobile.slice(-4), mobileEncrypted: encrypt(agentMobile) },
+  update: { active: true },
+});
+
 console.table([
   { mobile: "9876543210", case: "Existing user, profile complete", lands: "Dashboard" },
   { mobile: "9876543211", case: "Existing user, no report yet", lands: "Fetch score (resumes onboarding)" },
   { mobile: "9876543212", case: "New user (reset on every seed)", lands: "Enter PAN" },
 ]);
 console.log("OTP for all: 123456. PAN AAAAA0000A simulates a failed PAN lookup.");
+console.log(`Referral codes: ${agentMobile} (Test Agent, benefit) or 9876543210 (a user, no benefit). QR link: /?login=1&ref=${agentMobile}`);
 console.log("Dev only: header x-relive-mock-scenario: business_failure on /credit/report makes Experian fail, so CRIF is used.");
 
 await Promise.all([production.$disconnect(), audit.$disconnect()]);

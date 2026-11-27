@@ -34,6 +34,35 @@ Any other valid mobile number also works as a new user. PAN `AAAAA0000A` simulat
    - **PAN** → PAN API fills the name (incl. middle name) and DOB → report is fetched immediately (no extra consent step).
    - PAN not found / PAN service off / 5 PAN tries per day → "Enter your name as on PAN". PAN already linked to another mobile → log in with that number.
 
+## Referrals
+
+The referral code is the referrer's mobile number, entered (optionally) under PAN or in the name-as-on-PAN form. A company agent's number earns the agent a benefit; any other Relive user's number is recorded without one. Unknown numbers and the user's own number are rejected; a user's first referral is kept. Each agent has a QR code that opens the login with their number filled in and locked.
+
+**Staff (no terminal):** open `/admin/agents` on the website (e.g. `https://relive.co.in/admin/agents`) and enter the admin password. There you add an agent (name + mobile) or many at once from a CSV file (a name column and a mobile column; a template is on the page; bad rows are listed by row number and re-uploading is safe), download their QR code, see how many users each referred and how many of those came through their QR code, and deactivate or reactivate them. The password is `ADMIN_PASSWORD` in `backend/.env` (12+ characters in production; blank = page switched off; changing it signs everyone out). Sign-ins, wrong passwords and every change are written to the audit log.
+
+**Developers** can do the same from the terminal:
+
+```powershell
+npm run agent -w backend -- add 9876500001 "Priya Nair"   # add an agent; writes their QR code to backend/exports/agent-qr/
+npm run agent -w backend -- list                          # agents, users each referred, and how many via their QR code
+npm run agent -w backend -- qr 9876500001                 # write the QR code again
+npm run agent -w backend -- deactivate 9876500001         # their number stops counting as an agent's
+```
+
+QR codes link to `https://relive.co.in/?login=1&ref=<number>`; add `--site <url>` for another address. `npm run db:seed` adds a test agent, `9876500000`.
+
+Referrals are stored in `referrals` with the referrer's number as `agent_mobile_hash` (plus last 4 and encrypted), `source` = `QR` or `MANUAL`, and `agent_user_id` when the referrer has a Relive account. Users signed up through each agent's QR code, straight from the database:
+
+```sql
+SELECT a.name, a.mobile_last4, a.active,
+       count(r.id) FILTER (WHERE r.source = 'QR') AS users_via_qr,
+       count(r.id) AS total_referrals
+FROM agents a
+LEFT JOIN referrals r ON r.agent_mobile_hash = a.mobile_hash
+GROUP BY a.id
+ORDER BY users_via_qr DESC, a.name;
+```
+
 ## Audit trail
 
 Every login and onboarding step is recorded in the audit database (`audit_logs` events plus one `onboarding_journeys` row per user). See [docs/login-onboarding-flow.md](docs/login-onboarding-flow.md). `npm run journey -w backend` lists unfinished onboardings; add a mobile number to see one user's timeline.

@@ -19,8 +19,10 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { HeroCarousel } from "../components/hero-carousel";
 import { OnboardingFlow, type Workflow } from "../components/onboarding-flow";
+import { ResolutionImpact } from "../components/resolution-impact";
 import { preloadTurnstile, Turnstile, TURNSTILE_SITE_KEY, type CaptchaState } from "../components/turnstile";
 import { api, apiErrorCode, apiMessage, apiRetryAfter } from "../lib/api";
+import { rememberQrReferral } from "../lib/referral";
 import { getSession, hasSignedInHint, setSignedInHint, type Session } from "../lib/session";
 
 type LoginStep = "mobile" | "otp" | "onboarding";
@@ -190,6 +192,7 @@ export default function Home() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    rememberQrReferral(params.get("ref")); // an agent's QR code: their number becomes the locked referral code
     // ?login=1 opens the dialog straight away rather than after the session check below, except in a browser that
     // reached the dashboard: that check sends it on to /portal instead.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the URL is browser-only: reading it while rendering would mismatch the server HTML
@@ -537,6 +540,8 @@ export default function Home() {
         </div>
       </section>
 
+      <ResolutionImpact />
+
       {/* Security & privacy */}
       <section id="security" className="scroll-mt-20 border-t border-[#e5ece7] py-14 sm:py-20 dark:border-[#14261c]">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 sm:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-16">
@@ -610,7 +615,7 @@ export default function Home() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="login-title"
-            className="animate-in slide-in-from-bottom-10 duration-300 sm:fade-in sm:zoom-in-95 sm:slide-in-from-bottom-0 relative max-h-[100dvh] w-full max-w-[440px] overflow-y-auto overscroll-contain rounded-t-[26px] bg-white p-6 shadow-2xl sm:rounded-[26px] sm:p-8 dark:bg-[#0c1a12] dark:border dark:border-[#162a1f]"
+            className="animate-in slide-in-from-bottom-10 duration-300 sm:fade-in sm:zoom-in-95 sm:slide-in-from-bottom-0 relative max-h-[100dvh] w-full max-w-[440px] overflow-y-auto overscroll-contain no-scrollbar rounded-t-[26px] bg-white p-6 shadow-2xl sm:rounded-[26px] sm:p-8 dark:bg-[#0c1a12] dark:border dark:border-[#162a1f]"
           >
             {/* Close button sits in the corner, so every step uses the full dialog width */}
             <button

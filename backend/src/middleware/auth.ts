@@ -1,7 +1,8 @@
+import { createHmac } from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../config/env.js";
 import { production } from "../database/clients.js";
-import { hashToken } from "../lib/crypto.js";
+import { hashToken, secureEqual } from "../lib/crypto.js";
 import { HttpError } from "../lib/errors.js";
 
 declare global {
@@ -19,6 +20,23 @@ export async function findSession(req: Request) {
   // Local dev: each `npm run dev` starts signed out (sessions from earlier runs don't count). Never in production.
   if (env.NODE_ENV === "development" && env.RELIVE_DEV_RUN_STARTED_AT && session.createdAt.getTime() < env.RELIVE_DEV_RUN_STARTED_AT) return null;
   return session;
+}
+
+// Agents admin page: one shared password (ADMIN_PASSWORD). The cookie is "<expiry>.<signature>"; the signature covers
+// the password, so changing ADMIN_PASSWORD signs everyone out.
+export const ADMIN_COOKIE = "relive_admin";
+export const ADMIN_TTL_MS = 8 * 60 * 60_000;
+export const adminToken = (expiresAt: number) =>
+  `${expiresAt}.${createHmac("sha256", env.SESSION_SECRET).update(`admin:${expiresAt}:${env.ADMIN_PASSWORD}`).digest("base64url")}`;
+
+export function requireAdmin(req: Request, _res: Response, next: NextFunction) {
+  if (!env.ADMIN_PASSWORD) return next(new HttpError(404, "ADMIN_DISABLED", "The admin page is switched off. Set ADMIN_PASSWORD on the server to switch it on"));
+  const token = req.cookies?.[ADMIN_COOKIE] as string | undefined;
+  const expiresAt = Number(token?.split(".")[0]);
+  if (!token || !(expiresAt > Date.now()) || !secureEqual(token, adminToken(expiresAt))) {
+    return next(new HttpError(401, "ADMIN_AUTH_REQUIRED", "Please enter the admin password"));
+  }
+  next();
 }
 
 export async function requireAuth(req: Request, _res: Response, next: NextFunction) {

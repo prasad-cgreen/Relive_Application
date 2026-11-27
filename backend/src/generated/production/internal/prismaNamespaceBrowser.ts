@@ -52,6 +52,8 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  Agent: 'Agent',
+  Referral: 'Referral',
   UserProfile: 'UserProfile',
   UserConsent: 'UserConsent',
   OtpTransaction: 'OtpTransaction',
@@ -88,6 +90,7 @@ export const UserScalarFieldEnum = {
   mobileEncrypted: 'mobileEncrypted',
   bureauMobileEncrypted: 'bureauMobileEncrypted',
   bureauMobileLast4: 'bureauMobileLast4',
+  referralCode: 'referralCode',
   status: 'status',
   failedOtpWindow: 'failedOtpWindow',
   blockedUntil: 'blockedUntil',
@@ -96,6 +99,33 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const AgentScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  mobileHash: 'mobileHash',
+  mobileLast4: 'mobileLast4',
+  mobileEncrypted: 'mobileEncrypted',
+  active: 'active',
+  createdAt: 'createdAt'
+} as const
+
+export type AgentScalarFieldEnum = (typeof AgentScalarFieldEnum)[keyof typeof AgentScalarFieldEnum]
+
+
+export const ReferralScalarFieldEnum = {
+  id: 'id',
+  referredUserId: 'referredUserId',
+  agentUserId: 'agentUserId',
+  agentMobileHash: 'agentMobileHash',
+  agentMobileEncrypted: 'agentMobileEncrypted',
+  agentMobileLast4: 'agentMobileLast4',
+  source: 'source',
+  createdAt: 'createdAt'
+} as const
+
+export type ReferralScalarFieldEnum = (typeof ReferralScalarFieldEnum)[keyof typeof ReferralScalarFieldEnum]
 
 
 export const UserProfileScalarFieldEnum = {
