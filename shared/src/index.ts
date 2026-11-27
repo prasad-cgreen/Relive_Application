@@ -21,12 +21,13 @@ export const verifyOtpSchema = z.object({
   otp: z.string().regex(/^\d{6}$/, "Enter the 6-digit OTP"),
 });
 
-// Optional referral, sent with the PAN or the name-as-on-PAN form. The code is the referrer's mobile number:
-// a company agent's (benefit) or another Relive user's (no benefit). QR = prefilled from an agent's QR code.
-export const referralSchema = z.object({
-  mobile: mobileSchema,
-  source: z.enum(["QR", "MANUAL"]).default("MANUAL"),
-});
+// Optional referral, sent with the PAN or the name-as-on-PAN form. Typed: the referrer's mobile number, a company
+// agent's (benefit) or another Relive user's (no benefit). From an agent's QR code: the agent's id, so the link never
+// shows their number (QR codes printed before that carry the number, sent as { mobile, source: "QR" }).
+export const referralSchema = z.union([
+  z.object({ agentId: z.string().uuid(), source: z.literal("QR").default("QR") }),
+  z.object({ mobile: mobileSchema, source: z.enum(["QR", "MANUAL"]).default("MANUAL") }),
+]);
 
 // A company agent, added on the admin page (/admin/agents). Their mobile number is their referral code.
 export const agentSchema = z.object({

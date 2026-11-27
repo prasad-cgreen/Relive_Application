@@ -192,7 +192,7 @@ export default function Home() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    rememberQrReferral(params.get("ref")); // an agent's QR code: their number becomes the locked referral code
+    rememberQrReferral(params.get("ref")); // an agent's QR code: the agent becomes the locked referrer
     // ?login=1 opens the dialog straight away rather than after the session check below, except in a browser that
     // reached the dashboard: that check sends it on to /portal instead.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the URL is browser-only: reading it while rendering would mismatch the server HTML

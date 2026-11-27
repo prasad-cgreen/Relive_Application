@@ -138,9 +138,16 @@ describe("Relive end-to-end member workflow", () => {
       await a.client.post("/api/v1/kyc/verify").send({ pan: "ABCDE1234F", referral: { mobile: "9000000001" } }).expect(422);
       expect(await production.kycVerification.count({ where: { userId: a.user.id } })).toBe(0);
 
-      // An agent's number from their QR code: saved with the agent. A later referral doesn't replace it.
+      // An agent's QR code carries their id, not their number; signed-in onboarding fetches the number to show it.
+      await request(app).get(`/api/v1/referral/agents/${agentRow.id}`).expect(401);
+      expect((await a.client.get(`/api/v1/referral/agents/${agentRow.id}`).expect(200)).body).toEqual({ mobile: agentMobile });
+      await a.client.get("/api/v1/referral/agents/00000000-0000-4000-8000-000000000000").expect(404);
+      // An unknown id is rejected.
+      const gone = await a.client.post("/api/v1/profile/manual").send({ ...details, referral: { agentId: "00000000-0000-4000-8000-000000000000", source: "QR" } }).expect(422);
+      expect(gone.body.error.code).toBe("REFERRAL_NOT_FOUND");
+      // The agent's id: saved with the agent's number. A later referral (here an older QR code's number) doesn't replace it.
+      await a.client.post("/api/v1/profile/manual").send({ ...details, referral: { agentId: agentRow.id, source: "QR" } }).expect(200);
       await a.client.post("/api/v1/profile/manual").send({ ...details, referral: { mobile: agentMobile, source: "QR" } }).expect(200);
-      await a.client.post("/api/v1/profile/manual").send({ ...details, referral: { mobile } }).expect(200);
       expect(await production.referral.findUnique({ where: { referredUserId: a.user.id } })).toMatchObject({ agentMobileHash: agentRow.mobileHash, agentMobileLast4: "6790", agentUserId: null, source: "QR" });
 
       // Another user's number, typed: recorded with no agent (no benefit).
@@ -188,7 +195,7 @@ describe("Relive end-to-end member workflow", () => {
       expect(body.agents.find((a: { id: string }) => a.id === added.body.id)).toMatchObject({ name: "Admin Agent", mobile: agentMobile, active: true, referrals: 0 });
 
       const qr = await staff.get(`/api/v1/admin/agents/${added.body.id}/qr`).set("Origin", "http://127.0.0.1:5173").expect(200);
-      expect(qr.body.link).toBe(`http://127.0.0.1:5173/?login=1&ref=${agentMobile}`);
+      expect(qr.body.link).toBe(`http://127.0.0.1:5173/?login=1&ref=${added.body.id}`); // the id, never the number
       expect(qr.body.image).toMatch(/^data:image\/png;base64,/);
       await staff.get("/api/v1/admin/agents/not-an-id/qr").expect(400);
 

@@ -1,9 +1,9 @@
 "use client";
 
 import { ArrowRight, CircleAlert, LoaderCircle, Lock, RefreshCw, ShieldCheck, Smartphone, UserRound } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { api, apiErrorCode, apiMessage } from "../lib/api";
-import { forgetQrReferral, isReferralMobile, qrReferral } from "../lib/referral";
+import { forgetQrReferral, isAgentId, isReferralMobile, qrReferral, qrReferralBody } from "../lib/referral";
 
 export type Workflow = {
   stage: "PROFILE" | "REPORT" | "DASHBOARD";
@@ -72,6 +72,8 @@ export function OnboardingFlow({ initial, onComplete }: { initial: Workflow; onC
   // From an agent's QR code it is filled in and locked; otherwise the user may type one.
   const [referral, setReferral] = useState(qrReferral);
   const [referralLocked, setReferralLocked] = useState(() => referral !== "");
+  // The number shown in the locked field: the QR link carries the agent's id, so their number is fetched here.
+  const [qrMobile, setQrMobile] = useState(() => (isReferralMobile(referral) ? referral : ""));
   // What was last typed in the PAN / details forms: they are replaced by a spinner while saving, so after an error
   // (e.g. a referral number not found) they come back with the user's input instead of empty.
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -83,17 +85,29 @@ export function OnboardingFlow({ initial, onComplete }: { initial: Workflow; onC
     if (code.startsWith("REFERRAL_") && referralLocked) {
       forgetQrReferral();
       setReferralLocked(false);
+      setReferral("");
+      setQrMobile("");
     }
     setError({ code, message: apiMessage(requestError), actions: ACTIONS[code] ?? ["retry"] });
   };
+  useEffect(() => {
+    if (!referralLocked || !isAgentId(referral)) return;
+    let current = true;
+    api.get<{ mobile: string }>(`/referral/agents/${referral}`)
+      .then(({ data }) => current && setQrMobile(data.mobile))
+      .catch((requestError) => current && apiErrorCode(requestError) === "REFERRAL_NOT_FOUND" && showError(requestError));
+    return () => { current = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, for the QR code this tab opened with
+  }, []);
   /** The referral for a PAN / details request, or null (with the error shown) when the typed number isn't valid. */
   const referralBody = () => {
     if (!referral) return {};
+    if (referralLocked) return { referral: qrReferralBody(referral) };
     if (!isReferralMobile(referral)) {
       setError({ code: "REFERRAL_INVALID", message: "Enter the referrer's 10-digit mobile number, or leave the referral code blank", actions: ["retry"] });
       return null;
     }
-    return { referral: { mobile: referral, source: referralLocked ? "QR" : "MANUAL" } };
+    return { referral: { mobile: referral, source: "MANUAL" } };
   };
   const switchView = (next: View) => {
     setView(next);
@@ -159,13 +173,14 @@ export function OnboardingFlow({ initial, onComplete }: { initial: Workflow; onC
         }`}
       >
         <span className="border-r border-[#e5ece7] px-3 text-xs font-bold text-[#556b5e] dark:border-[#1e3829] dark:text-[#8ba295]">+91</span>
-        {/* No name attribute: sent as { referral: { mobile, source } }, not as a form field */}
+        {/* No name attribute: sent as { referral: {...} }, not as a form field. Locked (from a QR code): shows the
+            agent's number, but sends what the QR code carried. */}
         <input
           id="referral"
           inputMode="numeric"
           autoComplete="off"
           maxLength={10}
-          value={referral}
+          value={referralLocked ? qrMobile : referral}
           readOnly={referralLocked}
           onChange={(e) => setReferral(e.target.value.replace(/\D/g, ""))}
           placeholder="Mobile number of who referred you"

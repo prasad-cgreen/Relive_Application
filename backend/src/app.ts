@@ -357,6 +357,14 @@ app.get("/api/v1/credit/insight", requireAuth, async (req, res) => {
   }
 });
 
+// An agent's QR link carries their id, not their number; onboarding shows the number once the user has signed in.
+app.get("/api/v1/referral/agents/:id", requireAuth, async (req, res) => {
+  const id = z.string().uuid().safeParse(req.params.id);
+  const agent = id.success ? await production.agent.findFirst({ where: { id: id.data, active: true }, select: { mobileEncrypted: true } }) : null;
+  if (!agent) throw new HttpError(404, "REFERRAL_NOT_FOUND", "This QR code is no longer active. Enter a referrer's number, or leave the field blank");
+  res.json({ mobile: decrypt(agent.mobileEncrypted) });
+});
+
 app.post("/api/v1/profile/manual", requireAuth, sensitiveLimiter, async (req, res) => {
   const userId = userContext(req);
   const { referral: referralInput, ...data } = manualProfileSchema.parse(req.body);
@@ -761,8 +769,7 @@ app.get("/api/v1/admin/agents/:id/qr", requireAdmin, async (req, res) => {
   if (!agent) throw new HttpError(404, "AGENT_NOT_FOUND", "This agent no longer exists");
   const origin = req.header("origin");
   const site = origin && env.FRONTEND_ORIGIN.split(",").map((v) => v.trim()).includes(origin) ? origin : "https://relive.co.in";
-  const mobile = decrypt(agent.mobileEncrypted);
-  res.json({ link: referralLink(site, mobile), image: await agentQr(site, mobile) });
+  res.json({ link: referralLink(site, agent.id), image: await agentQr(site, agent.id) });
 });
 
 app.use((_req, _res, next) => next(new HttpError(404, "NOT_FOUND", "Route not found")));

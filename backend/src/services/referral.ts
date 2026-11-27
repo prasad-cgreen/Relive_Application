@@ -6,11 +6,14 @@ import { decrypt, encrypt, hashMobile } from "../lib/crypto.js";
 import { HttpError } from "../lib/errors.js";
 import { writeAudit } from "./audit.js";
 
-/** An agent's QR code link: the landing page opens the login, with the agent's number as the locked referral code. */
-export const referralLink = (site: string, mobile: string) => `${site.replace(/\/+$/, "")}/?login=1&ref=${mobile}`;
+/**
+ * An agent's QR code link: the landing page opens the login with the agent locked in as the referrer. It carries the
+ * agent's id, not their mobile number, so sharing the link doesn't share the number.
+ */
+export const referralLink = (site: string, agentId: string) => `${site.replace(/\/+$/, "")}/?login=1&ref=${agentId}`;
 export const QR_OPTIONS = { width: 800, margin: 2 };
 /** The agent's QR code as a PNG data URL (shown and downloaded on the admin page). */
-export const agentQr = (site: string, mobile: string) => QRCode.toDataURL(referralLink(site, mobile), QR_OPTIONS);
+export const agentQr = (site: string, agentId: string) => QRCode.toDataURL(referralLink(site, agentId), QR_OPTIONS);
 
 /** Adds an agent, or renames and reactivates the agent with that number. */
 export function saveAgent(name: string, mobile: string) {
@@ -50,7 +53,15 @@ export type ResolvedReferral = { mobile: string; agentUserId: string | null; isA
  */
 export async function resolveReferral(userId: string, input: z.infer<typeof referralSchema> | undefined): Promise<ResolvedReferral | null> {
   if (!input) return null;
-  const mobileHash = hashMobile(input.mobile);
+  let mobile: string;
+  if ("agentId" in input) {
+    const qrAgent = await production.agent.findFirst({ where: { id: input.agentId, active: true }, select: { mobileEncrypted: true } });
+    if (!qrAgent) throw new HttpError(422, "REFERRAL_NOT_FOUND", "This QR code is no longer active. Enter a referrer's number, or leave the field blank");
+    mobile = decrypt(qrAgent.mobileEncrypted);
+  } else {
+    mobile = input.mobile;
+  }
+  const mobileHash = hashMobile(mobile);
   const [self, agent, referrer] = await Promise.all([
     production.user.findUnique({ where: { id: userId }, select: { mobileHash: true } }),
     production.agent.findFirst({ where: { mobileHash, active: true }, select: { id: true } }),
@@ -58,7 +69,7 @@ export async function resolveReferral(userId: string, input: z.infer<typeof refe
   ]);
   if (self?.mobileHash === mobileHash) throw new HttpError(422, "REFERRAL_SELF", "You can't use your own mobile number as a referral code");
   if (!agent && !referrer) throw new HttpError(422, "REFERRAL_NOT_FOUND", "We couldn't find this referral number. Check it, or leave the field blank");
-  return { mobile: input.mobile, agentUserId: referrer?.id ?? null, isAgent: Boolean(agent), source: input.source };
+  return { mobile, agentUserId: referrer?.id ?? null, isAgent: Boolean(agent), source: input.source };
 }
 
 /**
