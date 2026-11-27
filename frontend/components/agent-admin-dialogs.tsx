@@ -396,7 +396,7 @@ export function QrDialog({ qr, onClose }: { qr: AgentQr; onClose: () => void }) 
 // ─── Change password ─────────────────────────────────────────────────────────
 
 export function ChangePasswordDialog({ onClose, fail }: { onClose: () => void; fail: Fail }) {
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState({ current: false, next: false });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -419,17 +419,33 @@ export function ChangePasswordDialog({ onClose, fail }: { onClose: () => void; f
     }
   };
 
-  const field = (id: string, label: string, hint?: string) => (
-    <div>
-      <label htmlFor={id} className="text-sm font-medium">{label}</label>
-      <input
-        id={id} name={id} type={show ? "text" : "password"} required maxLength={200} autoFocus={id === "current"}
-        autoComplete={id === "current" ? "current-password" : "new-password"} minLength={id === "current" ? undefined : 8}
-        onChange={() => error && setError("")} className={`${ui.input} mt-1.5`}
-      />
-      {hint && <p className={`mt-1.5 text-xs ${ui.muted}`}>{hint}</p>}
-    </div>
-  );
+  // The eye shows current and new; the confirm field stays hidden and is only checked against new.
+  const field = (id: "current" | "next" | "confirm", label: string, hint?: string) => {
+    const revealable = id !== "confirm";
+    const visible = revealable && show[id];
+    return (
+      <div>
+        <label htmlFor={id} className="text-sm font-medium">{label}</label>
+        <div className="relative mt-1.5">
+          <input
+            id={id} name={id} type={visible ? "text" : "password"} required maxLength={200} autoFocus={id === "current"}
+            autoComplete={id === "current" ? "current-password" : "new-password"} minLength={id === "current" ? undefined : 8}
+            onChange={() => error && setError("")} className={`${ui.input} ${revealable ? "pr-11" : ""}`}
+          />
+          {revealable && (
+            <button
+              type="button" onClick={() => setShow((value) => ({ ...value, [id]: !value[id] }))}
+              aria-label={visible ? "Hide password" : "Show password"} aria-pressed={visible}
+              className={`absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl ${ui.muted} hover:text-[#0c1a13] dark:hover:text-white`}
+            >
+              {visible ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
+            </button>
+          )}
+        </div>
+        {hint && <p className={`mt-1.5 text-xs ${ui.muted}`}>{hint}</p>}
+      </div>
+    );
+  };
 
   return (
     <Modal open onOpenChange={(open) => !open && onClose()} title="Change the admin password" description="Everyone uses this one password. After you change it, anyone else signed in has to sign in again with the new one.">
@@ -437,9 +453,6 @@ export function ChangePasswordDialog({ onClose, fail }: { onClose: () => void; f
         {field("current", "Current password")}
         {field("next", "New password", "At least 8 characters. A short sentence is easy to remember and hard to guess.")}
         {field("confirm", "New password again")}
-        <button type="button" onClick={() => setShow((value) => !value)} className={`inline-flex items-center gap-1.5 text-xs font-medium ${ui.muted} hover:text-[#0c1a13] dark:hover:text-white`}>
-          {show ? <EyeOff className="size-3.5" aria-hidden="true" /> : <Eye className="size-3.5" aria-hidden="true" />} {show ? "Hide passwords" : "Show passwords"}
-        </button>
         {error && <ErrorText>{error}</ErrorText>}
         <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
           <button type="button" onClick={onClose} className={ui.secondary}>Cancel</button>
