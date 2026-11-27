@@ -1,18 +1,18 @@
 "use client";
 
 import {
-  ArrowDownWideNarrow, Eye, EyeOff, Link2, Loader2, LogOut, MoreHorizontal, Plus, QrCode, Search, ShieldCheck, Trophy, Upload,
+  ArrowDownWideNarrow, Eye, EyeOff, KeyRound, Link2, Loader2, LogOut, MoreHorizontal, Plus, QrCode, Search, ShieldCheck, Trophy, Upload,
   UserCheck, Users, UserX, X,
 } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
 import {
-  AddAgentsDialog, DeactivateDialog, formatMobile, plural, QrDialog, ui, type Agent, type AgentQr,
+  AddAgentsDialog, ChangePasswordDialog, DeactivateDialog, formatMobile, plural, QrDialog, ui, type Agent, type AgentQr,
 } from "../../../components/agent-admin-dialogs";
 import { api, apiErrorCode, apiMessage } from "../../../lib/api";
 
-// Staff page for company agents (one shared password, ADMIN_PASSWORD on the server): add agents one by one or from a
+// Staff page for company agents (one shared password, stored hashed in the database; changed on this page): add agents one by one or from a
 // CSV, share their QR codes, see who they referred, deactivate them. An agent's mobile number is their referral code.
 
 type Filter = "all" | "active" | "inactive";
@@ -31,6 +31,7 @@ export default function AgentsAdminPage() {
   const [adding, setAdding] = useState<"one" | "csv" | null>(null);
   const [qr, setQr] = useState<AgentQr | null>(null);
   const [deactivating, setDeactivating] = useState<Agent | null>(null);
+  const [changingPassword, setChangingPassword] = useState(false);
   const [busyId, setBusyId] = useState("");
 
   /** Handles an expired admin sign-in (back to the password screen) and returns the message to show. */
@@ -40,6 +41,7 @@ export default function AgentsAdminPage() {
       setAdding(null);
       setQr(null);
       setDeactivating(null);
+      setChangingPassword(false);
       return "Your admin sign-in has ended. Please sign in again.";
     }
     return apiMessage(error);
@@ -137,9 +139,14 @@ export default function AgentsAdminPage() {
             <img src="/relive-logo-light.svg" alt="Relive" width={98} height={28} className="h-6 w-auto sm:h-7" />
             <span className="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-300">Admin</span>
           </div>
-          <button type="button" onClick={() => void logout()} className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm text-white/70 transition hover:bg-white/[0.07] hover:text-white">
-            <LogOut className="size-4" aria-hidden="true" /> <span className="max-sm:sr-only">Sign out</span>
-          </button>
+          <div className="flex items-center gap-1">
+            <button type="button" onClick={() => setChangingPassword(true)} className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm text-white/70 transition hover:bg-white/[0.07] hover:text-white">
+              <KeyRound className="size-4" aria-hidden="true" /> <span className="max-sm:sr-only">Password</span>
+            </button>
+            <button type="button" onClick={() => void logout()} className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm text-white/70 transition hover:bg-white/[0.07] hover:text-white">
+              <LogOut className="size-4" aria-hidden="true" /> <span className="max-sm:sr-only">Sign out</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -298,6 +305,7 @@ export default function AgentsAdminPage() {
         <AddAgentsDialog tab={adding} fail={fail} onClose={() => setAdding(null)} onAdded={(id) => void afterAdd(id)} onImported={() => void load()} />
       )}
       {qr && <QrDialog qr={qr} onClose={() => setQr(null)} />}
+      {changingPassword && <ChangePasswordDialog fail={fail} onClose={() => setChangingPassword(false)} />}
       {deactivating && <DeactivateDialog agent={deactivating} onClose={() => setDeactivating(null)} onConfirm={() => setActive(deactivating, false)} />}
     </div>
   );
@@ -408,8 +416,10 @@ function SignIn({ phase, onSignedIn }: { phase: "loading" | "login" | "off"; onS
             </div>
           ) : phase === "off" ? (
             <div className="py-2 text-center">
-              <h1 className="text-lg font-semibold">The admin page is switched off</h1>
-              <p className={`mt-1.5 text-sm ${ui.muted}`}>Ask a developer to set ADMIN_PASSWORD on the server.</p>
+              <h1 className="text-lg font-semibold">No admin password yet</h1>
+              <p className={`mt-1.5 text-sm ${ui.muted}`}>
+                Ask a developer to set one with <code className="rounded bg-[#eef3f0] px-1 py-0.5 text-xs dark:bg-[#16291e]">npm run admin-password -w backend</code>
+              </p>
             </div>
           ) : (
             <form onSubmit={(event) => { event.preventDefault(); void submit(event.currentTarget); }}>

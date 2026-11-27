@@ -34,6 +34,11 @@ export const agentSchema = z.object({
   mobile: mobileSchema,
 });
 
+// The agents admin page's shared password (stored hashed in the database). The database is shared with the live
+// site, so the rule is the same everywhere.
+export const adminPasswordSchema = z.string().min(8, "Use at least 8 characters").max(200, "Use at most 200 characters");
+export const changeAdminPasswordSchema = z.object({ current: z.string().max(200), next: adminPasswordSchema });
+
 // Several agents from a CSV file (admin page), sent in batches. Each row is checked on its own with agentSchema.
 export const AGENT_IMPORT_BATCH = 200;
 export const agentImportSchema = z.object({

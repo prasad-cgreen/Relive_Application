@@ -9,6 +9,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/User.js'
+export type * from './models/AdminPassword.js'
 export type * from './models/Agent.js'
 export type * from './models/Referral.js'
 export type * from './models/UserProfile.js'

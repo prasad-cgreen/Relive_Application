@@ -14,8 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model Agent
- * A company agent. The referral code is a mobile number: an agent's earns the agent a referral benefit; any other
- * Relive user's is recorded without one. Managed with `npm run agent -w backend` (which also makes the agent's QR code).
+ * 
  */
 export type AgentModel = runtime.Types.Result.DefaultSelection<Prisma.$AgentPayload>
 

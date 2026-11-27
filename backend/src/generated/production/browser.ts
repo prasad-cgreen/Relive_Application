@@ -23,9 +23,14 @@ export * from './enums.js';
  */
 export type User = Prisma.UserModel
 /**
- * Model Agent
+ * Model AdminPassword
  * A company agent. The referral code is a mobile number: an agent's earns the agent a referral benefit; any other
  * Relive user's is recorded without one. Managed with `npm run agent -w backend` (which also makes the agent's QR code).
+ */
+export type AdminPassword = Prisma.AdminPasswordModel
+/**
+ * Model Agent
+ * 
  */
 export type Agent = Prisma.AgentModel
 /**

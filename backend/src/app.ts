@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { request as httpsRequest } from "node:https";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -6,14 +6,16 @@ import express, { type NextFunction, type Request, type Response } from "express
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import {
-  agentImportSchema, agentSchema, bureauMobileSchema, concernSchema, kycSchema, manualProfileSchema, requestOtpSchema,
+  agentImportSchema, agentSchema, bureauMobileSchema, changeAdminPasswordSchema, concernSchema, kycSchema, manualProfileSchema, requestOtpSchema,
   reportRequestSchema, supportRequestSchema, verifyOtpSchema,
 } from "@relive/shared";
 import { z, ZodError } from "zod";
 import { env } from "./config/env.js";
 import { audit, production } from "./database/clients.js";
-import { ADMIN_COOKIE, ADMIN_TTL_MS, adminToken, findSession, requireAdmin, requireAuth, SESSION_COOKIE } from "./middleware/auth.js";
-import { decrypt, encrypt, hashMobile, hashOtp, hashPan, hashToken, newToken, secureEqual } from "./lib/crypto.js";
+import {
+  ADMIN_COOKIE, ADMIN_TTL_MS, adminPasswordHash, adminToken, findSession, requireAdmin, requireAuth, SESSION_COOKIE, setAdminPassword,
+} from "./middleware/auth.js";
+import { decrypt, encrypt, hashMobile, hashOtp, hashPan, hashToken, newToken, secureEqual, verifyPassword } from "./lib/crypto.js";
 import { HttpError, ProviderError } from "./lib/errors.js";
 import { stepForStage, trackJourney, writeAudit } from "./services/audit.js";
 import { maskPanPhone, panPhoneMatches, providers, type MockScenario } from "./services/providers.js";
@@ -674,19 +676,30 @@ app.get("/api/v1/dashboard", requireAuth, async (req, res) => {
   res.json(await getCreditOverview(userId));
 });
 
-// Agents admin page (/admin/agents), for staff: one shared password (ADMIN_PASSWORD). Strict cookie, scoped to these routes.
+// Agents admin page (/admin/agents), for staff: one shared password, stored hashed in the database. Strict cookie,
+// scoped to these routes.
 const adminCookie = () => ({ httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "strict" as const, path: "/api/v1/admin" });
 const adminLoginLimiter = rateLimit({ windowMs: 15 * 60_000, limit: 10, standardHeaders: "draft-8", legacyHeaders: false, skip: skipInTests });
 const agentId = z.string().uuid("Unknown agent");
-const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
 
 app.post("/api/v1/admin/login", adminLoginLimiter, async (req, res) => {
-  if (!env.ADMIN_PASSWORD) throw new HttpError(404, "ADMIN_DISABLED", "The admin page is switched off. Set ADMIN_PASSWORD on the server to switch it on");
+  const passwordHash = await adminPasswordHash();
   const { password } = z.object({ password: z.string().max(200) }).parse(req.body);
-  const ok = secureEqual(sha256(password), sha256(env.ADMIN_PASSWORD));
+  const ok = await verifyPassword(password, passwordHash);
   await writeAudit({ eventType: "ADMIN_LOGIN", status: ok ? "SUCCESS" : "WRONG_PASSWORD", requestId: req.requestId, metadata: { ipAddress: req.ip ?? null } });
   if (!ok) throw new HttpError(401, "ADMIN_PASSWORD_WRONG", "That password isn't right");
-  res.cookie(ADMIN_COOKIE, adminToken(Date.now() + ADMIN_TTL_MS), { ...adminCookie(), maxAge: ADMIN_TTL_MS });
+  res.cookie(ADMIN_COOKIE, adminToken(Date.now() + ADMIN_TTL_MS, passwordHash), { ...adminCookie(), maxAge: ADMIN_TTL_MS });
+  res.status(204).end();
+});
+
+// Change the shared password from the page. This browser stays signed in; everyone else has to sign in again.
+app.post("/api/v1/admin/password", adminLoginLimiter, requireAdmin, async (req, res) => {
+  const { current, next } = changeAdminPasswordSchema.parse(req.body);
+  const ok = await verifyPassword(current, await adminPasswordHash());
+  await writeAudit({ eventType: "ADMIN_PASSWORD_CHANGED", status: ok ? "SUCCESS" : "WRONG_PASSWORD", requestId: req.requestId, metadata: { ipAddress: req.ip ?? null } });
+  if (!ok) throw new HttpError(422, "ADMIN_CURRENT_PASSWORD_WRONG", "Your current password isn't right");
+  const passwordHash = await setAdminPassword(next);
+  res.cookie(ADMIN_COOKIE, adminToken(Date.now() + ADMIN_TTL_MS, passwordHash), { ...adminCookie(), maxAge: ADMIN_TTL_MS });
   res.status(204).end();
 });
 

@@ -1,4 +1,5 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
+import { promisify } from "node:util";
 import { env } from "../config/env.js";
 
 export const hashMobile = (value: string) => createHmac("sha256", env.SESSION_SECRET).update(`mobile:${value}`).digest("hex");
@@ -10,6 +11,19 @@ export const secureEqual = (a: string, b: string) => {
   const left = Buffer.from(a);
   const right = Buffer.from(b);
   return left.length === right.length && timingSafeEqual(left, right);
+};
+
+// Slow, salted hash for the admin password. Format: scrypt.salt.hash (base64url)
+const scryptAsync = promisify(scrypt) as (password: string, salt: Buffer, length: number) => Promise<Buffer>;
+export const hashPassword = async (password: string) => {
+  const salt = randomBytes(16);
+  return ["scrypt", salt.toString("base64url"), (await scryptAsync(password, salt, 32)).toString("base64url")].join(".");
+};
+export const verifyPassword = async (password: string, stored: string) => {
+  const [kind, salt, hash] = stored.split(".");
+  if (kind !== "scrypt" || !salt || !hash) return false;
+  const expected = Buffer.from(hash, "base64url");
+  return timingSafeEqual(await scryptAsync(password, Buffer.from(salt, "base64url"), expected.length), expected);
 };
 
 // AES-256-GCM for values we must read back (e.g. the mobile number sent to bureaus). Format: iv.tag.ciphertext (base64url)

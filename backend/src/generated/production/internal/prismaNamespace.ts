@@ -398,6 +398,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   User: 'User',
+  AdminPassword: 'AdminPassword',
   Agent: 'Agent',
   Referral: 'Referral',
   UserProfile: 'UserProfile',
@@ -426,7 +427,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "agent" | "referral" | "userProfile" | "userConsent" | "otpTransaction" | "userSession" | "kycVerification" | "creditReport" | "creditReportPdf" | "userConcern" | "dashboardInsight" | "apiTransaction" | "supportRequest"
+    modelProps: "user" | "adminPassword" | "agent" | "referral" | "userProfile" | "userConsent" | "otpTransaction" | "userSession" | "kycVerification" | "creditReport" | "creditReportPdf" | "userConcern" | "dashboardInsight" | "apiTransaction" | "supportRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -501,6 +502,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.UserCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.UserCountAggregateOutputType> | number
+        }
+      }
+    }
+    AdminPassword: {
+      payload: Prisma.$AdminPasswordPayload<ExtArgs>
+      fields: Prisma.AdminPasswordFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AdminPasswordFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminPasswordPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AdminPasswordFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminPasswordPayload>
+        }
+        findFirst: {
+          args: Prisma.AdminPasswordFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminPasswordPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AdminPasswordFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminPasswordPayload>
+        }
+        findMany: {
+          args: Prisma.AdminPasswordFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminPasswordPayload>[]
+        }
+        create: {
+          args: Prisma.AdminPasswordCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminPasswordPayload>
+        }
+        createMany: {
+          args: Prisma.AdminPasswordCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AdminPasswordCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminPasswordPayload>[]
+        }
+        delete: {
+          args: Prisma.AdminPasswordDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminPasswordPayload>
+        }
+        update: {
+          args: Prisma.AdminPasswordUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminPasswordPayload>
+        }
+        deleteMany: {
+          args: Prisma.AdminPasswordDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AdminPasswordUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AdminPasswordUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminPasswordPayload>[]
+        }
+        upsert: {
+          args: Prisma.AdminPasswordUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminPasswordPayload>
+        }
+        aggregate: {
+          args: Prisma.AdminPasswordAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAdminPassword>
+        }
+        groupBy: {
+          args: Prisma.AdminPasswordGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminPasswordGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AdminPasswordCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminPasswordCountAggregateOutputType> | number
         }
       }
     }
@@ -1523,6 +1598,15 @@ export const UserScalarFieldEnum = {
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+export const AdminPasswordScalarFieldEnum = {
+  id: 'id',
+  passwordHash: 'passwordHash',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AdminPasswordScalarFieldEnum = (typeof AdminPasswordScalarFieldEnum)[keyof typeof AdminPasswordScalarFieldEnum]
+
+
 export const AgentScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -2170,6 +2254,7 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
+  adminPassword?: Prisma.AdminPasswordOmit
   agent?: Prisma.AgentOmit
   referral?: Prisma.ReferralOmit
   userProfile?: Prisma.UserProfileOmit

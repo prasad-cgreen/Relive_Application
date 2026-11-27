@@ -5,6 +5,7 @@ import { app } from "./app.js";
 import { audit, production } from "./database/clients.js";
 import { encrypt, hashMobile, hashPan } from "./lib/crypto.js";
 import { ProviderError } from "./lib/errors.js";
+import { setAdminPassword } from "./middleware/auth.js";
 import { providers } from "./services/providers.js";
 import { listAgents } from "./services/referral.js";
 
@@ -157,8 +158,16 @@ describe("Relive end-to-end member workflow", () => {
     }
   }, 30_000);
 
-  it("agents admin page: shared password, add agent, QR code, deactivate", async () => {
+  it("agents admin page: password in the database, add agent, QR code, deactivate, change password", async () => {
     const agentMobile = "9123456791";
+    // The test uses its own password and puts the database's back afterwards.
+    const original = await production.adminPassword.findUnique({ where: { id: 1 } });
+    await production.adminPassword.deleteMany();
+    const off = await request(app).post("/api/v1/admin/login").send({ password: "anything" }).expect(404);
+    expect(off.body.error.code).toBe("ADMIN_DISABLED");
+    await setAdminPassword("test-admin-password");
+    expect((await production.adminPassword.findUniqueOrThrow({ where: { id: 1 } })).passwordHash).not.toContain("test-admin-password");
+
     await request(app).get("/api/v1/admin/agents").expect(401);
     await request(app).post("/api/v1/admin/login").send({ password: "wrong-password" }).expect(401);
     await request(app).get("/api/v1/admin/agents").set("Cookie", "relive_admin=99999999999999.forged").expect(401);
@@ -198,11 +207,25 @@ describe("Relive end-to-end member workflow", () => {
       expect(reimported.body).toMatchObject({ added: 0, updated: 2 });
       await staff.post("/api/v1/admin/agents/import").send({ rows: [] }).expect(400);
 
+      // Changing the password: needs the current one and 12+ characters; this browser stays in, everyone else is out.
+      const colleague = request.agent(app);
+      await colleague.post("/api/v1/admin/login").send({ password: "test-admin-password" }).expect(204);
+      const wrong = await staff.post("/api/v1/admin/password").send({ current: "not-it-at-all", next: "a-new-long-password" }).expect(422);
+      expect(wrong.body.error.code).toBe("ADMIN_CURRENT_PASSWORD_WRONG");
+      await staff.post("/api/v1/admin/password").send({ current: "test-admin-password", next: "short" }).expect(400);
+      await staff.post("/api/v1/admin/password").send({ current: "test-admin-password", next: "a-new-long-password" }).expect(204);
+      await staff.get("/api/v1/admin/agents").expect(200);
+      await colleague.get("/api/v1/admin/agents").expect(401);
+      await request(app).post("/api/v1/admin/login").send({ password: "test-admin-password" }).expect(401);
+      await colleague.post("/api/v1/admin/login").send({ password: "a-new-long-password" }).expect(204);
+
       await staff.post("/api/v1/admin/logout").expect(204);
       await request(app).post("/api/v1/admin/agents/import").send({ rows }).expect(401);
       await staff.get("/api/v1/admin/agents").expect(401);
     } finally {
       await production.agent.deleteMany({ where: { mobileHash: { in: [agentMobile, "9123456792", "9123456794"].map(hashMobile) } } });
+      await production.adminPassword.deleteMany();
+      if (original) await production.adminPassword.create({ data: original });
     }
   }, 30_000);
 

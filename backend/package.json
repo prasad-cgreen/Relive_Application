@@ -13,6 +13,7 @@
     "db:seed": "tsx src/database/seed.ts",
     "journey": "tsx src/database/journey.ts",
     "agent": "tsx src/database/agent.ts",
+    "admin-password": "tsx src/database/admin-password.ts",
     "mobile": "tsx src/database/mobile.ts",
     "export-users": "tsx src/database/export-users.ts",
     "report-pdf": "tsx src/database/report-pdf.ts"

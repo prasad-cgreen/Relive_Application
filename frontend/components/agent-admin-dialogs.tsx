@@ -3,12 +3,12 @@
 // Dialogs for the agents admin page (app/admin/agents): add agents (one, or many from a CSV), an agent's QR card,
 // and the deactivate confirmation. Phones get bottom sheets, larger screens centred dialogs.
 
-import { AGENT_IMPORT_BATCH, agentCsvRows, agentSchema } from "@relive/shared";
-import { AlertCircle, Check, CheckCircle2, Copy, Download, FileSpreadsheet, Loader2, QrCode, UploadCloud, X } from "lucide-react";
+import { AGENT_IMPORT_BATCH, adminPasswordSchema, agentCsvRows, agentSchema } from "@relive/shared";
+import { AlertCircle, Check, CheckCircle2, Copy, Download, Eye, EyeOff, FileSpreadsheet, Loader2, QrCode, UploadCloud, X } from "lucide-react";
 import { Dialog, Tabs } from "radix-ui";
 import { useState } from "react";
 import { toast } from "sonner";
-import { api } from "../lib/api";
+import { api, apiErrorCode } from "../lib/api";
 
 export type Agent = { id: string; name: string; mobile: string; active: boolean; referrals: number; viaQr: number; createdAt: string };
 export type AgentQr = { agent: Agent; link: string; image: string };
@@ -389,6 +389,65 @@ export function QrDialog({ qr, onClose }: { qr: AgentQr; onClose: () => void }) 
         </button>
       </div>
       <p className={`mt-2 text-center text-xs ${ui.muted}`}>The card adds the Relive logo, the agent&apos;s name and code: ready to print or share on WhatsApp.</p>
+    </Modal>
+  );
+}
+
+// ─── Change password ─────────────────────────────────────────────────────────
+
+export function ChangePasswordDialog({ onClose, fail }: { onClose: () => void; fail: Fail }) {
+  const [show, setShow] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const submit = async (form: HTMLFormElement) => {
+    const values = new FormData(form);
+    const next = String(values.get("next"));
+    const checked = adminPasswordSchema.safeParse(next);
+    if (!checked.success) return setError(`New password: ${checked.error.issues[0]?.message ?? "not allowed"}`);
+    if (next !== values.get("confirm")) return setError("The new passwords don't match");
+    setBusy(true);
+    setError("");
+    try {
+      await api.post("/admin/password", { current: values.get("current"), next });
+      toast.success("Password changed. Anyone else signed in will need the new one.");
+      onClose();
+    } catch (requestError) {
+      setError(apiErrorCode(requestError) === "ADMIN_CURRENT_PASSWORD_WRONG" ? "Your current password isn't right" : fail(requestError));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const field = (id: string, label: string, hint?: string) => (
+    <div>
+      <label htmlFor={id} className="text-sm font-medium">{label}</label>
+      <input
+        id={id} name={id} type={show ? "text" : "password"} required maxLength={200} autoFocus={id === "current"}
+        autoComplete={id === "current" ? "current-password" : "new-password"} minLength={id === "current" ? undefined : 8}
+        onChange={() => error && setError("")} className={`${ui.input} mt-1.5`}
+      />
+      {hint && <p className={`mt-1.5 text-xs ${ui.muted}`}>{hint}</p>}
+    </div>
+  );
+
+  return (
+    <Modal open onOpenChange={(open) => !open && onClose()} title="Change the admin password" description="Everyone uses this one password. After you change it, anyone else signed in has to sign in again with the new one.">
+      <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); void submit(event.currentTarget); }}>
+        {field("current", "Current password")}
+        {field("next", "New password", "At least 8 characters. A short sentence is easy to remember and hard to guess.")}
+        {field("confirm", "New password again")}
+        <button type="button" onClick={() => setShow((value) => !value)} className={`inline-flex items-center gap-1.5 text-xs font-medium ${ui.muted} hover:text-[#0c1a13] dark:hover:text-white`}>
+          {show ? <EyeOff className="size-3.5" aria-hidden="true" /> : <Eye className="size-3.5" aria-hidden="true" />} {show ? "Hide passwords" : "Show passwords"}
+        </button>
+        {error && <ErrorText>{error}</ErrorText>}
+        <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+          <button type="button" onClick={onClose} className={ui.secondary}>Cancel</button>
+          <button type="submit" disabled={busy} className={ui.primary}>
+            {busy && <Loader2 className="size-4 animate-spin" aria-hidden="true" />} {busy ? "Saving…" : "Change password"}
+          </button>
+        </div>
+      </form>
     </Modal>
   );
 }

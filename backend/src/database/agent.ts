@@ -1,4 +1,4 @@
-// Company agents, for developers. Staff without a terminal use the admin page instead: /admin/agents (ADMIN_PASSWORD).
+// Company agents, for developers. Staff without a terminal use the admin page instead: /admin/agents.
 // An agent's mobile number is their referral code (referrals with it earn them a benefit), and each agent gets a QR
 // code that opens Relive's login with that number already filled in and locked.
 //   npm run agent -w backend -- add 9876500001 "Priya Nair"   add (or rename / reactivate) an agent and write their QR code
