@@ -2,7 +2,7 @@ import { createHmac } from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../config/env.js";
 import { production } from "../database/clients.js";
-import { hashPassword, hashToken, secureEqual } from "../lib/crypto.js";
+import { hashToken, secureEqual } from "../lib/crypto.js";
 import { HttpError } from "../lib/errors.js";
 
 declare global {
@@ -22,33 +22,32 @@ export async function findSession(req: Request) {
   return session;
 }
 
-// Agents admin page: one shared password, stored hashed in the admin_password table. The sign-in cookie is
-// "<expiry>.<signature>"; the signature covers the stored hash, so changing the password signs everyone else out.
+// Agents admin page: one shared password, stored readable in the admin_password table. The sign-in cookie is
+// "<expiry>.<signature>"; the signature covers the password (it is never in the cookie itself), so changing the password
+// signs everyone else out.
 export const ADMIN_COOKIE = "relive_admin";
 export const ADMIN_TTL_MS = 8 * 60 * 60_000;
-export const adminToken = (expiresAt: number, passwordHash: string) =>
-  `${expiresAt}.${createHmac("sha256", env.SESSION_SECRET).update(`admin:${expiresAt}:${passwordHash}`).digest("base64url")}`;
+export const adminToken = (expiresAt: number, password: string) =>
+  `${expiresAt}.${createHmac("sha256", env.SESSION_SECRET).update(`admin:${expiresAt}:${password}`).digest("base64url")}`;
 
-/** The stored admin password hash; no password yet = the admin page is switched off. */
-export async function adminPasswordHash() {
+/** The stored admin password; none yet = the admin page is switched off. */
+export async function adminPassword() {
   const row = await production.adminPassword.findUnique({ where: { id: 1 } });
   if (!row) throw new HttpError(404, "ADMIN_DISABLED", "The admin page has no password yet. A developer can set one with: npm run admin-password -w backend");
-  return row.passwordHash;
+  return row.password;
 }
 
-/** Saves a new admin password (check it with adminPasswordSchema first) and returns its hash. */
+/** Saves a new admin password (check it with adminPasswordSchema first). */
 export async function setAdminPassword(password: string) {
-  const passwordHash = await hashPassword(password);
-  await production.adminPassword.upsert({ where: { id: 1 }, create: { id: 1, passwordHash }, update: { passwordHash } });
-  return passwordHash;
+  await production.adminPassword.upsert({ where: { id: 1 }, create: { id: 1, password }, update: { password } });
 }
 
 export async function requireAdmin(req: Request, _res: Response, next: NextFunction) {
   try {
-    const passwordHash = await adminPasswordHash();
+    const password = await adminPassword();
     const token = req.cookies?.[ADMIN_COOKIE] as string | undefined;
     const expiresAt = Number(token?.split(".")[0]);
-    if (!token || !(expiresAt > Date.now()) || !secureEqual(token, adminToken(expiresAt, passwordHash))) {
+    if (!token || !(expiresAt > Date.now()) || !secureEqual(token, adminToken(expiresAt, password))) {
       throw new HttpError(401, "ADMIN_AUTH_REQUIRED", "Please enter the admin password");
     }
     next();

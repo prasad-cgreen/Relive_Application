@@ -150,6 +150,13 @@ describe("Relive end-to-end member workflow", () => {
       expect(await production.referral.findUnique({ where: { referredUserId: b.user.id } })).toMatchObject({ agentMobileHash: hashMobile(mobile), agentUserId: userId, source: "MANUAL" });
       // The agent's referral shows on the admin page's count.
       expect((await listAgents()).find((agent) => agent.id === agentRow.id)).toMatchObject({ referrals: 1, viaQr: 1 });
+      // A number that becomes an agent's later: referrals from before that don't count as the agent's.
+      const later = await production.agent.create({ data: { name: "Later Agent", mobileHash: hashMobile(mobile), mobileLast4: mobile.slice(-4), mobileEncrypted: encrypt(mobile) } });
+      try {
+        expect((await listAgents()).find((agent) => agent.id === later.id)).toMatchObject({ referrals: 0, viaQr: 0 });
+      } finally {
+        await production.agent.delete({ where: { id: later.id } });
+      }
     } finally {
       await audit.auditLog.deleteMany({ where: { userRef: { in: users } } });
       await audit.onboardingJourney.deleteMany({ where: { userRef: { in: users } } });
@@ -166,7 +173,7 @@ describe("Relive end-to-end member workflow", () => {
     const off = await request(app).post("/api/v1/admin/login").send({ password: "anything" }).expect(404);
     expect(off.body.error.code).toBe("ADMIN_DISABLED");
     await setAdminPassword("test-admin-password");
-    expect((await production.adminPassword.findUniqueOrThrow({ where: { id: 1 } })).passwordHash).not.toContain("test-admin-password");
+    expect(await production.adminPassword.findUniqueOrThrow({ where: { id: 1 } })).toMatchObject({ password: "test-admin-password" });
 
     await request(app).get("/api/v1/admin/agents").expect(401);
     await request(app).post("/api/v1/admin/login").send({ password: "wrong-password" }).expect(401);
@@ -206,6 +213,13 @@ describe("Relive end-to-end member workflow", () => {
       const reimported = await staff.post("/api/v1/admin/agents/import").send({ rows }).expect(200);
       expect(reimported.body).toMatchObject({ added: 0, updated: 2 });
       await staff.post("/api/v1/admin/agents/import").send({ rows: [] }).expect(400);
+
+      // Delete: gone from the list; deleting again is a 404.
+      const bulkThree = await production.agent.findUniqueOrThrow({ where: { mobileHash: hashMobile("9123456794") } });
+      await staff.delete(`/api/v1/admin/agents/${bulkThree.id}`).expect(204);
+      expect((await staff.get("/api/v1/admin/agents").expect(200)).body.agents.some((a: { id: string }) => a.id === bulkThree.id)).toBe(false);
+      await staff.delete(`/api/v1/admin/agents/${bulkThree.id}`).expect(404);
+      await request(app).delete(`/api/v1/admin/agents/${added.body.id}`).expect(401);
 
       // Changing the password: needs the current one and 12+ characters; this browser stays in, everyone else is out.
       const colleague = request.agent(app);

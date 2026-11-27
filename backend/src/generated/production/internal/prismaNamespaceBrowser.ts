@@ -104,7 +104,7 @@ export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof User
 
 export const AdminPasswordScalarFieldEnum = {
   id: 'id',
-  passwordHash: 'passwordHash',
+  password: 'password',
   updatedAt: 'updatedAt'
 } as const
 

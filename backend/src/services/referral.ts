@@ -23,19 +23,21 @@ export function saveAgent(name: string, mobile: string) {
 }
 
 /**
- * Every agent, newest first, with the users they referred (referrals made with the agent's number): all of them, and
- * those who signed up through the agent's QR code.
+ * Every agent, newest first, with the users they referred: referrals made with the agent's number since they were added
+ * as an agent (earlier ones, from when the number was an ordinary user's, don't count), and how many came via their QR.
  */
 export async function listAgents() {
-  const agents = await production.agent.findMany({ orderBy: { createdAt: "desc" } });
-  const counts = await production.referral.groupBy({
-    by: ["agentMobileHash", "source"], where: { agentMobileHash: { in: agents.map((agent) => agent.mobileHash) } }, _count: { _all: true },
-  });
-  const count = (hash: string, source?: "QR") =>
-    counts.filter((row) => row.agentMobileHash === hash && (!source || row.source === source)).reduce((sum, row) => sum + row._count._all, 0);
+  const [agents, counts] = await Promise.all([
+    production.agent.findMany({ orderBy: { createdAt: "desc" } }),
+    production.$queryRaw<{ id: string; referrals: number; via_qr: number }[]>`
+      SELECT a.id::text AS id, count(*)::int AS referrals, (count(*) FILTER (WHERE r.source = 'QR'))::int AS via_qr
+      FROM agents a JOIN referrals r ON r.agent_mobile_hash = a.mobile_hash AND r.created_at >= a.created_at
+      GROUP BY a.id`,
+  ]);
+  const byAgent = new Map(counts.map((row) => [row.id, row]));
   return agents.map((agent) => ({
     id: agent.id, name: agent.name, mobile: decrypt(agent.mobileEncrypted), active: agent.active,
-    referrals: count(agent.mobileHash), viaQr: count(agent.mobileHash, "QR"), createdAt: agent.createdAt.toISOString(),
+    referrals: byAgent.get(agent.id)?.referrals ?? 0, viaQr: byAgent.get(agent.id)?.via_qr ?? 0, createdAt: agent.createdAt.toISOString(),
   }));
 }
 

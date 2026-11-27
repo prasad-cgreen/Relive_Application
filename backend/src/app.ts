@@ -13,9 +13,9 @@ import { z, ZodError } from "zod";
 import { env } from "./config/env.js";
 import { audit, production } from "./database/clients.js";
 import {
-  ADMIN_COOKIE, ADMIN_TTL_MS, adminPasswordHash, adminToken, findSession, requireAdmin, requireAuth, SESSION_COOKIE, setAdminPassword,
+  ADMIN_COOKIE, ADMIN_TTL_MS, adminPassword, adminToken, findSession, requireAdmin, requireAuth, SESSION_COOKIE, setAdminPassword,
 } from "./middleware/auth.js";
-import { decrypt, encrypt, hashMobile, hashOtp, hashPan, hashToken, newToken, secureEqual, verifyPassword } from "./lib/crypto.js";
+import { decrypt, encrypt, hashMobile, hashOtp, hashPan, hashToken, newToken, samePassword, secureEqual } from "./lib/crypto.js";
 import { HttpError, ProviderError } from "./lib/errors.js";
 import { stepForStage, trackJourney, writeAudit } from "./services/audit.js";
 import { maskPanPhone, panPhoneMatches, providers, type MockScenario } from "./services/providers.js";
@@ -676,30 +676,30 @@ app.get("/api/v1/dashboard", requireAuth, async (req, res) => {
   res.json(await getCreditOverview(userId));
 });
 
-// Agents admin page (/admin/agents), for staff: one shared password, stored hashed in the database. Strict cookie,
+// Agents admin page (/admin/agents), for staff: one shared password, stored in the database. Strict cookie,
 // scoped to these routes.
 const adminCookie = () => ({ httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "strict" as const, path: "/api/v1/admin" });
 const adminLoginLimiter = rateLimit({ windowMs: 15 * 60_000, limit: 10, standardHeaders: "draft-8", legacyHeaders: false, skip: skipInTests });
 const agentId = z.string().uuid("Unknown agent");
 
 app.post("/api/v1/admin/login", adminLoginLimiter, async (req, res) => {
-  const passwordHash = await adminPasswordHash();
+  const stored = await adminPassword();
   const { password } = z.object({ password: z.string().max(200) }).parse(req.body);
-  const ok = await verifyPassword(password, passwordHash);
+  const ok = samePassword(password, stored);
   await writeAudit({ eventType: "ADMIN_LOGIN", status: ok ? "SUCCESS" : "WRONG_PASSWORD", requestId: req.requestId, metadata: { ipAddress: req.ip ?? null } });
   if (!ok) throw new HttpError(401, "ADMIN_PASSWORD_WRONG", "That password isn't right");
-  res.cookie(ADMIN_COOKIE, adminToken(Date.now() + ADMIN_TTL_MS, passwordHash), { ...adminCookie(), maxAge: ADMIN_TTL_MS });
+  res.cookie(ADMIN_COOKIE, adminToken(Date.now() + ADMIN_TTL_MS, stored), { ...adminCookie(), maxAge: ADMIN_TTL_MS });
   res.status(204).end();
 });
 
 // Change the shared password from the page. This browser stays signed in; everyone else has to sign in again.
 app.post("/api/v1/admin/password", adminLoginLimiter, requireAdmin, async (req, res) => {
   const { current, next } = changeAdminPasswordSchema.parse(req.body);
-  const ok = await verifyPassword(current, await adminPasswordHash());
+  const ok = samePassword(current, await adminPassword());
   await writeAudit({ eventType: "ADMIN_PASSWORD_CHANGED", status: ok ? "SUCCESS" : "WRONG_PASSWORD", requestId: req.requestId, metadata: { ipAddress: req.ip ?? null } });
   if (!ok) throw new HttpError(422, "ADMIN_CURRENT_PASSWORD_WRONG", "Your current password isn't right");
-  const passwordHash = await setAdminPassword(next);
-  res.cookie(ADMIN_COOKIE, adminToken(Date.now() + ADMIN_TTL_MS, passwordHash), { ...adminCookie(), maxAge: ADMIN_TTL_MS });
+  await setAdminPassword(next);
+  res.cookie(ADMIN_COOKIE, adminToken(Date.now() + ADMIN_TTL_MS, next), { ...adminCookie(), maxAge: ADMIN_TTL_MS });
   res.status(204).end();
 });
 
@@ -741,6 +741,17 @@ app.post("/api/v1/admin/agents/:id/active", requireAdmin, async (req, res) => {
   const { count } = await production.agent.updateMany({ where: { id }, data: { active } });
   if (!count) throw new HttpError(404, "AGENT_NOT_FOUND", "This agent no longer exists");
   await writeAudit({ eventType: active ? "AGENT_ACTIVATED" : "AGENT_DEACTIVATED", status: "SUCCESS", requestId: req.requestId, metadata: { agentId: id } });
+  res.status(204).end();
+});
+
+// Removes an agent. Referrals made with their number stay (they belong to the users who signed up) but no longer count
+// as an agent's; adding the same number again counts them again.
+app.delete("/api/v1/admin/agents/:id", requireAdmin, async (req, res) => {
+  const id = agentId.parse(req.params.id);
+  const agent = await production.agent.findUnique({ where: { id }, select: { mobileLast4: true } });
+  const { count } = await production.agent.deleteMany({ where: { id } });
+  if (!agent || !count) throw new HttpError(404, "AGENT_NOT_FOUND", "This agent no longer exists");
+  await writeAudit({ eventType: "AGENT_DELETED", status: "SUCCESS", requestId: req.requestId, metadata: { agentId: id, mobileLast4: agent.mobileLast4 } });
   res.status(204).end();
 });
 

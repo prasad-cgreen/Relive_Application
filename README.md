@@ -38,7 +38,7 @@ Any other valid mobile number also works as a new user. PAN `AAAAA0000A` simulat
 
 The referral code is the referrer's mobile number, entered (optionally) under PAN or in the name-as-on-PAN form. A company agent's number earns the agent a benefit; any other Relive user's number is recorded without one. Unknown numbers and the user's own number are rejected; a user's first referral is kept. Each agent has a QR code that opens the login with their number filled in and locked.
 
-**Staff (no terminal):** open `/admin/agents` on the website (e.g. `https://relive.co.in/admin/agents`) and enter the admin password. There you add an agent (name + mobile) or many at once from a CSV file (a name column and a mobile column; a template is on the page; bad rows are listed by row number and re-uploading is safe), download their QR code, see how many users each referred and how many of those came through their QR code, and deactivate or reactivate them. There is one shared password (8+ characters), stored hashed in the database (`admin_password`), so it is the same for the live site and any local copy using the same database. Staff change it on the page (**Password**, top right); a developer sets the first one, or resets a forgotten one, with `npm run admin-password -w backend` (prints a strong random password once) or `npm run admin-password -w backend -- "<new password>"`. Changing it signs everyone else out. Sign-ins, wrong passwords and every change are written to the audit log.
+**Staff (no terminal):** open `/admin/agents` on the website (e.g. `https://relive.co.in/admin/agents`) and enter the admin password. There you add an agent (name + mobile) or many at once from a CSV file (a name column and a mobile column; a template is on the page; bad rows are listed by row number and re-uploading is safe), download their QR code, see how many users each referred and how many of those came through their QR code, and deactivate or reactivate them. There is one shared password (8+ characters), stored readable in the database (`admin_password` table, `password` column; anyone with database access can see it), so it is the same for the live site and any local copy using the same database. Staff change it on the page (**Password**, top right); a developer sets the first one, or resets a forgotten one, with `npm run admin-password -w backend` (makes up a strong random password and prints it) or `npm run admin-password -w backend -- "<new password>"`. Changing it signs everyone else out. Sign-ins, wrong passwords and every change are written to the audit log.
 
 **Developers** can do the same from the terminal:
 
@@ -58,7 +58,7 @@ SELECT a.name, a.mobile_last4, a.active,
        count(r.id) FILTER (WHERE r.source = 'QR') AS users_via_qr,
        count(r.id) AS total_referrals
 FROM agents a
-LEFT JOIN referrals r ON r.agent_mobile_hash = a.mobile_hash
+LEFT JOIN referrals r ON r.agent_mobile_hash = a.mobile_hash AND r.created_at >= a.created_at  -- only since they became an agent
 GROUP BY a.id
 ORDER BY users_via_qr DESC, a.name;
 ```

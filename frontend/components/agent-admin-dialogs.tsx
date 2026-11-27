@@ -452,6 +452,39 @@ export function ChangePasswordDialog({ onClose, fail }: { onClose: () => void; f
   );
 }
 
+// ─── Delete ──────────────────────────────────────────────────────────────────
+
+export function DeleteDialog({ agent, onClose, onConfirm, onDeactivate }: {
+  agent: Agent; onClose: () => void; onConfirm: () => Promise<void>; onDeactivate: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <Modal
+      open onOpenChange={(open) => !open && onClose()} title={`Delete ${agent.name}?`}
+      description="They're removed from this list and their QR code stops working. The users they referred keep their accounts."
+    >
+      {agent.referrals > 0 && (
+        <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <p>
+            {agent.name} has <strong>{plural(agent.referrals, "referral")}</strong>. Deleting hides them from this page, so they no longer
+            count towards {agent.name.split(" ")[0]}&apos;s benefit.{agent.active ? " To keep the count, deactivate them instead." : ""}
+          </p>
+        </div>
+      )}
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <button type="button" onClick={onClose} className={ui.secondary}>Cancel</button>
+        {agent.referrals > 0 && agent.active && (
+          <button type="button" onClick={onDeactivate} className={ui.secondary}>Deactivate instead</button>
+        )}
+        <button type="button" disabled={busy} onClick={async () => { setBusy(true); try { await onConfirm(); } finally { setBusy(false); } }} className={ui.danger}>
+          {busy && <Loader2 className="size-4 animate-spin" aria-hidden="true" />} Delete agent
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
 // ─── Deactivate ──────────────────────────────────────────────────────────────
 
 export function DeactivateDialog({ agent, onClose, onConfirm }: { agent: Agent; onClose: () => void; onConfirm: () => Promise<void> }) {

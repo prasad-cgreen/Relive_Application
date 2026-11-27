@@ -1,5 +1,5 @@
-// Sets the agents admin page's shared password. It is stored hashed in the database (admin_password); staff can change
-// it later on the page. Setting it signs everyone out of the admin page.
+// Sets the agents admin page's shared password. It is stored readable in the database (admin_password table); staff can
+// change it later on the page. Setting it signs everyone out of the admin page.
 //   npm run admin-password -w backend -- "<new password>"   use this password (8+ characters)
 //   npm run admin-password -w backend                        make up a strong one and print it once
 import { randomBytes } from "node:crypto";
@@ -14,7 +14,7 @@ try {
   if (!password.success) throw new Error(password.error.issues[0]!.message);
   await setAdminPassword(password.data);
   await writeAudit({ eventType: "ADMIN_PASSWORD_CHANGED", status: "SUCCESS", metadata: { via: "CLI" } });
-  console.log(given ? "Admin password set." : `Admin password set to: ${password.data}\nSave it somewhere safe: it's stored hashed and can't be shown again.`);
+  console.log(given ? "Admin password set." : `Admin password set to: ${password.data}\nIt's also in the database: admin_password table, password column.`);
   console.log("Anyone signed in to /admin/agents has been signed out.");
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);

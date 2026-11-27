@@ -91,12 +91,13 @@ model User {
 
 /// A company agent. The referral code is a mobile number: an agent's earns the agent a referral benefit; any other
 /// Relive user's is recorded without one. Managed with `npm run agent -w backend` (which also makes the agent's QR code).
-// The agents admin page's shared password: one row (id 1), a salted scrypt hash. Set it with
-// `npm run admin-password -w backend`; staff change it on the page. Changing it signs everyone else out.
+// The agents admin page's shared password: one row (id 1), stored readable (not hashed) at the owner's request, so
+// anyone who can read this database can read it. Set it with `npm run admin-password -w backend`; staff change it on
+// the page. Changing it signs everyone else out.
 model AdminPassword {
-  id           Int      @id @default(1)
-  passwordHash String   @map("password_hash")
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id        Int      @id @default(1)
+  password  String
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@map("admin_password")
 }

@@ -37,19 +37,19 @@ export type AdminPasswordSumAggregateOutputType = {
 
 export type AdminPasswordMinAggregateOutputType = {
   id: number | null
-  passwordHash: string | null
+  password: string | null
   updatedAt: Date | null
 }
 
 export type AdminPasswordMaxAggregateOutputType = {
   id: number | null
-  passwordHash: string | null
+  password: string | null
   updatedAt: Date | null
 }
 
 export type AdminPasswordCountAggregateOutputType = {
   id: number
-  passwordHash: number
+  password: number
   updatedAt: number
   _all: number
 }
@@ -65,19 +65,19 @@ export type AdminPasswordSumAggregateInputType = {
 
 export type AdminPasswordMinAggregateInputType = {
   id?: true
-  passwordHash?: true
+  password?: true
   updatedAt?: true
 }
 
 export type AdminPasswordMaxAggregateInputType = {
   id?: true
-  passwordHash?: true
+  password?: true
   updatedAt?: true
 }
 
 export type AdminPasswordCountAggregateInputType = {
   id?: true
-  passwordHash?: true
+  password?: true
   updatedAt?: true
   _all?: true
 }
@@ -170,7 +170,7 @@ export type AdminPasswordGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 
 export type AdminPasswordGroupByOutputType = {
   id: number
-  passwordHash: string
+  password: string
   updatedAt: Date
   _count: AdminPasswordCountAggregateOutputType | null
   _avg: AdminPasswordAvgAggregateOutputType | null
@@ -199,13 +199,13 @@ export type AdminPasswordWhereInput = {
   OR?: Prisma.AdminPasswordWhereInput[]
   NOT?: Prisma.AdminPasswordWhereInput | Prisma.AdminPasswordWhereInput[]
   id?: Prisma.IntFilter<"AdminPassword"> | number
-  passwordHash?: Prisma.StringFilter<"AdminPassword"> | string
+  password?: Prisma.StringFilter<"AdminPassword"> | string
   updatedAt?: Prisma.DateTimeFilter<"AdminPassword"> | Date | string
 }
 
 export type AdminPasswordOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -214,13 +214,13 @@ export type AdminPasswordWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.AdminPasswordWhereInput | Prisma.AdminPasswordWhereInput[]
   OR?: Prisma.AdminPasswordWhereInput[]
   NOT?: Prisma.AdminPasswordWhereInput | Prisma.AdminPasswordWhereInput[]
-  passwordHash?: Prisma.StringFilter<"AdminPassword"> | string
+  password?: Prisma.StringFilter<"AdminPassword"> | string
   updatedAt?: Prisma.DateTimeFilter<"AdminPassword"> | Date | string
 }, "id">
 
 export type AdminPasswordOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.AdminPasswordCountOrderByAggregateInput
   _avg?: Prisma.AdminPasswordAvgOrderByAggregateInput
@@ -234,55 +234,55 @@ export type AdminPasswordScalarWhereWithAggregatesInput = {
   OR?: Prisma.AdminPasswordScalarWhereWithAggregatesInput[]
   NOT?: Prisma.AdminPasswordScalarWhereWithAggregatesInput | Prisma.AdminPasswordScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"AdminPassword"> | number
-  passwordHash?: Prisma.StringWithAggregatesFilter<"AdminPassword"> | string
+  password?: Prisma.StringWithAggregatesFilter<"AdminPassword"> | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"AdminPassword"> | Date | string
 }
 
 export type AdminPasswordCreateInput = {
   id?: number
-  passwordHash: string
+  password: string
   updatedAt?: Date | string
 }
 
 export type AdminPasswordUncheckedCreateInput = {
   id?: number
-  passwordHash: string
+  password: string
   updatedAt?: Date | string
 }
 
 export type AdminPasswordUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type AdminPasswordUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type AdminPasswordCreateManyInput = {
   id?: number
-  passwordHash: string
+  password: string
   updatedAt?: Date | string
 }
 
 export type AdminPasswordUpdateManyMutationInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type AdminPasswordUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type AdminPasswordCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -292,13 +292,13 @@ export type AdminPasswordAvgOrderByAggregateInput = {
 
 export type AdminPasswordMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type AdminPasswordMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -310,36 +310,36 @@ export type AdminPasswordSumOrderByAggregateInput = {
 
 export type AdminPasswordSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  passwordHash?: boolean
+  password?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["adminPassword"]>
 
 export type AdminPasswordSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  passwordHash?: boolean
+  password?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["adminPassword"]>
 
 export type AdminPasswordSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  passwordHash?: boolean
+  password?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["adminPassword"]>
 
 export type AdminPasswordSelectScalar = {
   id?: boolean
-  passwordHash?: boolean
+  password?: boolean
   updatedAt?: boolean
 }
 
-export type AdminPasswordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "passwordHash" | "updatedAt", ExtArgs["result"]["adminPassword"]>
+export type AdminPasswordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "password" | "updatedAt", ExtArgs["result"]["adminPassword"]>
 
 export type $AdminPasswordPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AdminPassword"
   objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    passwordHash: string
+    password: string
     updatedAt: Date
   }, ExtArgs["result"]["adminPassword"]>
   composites: {}
@@ -765,7 +765,7 @@ export interface Prisma__AdminPasswordClient<T, Null = never, ExtArgs extends ru
  */
 export interface AdminPasswordFieldRefs {
   readonly id: Prisma.FieldRef<"AdminPassword", 'Int'>
-  readonly passwordHash: Prisma.FieldRef<"AdminPassword", 'String'>
+  readonly password: Prisma.FieldRef<"AdminPassword", 'String'>
   readonly updatedAt: Prisma.FieldRef<"AdminPassword", 'DateTime'>
 }
     

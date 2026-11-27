@@ -1,18 +1,18 @@
 "use client";
 
 import {
-  ArrowDownWideNarrow, Eye, EyeOff, KeyRound, Link2, Loader2, LogOut, MoreHorizontal, Plus, QrCode, Search, ShieldCheck, Trophy, Upload,
+  ArrowDownWideNarrow, Eye, EyeOff, KeyRound, Link2, Trash2, Loader2, LogOut, MoreHorizontal, Plus, QrCode, Search, ShieldCheck, Trophy, Upload,
   UserCheck, Users, UserX, X,
 } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
 import {
-  AddAgentsDialog, ChangePasswordDialog, DeactivateDialog, formatMobile, plural, QrDialog, ui, type Agent, type AgentQr,
+  AddAgentsDialog, ChangePasswordDialog, DeactivateDialog, DeleteDialog, formatMobile, plural, QrDialog, ui, type Agent, type AgentQr,
 } from "../../../components/agent-admin-dialogs";
 import { api, apiErrorCode, apiMessage } from "../../../lib/api";
 
-// Staff page for company agents (one shared password, stored hashed in the database; changed on this page): add agents one by one or from a
+// Staff page for company agents (one shared password, stored in the database; changed on this page): add agents one by one or from a
 // CSV, share their QR codes, see who they referred, deactivate them. An agent's mobile number is their referral code.
 
 type Filter = "all" | "active" | "inactive";
@@ -31,6 +31,7 @@ export default function AgentsAdminPage() {
   const [adding, setAdding] = useState<"one" | "csv" | null>(null);
   const [qr, setQr] = useState<AgentQr | null>(null);
   const [deactivating, setDeactivating] = useState<Agent | null>(null);
+  const [deleting, setDeleting] = useState<Agent | null>(null);
   const [changingPassword, setChangingPassword] = useState(false);
   const [busyId, setBusyId] = useState("");
 
@@ -41,6 +42,7 @@ export default function AgentsAdminPage() {
       setAdding(null);
       setQr(null);
       setDeactivating(null);
+      setDeleting(null);
       setChangingPassword(false);
       return "Your admin sign-in has ended. Please sign in again.";
     }
@@ -86,6 +88,15 @@ export default function AgentsAdminPage() {
       await load(); // before the dialog closes, so the row never shows the old status
       setDeactivating(null);
       toast.success(active ? `${agent.name} is active again` : `${agent.name} deactivated`);
+    } catch (error) { toast.error(fail(error)); }
+  };
+
+  const remove = async (agent: Agent) => {
+    try {
+      await api.delete(`/admin/agents/${agent.id}`);
+      await load();
+      setDeleting(null);
+      toast.success(`${agent.name} deleted`);
     } catch (error) { toast.error(fail(error)); }
   };
 
@@ -265,7 +276,7 @@ export default function AgentsAdminPage() {
                           <td className={`px-3 py-3 text-right tabular-nums ${ui.muted}`}>{agent.viaQr.toLocaleString("en-IN")}</td>
                           <td className="px-3 py-3"><Status active={agent.active} /></td>
                           <td className="py-3 pl-3 pr-5">
-                            <Actions agent={agent} busy={busyId === agent.id} onQr={showQr} onCopy={copyLink} onDeactivate={setDeactivating} onReactivate={(a) => void setActive(a, true)} />
+                            <Actions agent={agent} busy={busyId === agent.id} onQr={showQr} onCopy={copyLink} onDeactivate={setDeactivating} onReactivate={(a) => void setActive(a, true)} onDelete={setDeleting} />
                           </td>
                         </tr>
                       ))}
@@ -285,7 +296,7 @@ export default function AgentsAdminPage() {
                           <div><dt className={`text-[11px] ${ui.muted}`}>Via QR</dt><dd className="font-semibold tabular-nums">{agent.viaQr}</dd></div>
                           <div><dt className={`text-[11px] ${ui.muted}`}>Code</dt><dd className="truncate text-xs font-medium tabular-nums leading-6">{agent.mobile}</dd></div>
                         </dl>
-                        <div className="mt-3"><Actions agent={agent} busy={busyId === agent.id} onQr={showQr} onCopy={copyLink} onDeactivate={setDeactivating} onReactivate={(a) => void setActive(a, true)} wide /></div>
+                        <div className="mt-3"><Actions agent={agent} busy={busyId === agent.id} onQr={showQr} onCopy={copyLink} onDeactivate={setDeactivating} onReactivate={(a) => void setActive(a, true)} onDelete={setDeleting} wide /></div>
                       </li>
                     ))}
                   </ul>
@@ -306,6 +317,12 @@ export default function AgentsAdminPage() {
       )}
       {qr && <QrDialog qr={qr} onClose={() => setQr(null)} />}
       {changingPassword && <ChangePasswordDialog fail={fail} onClose={() => setChangingPassword(false)} />}
+      {deleting && (
+        <DeleteDialog
+          agent={deleting} onClose={() => setDeleting(null)} onConfirm={() => remove(deleting)}
+          onDeactivate={() => { setDeactivating(deleting); setDeleting(null); }}
+        />
+      )}
       {deactivating && <DeactivateDialog agent={deactivating} onClose={() => setDeactivating(null)} onConfirm={() => setActive(deactivating, false)} />}
     </div>
   );
@@ -350,9 +367,9 @@ function Status({ active }: { active: boolean }) {
   );
 }
 
-function Actions({ agent, busy, onQr, onCopy, onDeactivate, onReactivate, wide }: {
-  agent: Agent; busy: boolean; wide?: boolean;
-  onQr: (agent: Agent) => void; onCopy: (agent: Agent) => void; onDeactivate: (agent: Agent) => void; onReactivate: (agent: Agent) => void;
+function Actions({ agent, busy, onQr, onCopy, onDeactivate, onReactivate, onDelete, wide }: {
+  agent: Agent; busy: boolean; wide?: boolean; onQr: (agent: Agent) => void; onCopy: (agent: Agent) => void;
+  onDeactivate: (agent: Agent) => void; onReactivate: (agent: Agent) => void; onDelete: (agent: Agent) => void;
 }) {
   const item = "flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm outline-none data-[highlighted]:bg-[#f2f6f4] dark:data-[highlighted]:bg-[#16291e]";
   return (
@@ -373,12 +390,13 @@ function Actions({ agent, busy, onQr, onCopy, onDeactivate, onReactivate, wide }
             <DropdownMenu.Item className={item} onSelect={() => onCopy(agent)}><Link2 className="size-4 text-[#5d7367]" /> Copy referral link</DropdownMenu.Item>
             <DropdownMenu.Separator className="my-1 h-px bg-[#eef3f0] dark:bg-[#16291e]" />
             {agent.active ? (
-              <DropdownMenu.Item className={`${item} text-red-700 data-[highlighted]:bg-red-50 dark:text-red-400 dark:data-[highlighted]:bg-red-950/40`} onSelect={() => onDeactivate(agent)}>
-                <UserX className="size-4" /> Deactivate
-              </DropdownMenu.Item>
+              <DropdownMenu.Item className={item} onSelect={() => onDeactivate(agent)}><UserX className="size-4 text-[#5d7367]" /> Deactivate</DropdownMenu.Item>
             ) : (
               <DropdownMenu.Item className={item} onSelect={() => onReactivate(agent)}><UserCheck className="size-4 text-[#5d7367]" /> Reactivate</DropdownMenu.Item>
             )}
+            <DropdownMenu.Item className={`${item} text-red-700 data-[highlighted]:bg-red-50 dark:text-red-400 dark:data-[highlighted]:bg-red-950/40`} onSelect={() => onDelete(agent)}>
+              <Trash2 className="size-4" /> Delete
+            </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
