@@ -20,8 +20,22 @@ export type ReferralModel = runtime.Types.Result.DefaultSelection<Prisma.$Referr
 
 export type AggregateReferral = {
   _count: ReferralCountAggregateOutputType | null
+  _avg: ReferralAvgAggregateOutputType | null
+  _sum: ReferralSumAggregateOutputType | null
   _min: ReferralMinAggregateOutputType | null
   _max: ReferralMaxAggregateOutputType | null
+}
+
+export type ReferralAvgAggregateOutputType = {
+  scanLat: number | null
+  scanLng: number | null
+  scanAccuracyM: number | null
+}
+
+export type ReferralSumAggregateOutputType = {
+  scanLat: number | null
+  scanLng: number | null
+  scanAccuracyM: number | null
 }
 
 export type ReferralMinAggregateOutputType = {
@@ -32,6 +46,11 @@ export type ReferralMinAggregateOutputType = {
   agentMobileEncrypted: string | null
   agentMobileLast4: string | null
   source: $Enums.ReferralSource | null
+  scanLat: number | null
+  scanLng: number | null
+  scanAccuracyM: number | null
+  scanAddress: string | null
+  scanPlaceLabel: string | null
   createdAt: Date | null
 }
 
@@ -43,6 +62,11 @@ export type ReferralMaxAggregateOutputType = {
   agentMobileEncrypted: string | null
   agentMobileLast4: string | null
   source: $Enums.ReferralSource | null
+  scanLat: number | null
+  scanLng: number | null
+  scanAccuracyM: number | null
+  scanAddress: string | null
+  scanPlaceLabel: string | null
   createdAt: Date | null
 }
 
@@ -54,10 +78,27 @@ export type ReferralCountAggregateOutputType = {
   agentMobileEncrypted: number
   agentMobileLast4: number
   source: number
+  scanLat: number
+  scanLng: number
+  scanAccuracyM: number
+  scanAddress: number
+  scanPlaceLabel: number
   createdAt: number
   _all: number
 }
 
+
+export type ReferralAvgAggregateInputType = {
+  scanLat?: true
+  scanLng?: true
+  scanAccuracyM?: true
+}
+
+export type ReferralSumAggregateInputType = {
+  scanLat?: true
+  scanLng?: true
+  scanAccuracyM?: true
+}
 
 export type ReferralMinAggregateInputType = {
   id?: true
@@ -67,6 +108,11 @@ export type ReferralMinAggregateInputType = {
   agentMobileEncrypted?: true
   agentMobileLast4?: true
   source?: true
+  scanLat?: true
+  scanLng?: true
+  scanAccuracyM?: true
+  scanAddress?: true
+  scanPlaceLabel?: true
   createdAt?: true
 }
 
@@ -78,6 +124,11 @@ export type ReferralMaxAggregateInputType = {
   agentMobileEncrypted?: true
   agentMobileLast4?: true
   source?: true
+  scanLat?: true
+  scanLng?: true
+  scanAccuracyM?: true
+  scanAddress?: true
+  scanPlaceLabel?: true
   createdAt?: true
 }
 
@@ -89,6 +140,11 @@ export type ReferralCountAggregateInputType = {
   agentMobileEncrypted?: true
   agentMobileLast4?: true
   source?: true
+  scanLat?: true
+  scanLng?: true
+  scanAccuracyM?: true
+  scanAddress?: true
+  scanPlaceLabel?: true
   createdAt?: true
   _all?: true
 }
@@ -131,6 +187,18 @@ export type ReferralAggregateArgs<ExtArgs extends runtime.Types.Extensions.Inter
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ReferralAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ReferralSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ReferralMinAggregateInputType
@@ -161,6 +229,8 @@ export type ReferralGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   _count?: ReferralCountAggregateInputType | true
+  _avg?: ReferralAvgAggregateInputType
+  _sum?: ReferralSumAggregateInputType
   _min?: ReferralMinAggregateInputType
   _max?: ReferralMaxAggregateInputType
 }
@@ -173,8 +243,15 @@ export type ReferralGroupByOutputType = {
   agentMobileEncrypted: string | null
   agentMobileLast4: string
   source: $Enums.ReferralSource
+  scanLat: number | null
+  scanLng: number | null
+  scanAccuracyM: number | null
+  scanAddress: string | null
+  scanPlaceLabel: string | null
   createdAt: Date
   _count: ReferralCountAggregateOutputType | null
+  _avg: ReferralAvgAggregateOutputType | null
+  _sum: ReferralSumAggregateOutputType | null
   _min: ReferralMinAggregateOutputType | null
   _max: ReferralMaxAggregateOutputType | null
 }
@@ -205,6 +282,11 @@ export type ReferralWhereInput = {
   agentMobileEncrypted?: Prisma.StringNullableFilter<"Referral"> | string | null
   agentMobileLast4?: Prisma.StringFilter<"Referral"> | string
   source?: Prisma.EnumReferralSourceFilter<"Referral"> | $Enums.ReferralSource
+  scanLat?: Prisma.FloatNullableFilter<"Referral"> | number | null
+  scanLng?: Prisma.FloatNullableFilter<"Referral"> | number | null
+  scanAccuracyM?: Prisma.IntNullableFilter<"Referral"> | number | null
+  scanAddress?: Prisma.StringNullableFilter<"Referral"> | string | null
+  scanPlaceLabel?: Prisma.StringNullableFilter<"Referral"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Referral"> | Date | string
   referredUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   agentUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
@@ -218,6 +300,11 @@ export type ReferralOrderByWithRelationInput = {
   agentMobileEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   agentMobileLast4?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  scanLat?: Prisma.SortOrderInput | Prisma.SortOrder
+  scanLng?: Prisma.SortOrderInput | Prisma.SortOrder
+  scanAccuracyM?: Prisma.SortOrderInput | Prisma.SortOrder
+  scanAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  scanPlaceLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   referredUser?: Prisma.UserOrderByWithRelationInput
   agentUser?: Prisma.UserOrderByWithRelationInput
@@ -234,6 +321,11 @@ export type ReferralWhereUniqueInput = Prisma.AtLeast<{
   agentMobileEncrypted?: Prisma.StringNullableFilter<"Referral"> | string | null
   agentMobileLast4?: Prisma.StringFilter<"Referral"> | string
   source?: Prisma.EnumReferralSourceFilter<"Referral"> | $Enums.ReferralSource
+  scanLat?: Prisma.FloatNullableFilter<"Referral"> | number | null
+  scanLng?: Prisma.FloatNullableFilter<"Referral"> | number | null
+  scanAccuracyM?: Prisma.IntNullableFilter<"Referral"> | number | null
+  scanAddress?: Prisma.StringNullableFilter<"Referral"> | string | null
+  scanPlaceLabel?: Prisma.StringNullableFilter<"Referral"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Referral"> | Date | string
   referredUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   agentUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
@@ -247,10 +339,17 @@ export type ReferralOrderByWithAggregationInput = {
   agentMobileEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   agentMobileLast4?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  scanLat?: Prisma.SortOrderInput | Prisma.SortOrder
+  scanLng?: Prisma.SortOrderInput | Prisma.SortOrder
+  scanAccuracyM?: Prisma.SortOrderInput | Prisma.SortOrder
+  scanAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  scanPlaceLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ReferralCountOrderByAggregateInput
+  _avg?: Prisma.ReferralAvgOrderByAggregateInput
   _max?: Prisma.ReferralMaxOrderByAggregateInput
   _min?: Prisma.ReferralMinOrderByAggregateInput
+  _sum?: Prisma.ReferralSumOrderByAggregateInput
 }
 
 export type ReferralScalarWhereWithAggregatesInput = {
@@ -264,6 +363,11 @@ export type ReferralScalarWhereWithAggregatesInput = {
   agentMobileEncrypted?: Prisma.StringNullableWithAggregatesFilter<"Referral"> | string | null
   agentMobileLast4?: Prisma.StringWithAggregatesFilter<"Referral"> | string
   source?: Prisma.EnumReferralSourceWithAggregatesFilter<"Referral"> | $Enums.ReferralSource
+  scanLat?: Prisma.FloatNullableWithAggregatesFilter<"Referral"> | number | null
+  scanLng?: Prisma.FloatNullableWithAggregatesFilter<"Referral"> | number | null
+  scanAccuracyM?: Prisma.IntNullableWithAggregatesFilter<"Referral"> | number | null
+  scanAddress?: Prisma.StringNullableWithAggregatesFilter<"Referral"> | string | null
+  scanPlaceLabel?: Prisma.StringNullableWithAggregatesFilter<"Referral"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Referral"> | Date | string
 }
 
@@ -273,6 +377,11 @@ export type ReferralCreateInput = {
   agentMobileEncrypted?: string | null
   agentMobileLast4: string
   source: $Enums.ReferralSource
+  scanLat?: number | null
+  scanLng?: number | null
+  scanAccuracyM?: number | null
+  scanAddress?: string | null
+  scanPlaceLabel?: string | null
   createdAt?: Date | string
   referredUser: Prisma.UserCreateNestedOneWithoutReferredByInput
   agentUser?: Prisma.UserCreateNestedOneWithoutReferralsMadeInput
@@ -286,6 +395,11 @@ export type ReferralUncheckedCreateInput = {
   agentMobileEncrypted?: string | null
   agentMobileLast4: string
   source: $Enums.ReferralSource
+  scanLat?: number | null
+  scanLng?: number | null
+  scanAccuracyM?: number | null
+  scanAddress?: string | null
+  scanPlaceLabel?: string | null
   createdAt?: Date | string
 }
 
@@ -295,6 +409,11 @@ export type ReferralUpdateInput = {
   agentMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   agentMobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.EnumReferralSourceFieldUpdateOperationsInput | $Enums.ReferralSource
+  scanLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanAccuracyM?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scanAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scanPlaceLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   referredUser?: Prisma.UserUpdateOneRequiredWithoutReferredByNestedInput
   agentUser?: Prisma.UserUpdateOneWithoutReferralsMadeNestedInput
@@ -308,6 +427,11 @@ export type ReferralUncheckedUpdateInput = {
   agentMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   agentMobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.EnumReferralSourceFieldUpdateOperationsInput | $Enums.ReferralSource
+  scanLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanAccuracyM?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scanAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scanPlaceLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -319,6 +443,11 @@ export type ReferralCreateManyInput = {
   agentMobileEncrypted?: string | null
   agentMobileLast4: string
   source: $Enums.ReferralSource
+  scanLat?: number | null
+  scanLng?: number | null
+  scanAccuracyM?: number | null
+  scanAddress?: string | null
+  scanPlaceLabel?: string | null
   createdAt?: Date | string
 }
 
@@ -328,6 +457,11 @@ export type ReferralUpdateManyMutationInput = {
   agentMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   agentMobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.EnumReferralSourceFieldUpdateOperationsInput | $Enums.ReferralSource
+  scanLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanAccuracyM?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scanAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scanPlaceLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -339,6 +473,11 @@ export type ReferralUncheckedUpdateManyInput = {
   agentMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   agentMobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.EnumReferralSourceFieldUpdateOperationsInput | $Enums.ReferralSource
+  scanLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanAccuracyM?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scanAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scanPlaceLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -365,7 +504,18 @@ export type ReferralCountOrderByAggregateInput = {
   agentMobileEncrypted?: Prisma.SortOrder
   agentMobileLast4?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  scanLat?: Prisma.SortOrder
+  scanLng?: Prisma.SortOrder
+  scanAccuracyM?: Prisma.SortOrder
+  scanAddress?: Prisma.SortOrder
+  scanPlaceLabel?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type ReferralAvgOrderByAggregateInput = {
+  scanLat?: Prisma.SortOrder
+  scanLng?: Prisma.SortOrder
+  scanAccuracyM?: Prisma.SortOrder
 }
 
 export type ReferralMaxOrderByAggregateInput = {
@@ -376,6 +526,11 @@ export type ReferralMaxOrderByAggregateInput = {
   agentMobileEncrypted?: Prisma.SortOrder
   agentMobileLast4?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  scanLat?: Prisma.SortOrder
+  scanLng?: Prisma.SortOrder
+  scanAccuracyM?: Prisma.SortOrder
+  scanAddress?: Prisma.SortOrder
+  scanPlaceLabel?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -387,7 +542,18 @@ export type ReferralMinOrderByAggregateInput = {
   agentMobileEncrypted?: Prisma.SortOrder
   agentMobileLast4?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  scanLat?: Prisma.SortOrder
+  scanLng?: Prisma.SortOrder
+  scanAccuracyM?: Prisma.SortOrder
+  scanAddress?: Prisma.SortOrder
+  scanPlaceLabel?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type ReferralSumOrderByAggregateInput = {
+  scanLat?: Prisma.SortOrder
+  scanLng?: Prisma.SortOrder
+  scanAccuracyM?: Prisma.SortOrder
 }
 
 export type ReferralCreateNestedOneWithoutReferredUserInput = {
@@ -468,12 +634,33 @@ export type EnumReferralSourceFieldUpdateOperationsInput = {
   set?: $Enums.ReferralSource
 }
 
+export type NullableFloatFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type ReferralCreateWithoutReferredUserInput = {
   id?: string
   agentMobileHash: string
   agentMobileEncrypted?: string | null
   agentMobileLast4: string
   source: $Enums.ReferralSource
+  scanLat?: number | null
+  scanLng?: number | null
+  scanAccuracyM?: number | null
+  scanAddress?: string | null
+  scanPlaceLabel?: string | null
   createdAt?: Date | string
   agentUser?: Prisma.UserCreateNestedOneWithoutReferralsMadeInput
 }
@@ -485,6 +672,11 @@ export type ReferralUncheckedCreateWithoutReferredUserInput = {
   agentMobileEncrypted?: string | null
   agentMobileLast4: string
   source: $Enums.ReferralSource
+  scanLat?: number | null
+  scanLng?: number | null
+  scanAccuracyM?: number | null
+  scanAddress?: string | null
+  scanPlaceLabel?: string | null
   createdAt?: Date | string
 }
 
@@ -499,6 +691,11 @@ export type ReferralCreateWithoutAgentUserInput = {
   agentMobileEncrypted?: string | null
   agentMobileLast4: string
   source: $Enums.ReferralSource
+  scanLat?: number | null
+  scanLng?: number | null
+  scanAccuracyM?: number | null
+  scanAddress?: string | null
+  scanPlaceLabel?: string | null
   createdAt?: Date | string
   referredUser: Prisma.UserCreateNestedOneWithoutReferredByInput
 }
@@ -510,6 +707,11 @@ export type ReferralUncheckedCreateWithoutAgentUserInput = {
   agentMobileEncrypted?: string | null
   agentMobileLast4: string
   source: $Enums.ReferralSource
+  scanLat?: number | null
+  scanLng?: number | null
+  scanAccuracyM?: number | null
+  scanAddress?: string | null
+  scanPlaceLabel?: string | null
   createdAt?: Date | string
 }
 
@@ -540,6 +742,11 @@ export type ReferralUpdateWithoutReferredUserInput = {
   agentMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   agentMobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.EnumReferralSourceFieldUpdateOperationsInput | $Enums.ReferralSource
+  scanLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanAccuracyM?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scanAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scanPlaceLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   agentUser?: Prisma.UserUpdateOneWithoutReferralsMadeNestedInput
 }
@@ -551,6 +758,11 @@ export type ReferralUncheckedUpdateWithoutReferredUserInput = {
   agentMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   agentMobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.EnumReferralSourceFieldUpdateOperationsInput | $Enums.ReferralSource
+  scanLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanAccuracyM?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scanAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scanPlaceLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -581,6 +793,11 @@ export type ReferralScalarWhereInput = {
   agentMobileEncrypted?: Prisma.StringNullableFilter<"Referral"> | string | null
   agentMobileLast4?: Prisma.StringFilter<"Referral"> | string
   source?: Prisma.EnumReferralSourceFilter<"Referral"> | $Enums.ReferralSource
+  scanLat?: Prisma.FloatNullableFilter<"Referral"> | number | null
+  scanLng?: Prisma.FloatNullableFilter<"Referral"> | number | null
+  scanAccuracyM?: Prisma.IntNullableFilter<"Referral"> | number | null
+  scanAddress?: Prisma.StringNullableFilter<"Referral"> | string | null
+  scanPlaceLabel?: Prisma.StringNullableFilter<"Referral"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Referral"> | Date | string
 }
 
@@ -591,6 +808,11 @@ export type ReferralCreateManyAgentUserInput = {
   agentMobileEncrypted?: string | null
   agentMobileLast4: string
   source: $Enums.ReferralSource
+  scanLat?: number | null
+  scanLng?: number | null
+  scanAccuracyM?: number | null
+  scanAddress?: string | null
+  scanPlaceLabel?: string | null
   createdAt?: Date | string
 }
 
@@ -600,6 +822,11 @@ export type ReferralUpdateWithoutAgentUserInput = {
   agentMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   agentMobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.EnumReferralSourceFieldUpdateOperationsInput | $Enums.ReferralSource
+  scanLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanAccuracyM?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scanAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scanPlaceLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   referredUser?: Prisma.UserUpdateOneRequiredWithoutReferredByNestedInput
 }
@@ -611,6 +838,11 @@ export type ReferralUncheckedUpdateWithoutAgentUserInput = {
   agentMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   agentMobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.EnumReferralSourceFieldUpdateOperationsInput | $Enums.ReferralSource
+  scanLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanAccuracyM?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scanAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scanPlaceLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -621,6 +853,11 @@ export type ReferralUncheckedUpdateManyWithoutAgentUserInput = {
   agentMobileEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   agentMobileLast4?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.EnumReferralSourceFieldUpdateOperationsInput | $Enums.ReferralSource
+  scanLat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scanAccuracyM?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scanAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scanPlaceLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -634,6 +871,11 @@ export type ReferralSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   agentMobileEncrypted?: boolean
   agentMobileLast4?: boolean
   source?: boolean
+  scanLat?: boolean
+  scanLng?: boolean
+  scanAccuracyM?: boolean
+  scanAddress?: boolean
+  scanPlaceLabel?: boolean
   createdAt?: boolean
   referredUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   agentUser?: boolean | Prisma.Referral$agentUserArgs<ExtArgs>
@@ -647,6 +889,11 @@ export type ReferralSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   agentMobileEncrypted?: boolean
   agentMobileLast4?: boolean
   source?: boolean
+  scanLat?: boolean
+  scanLng?: boolean
+  scanAccuracyM?: boolean
+  scanAddress?: boolean
+  scanPlaceLabel?: boolean
   createdAt?: boolean
   referredUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   agentUser?: boolean | Prisma.Referral$agentUserArgs<ExtArgs>
@@ -660,6 +907,11 @@ export type ReferralSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   agentMobileEncrypted?: boolean
   agentMobileLast4?: boolean
   source?: boolean
+  scanLat?: boolean
+  scanLng?: boolean
+  scanAccuracyM?: boolean
+  scanAddress?: boolean
+  scanPlaceLabel?: boolean
   createdAt?: boolean
   referredUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   agentUser?: boolean | Prisma.Referral$agentUserArgs<ExtArgs>
@@ -673,10 +925,15 @@ export type ReferralSelectScalar = {
   agentMobileEncrypted?: boolean
   agentMobileLast4?: boolean
   source?: boolean
+  scanLat?: boolean
+  scanLng?: boolean
+  scanAccuracyM?: boolean
+  scanAddress?: boolean
+  scanPlaceLabel?: boolean
   createdAt?: boolean
 }
 
-export type ReferralOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "referredUserId" | "agentUserId" | "agentMobileHash" | "agentMobileEncrypted" | "agentMobileLast4" | "source" | "createdAt", ExtArgs["result"]["referral"]>
+export type ReferralOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "referredUserId" | "agentUserId" | "agentMobileHash" | "agentMobileEncrypted" | "agentMobileLast4" | "source" | "scanLat" | "scanLng" | "scanAccuracyM" | "scanAddress" | "scanPlaceLabel" | "createdAt", ExtArgs["result"]["referral"]>
 export type ReferralInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   referredUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   agentUser?: boolean | Prisma.Referral$agentUserArgs<ExtArgs>
@@ -704,6 +961,11 @@ export type $ReferralPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     agentMobileEncrypted: string | null
     agentMobileLast4: string
     source: $Enums.ReferralSource
+    scanLat: number | null
+    scanLng: number | null
+    scanAccuracyM: number | null
+    scanAddress: string | null
+    scanPlaceLabel: string | null
     createdAt: Date
   }, ExtArgs["result"]["referral"]>
   composites: {}
@@ -1137,6 +1399,11 @@ export interface ReferralFieldRefs {
   readonly agentMobileEncrypted: Prisma.FieldRef<"Referral", 'String'>
   readonly agentMobileLast4: Prisma.FieldRef<"Referral", 'String'>
   readonly source: Prisma.FieldRef<"Referral", 'ReferralSource'>
+  readonly scanLat: Prisma.FieldRef<"Referral", 'Float'>
+  readonly scanLng: Prisma.FieldRef<"Referral", 'Float'>
+  readonly scanAccuracyM: Prisma.FieldRef<"Referral", 'Int'>
+  readonly scanAddress: Prisma.FieldRef<"Referral", 'String'>
+  readonly scanPlaceLabel: Prisma.FieldRef<"Referral", 'String'>
   readonly createdAt: Prisma.FieldRef<"Referral", 'DateTime'>
 }
     

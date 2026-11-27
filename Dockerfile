@@ -69,6 +69,20 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT+'/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
 CMD ["node", "dist/server.js"]
 
+# ----------------------------------------------------------------- shared ----
+# @relive/shared is a workspace package, not published to npm. The frontend imports it (e.g. the agents admin page)
+# but is built standalone below, so it can't resolve the workspace symlink. This stage builds shared on its own (no
+# Prisma or backend compile), and the frontend stage drops the result into its node_modules.
+FROM ${NODE_IMAGE} AS shared-build
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY shared/package.json shared/
+COPY backend/package.json backend/
+COPY frontend/package.json frontend/
+RUN npm ci -w shared --no-audit --no-fund
+COPY shared shared
+RUN npm run build -w shared
+
 # --------------------------------------------------------------- frontend ----
 
 FROM ${NODE_IMAGE} AS frontend-build
@@ -77,6 +91,10 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json frontend/.npmrc ./
 RUN npm ci --no-audit --no-fund
 COPY frontend ./
+# @relive/shared isn't on npm and this stage installed only frontend/, so place the package built in shared-build into
+# node_modules, where Node and Vite resolve it. Its one dependency (zod) is already a frontend dependency.
+COPY --from=shared-build /app/shared/package.json ./node_modules/@relive/shared/package.json
+COPY --from=shared-build /app/shared/dist ./node_modules/@relive/shared/dist
 # NEXT_PUBLIC_* values are compiled into the browser code, so they are build arguments, not run-time env.
 ARG NEXT_PUBLIC_API_URL=http://localhost:4100/api/v1
 ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY=

@@ -45,6 +45,14 @@ const schema = z.object({
   // OpenAI key for the personalised dashboard summary (prompt: prompts/dashboard-summary.md). Unset = rule-based summary.
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_MODEL: z.string().min(1).default("gpt-5.4-mini"),
+  // Reverse-geocoding for QR scan locations: turns the customer's phone coordinates into a readable address.
+  // GEOCODE_ENABLED=false turns it off (coordinates are still stored). The default endpoint is OpenStreetMap's
+  // Nominatim (free, no key; mind its usage policy). LocationIQ/MapTiler use the same lat/lon/display_name shape:
+  // point GEOCODE_URL at their /reverse endpoint and set GEOCODE_API_KEY. Only coordinates are sent, never user details.
+  GEOCODE_ENABLED: z.enum(["true", "false"]).default("true").transform((value) => value === "true"),
+  GEOCODE_URL: z.string().url().default("https://nominatim.openstreetmap.org/reverse"),
+  GEOCODE_API_KEY: z.string().min(1).optional(),
+  GEOCODE_TIMEOUT_MS: z.coerce.number().int().positive().default(2500), // kept short: saving a referral waits on it
   // Set by the root `npm run dev` (scripts/dev.mjs): in development, sessions from earlier runs are ignored.
   RELIVE_DEV_RUN_STARTED_AT: z.coerce.number().int().positive().optional(),
 }).superRefine((value, ctx) => {

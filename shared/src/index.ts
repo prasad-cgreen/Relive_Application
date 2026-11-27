@@ -21,12 +21,22 @@ export const verifyOtpSchema = z.object({
   otp: z.string().regex(/^\d{6}$/, "Enter the 6-digit OTP"),
 });
 
+// Where a QR code was scanned. `lat`/`lng` come from the customer's phone (optional: they can deny the browser's
+// location prompt). `label` is the place baked into the printed QR (?loc=…), i.e. where we meant to put it: comparing
+// it with the scanned coordinates flags a QR that was copied and moved. All parts are optional and never block signup.
+export const scanLocationSchema = z.object({
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+  accuracy: z.number().nonnegative().max(1_000_000).optional(), // metres, as reported by the browser
+  label: z.string().trim().max(120).optional(),
+}).partial().refine((value) => (value.lat === undefined) === (value.lng === undefined), "lat and lng go together");
+
 // Optional referral, sent with the PAN or the name-as-on-PAN form. Typed: the referrer's mobile number, a company
 // agent's (benefit) or another Relive user's (no benefit). From an agent's QR code: the agent's id, so the link never
 // shows their number (QR codes printed before that carry the number, sent as { mobile, source: "QR" }).
 export const referralSchema = z.union([
-  z.object({ agentId: z.string().uuid(), source: z.literal("QR").default("QR") }),
-  z.object({ mobile: mobileSchema, source: z.enum(["QR", "MANUAL"]).default("MANUAL") }),
+  z.object({ agentId: z.string().uuid(), source: z.literal("QR").default("QR"), location: scanLocationSchema.optional() }),
+  z.object({ mobile: mobileSchema, source: z.enum(["QR", "MANUAL"]).default("MANUAL"), location: scanLocationSchema.optional() }),
 ]);
 
 // A company agent, added on the admin page (/admin/agents). Their mobile number is their referral code.

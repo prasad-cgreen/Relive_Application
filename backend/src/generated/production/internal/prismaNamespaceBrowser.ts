@@ -132,6 +132,11 @@ export const ReferralScalarFieldEnum = {
   agentMobileEncrypted: 'agentMobileEncrypted',
   agentMobileLast4: 'agentMobileLast4',
   source: 'source',
+  scanLat: 'scanLat',
+  scanLng: 'scanLng',
+  scanAccuracyM: 'scanAccuracyM',
+  scanAddress: 'scanAddress',
+  scanPlaceLabel: 'scanPlaceLabel',
   createdAt: 'createdAt'
 } as const
 

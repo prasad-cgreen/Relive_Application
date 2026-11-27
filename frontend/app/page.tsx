@@ -22,7 +22,7 @@ import { OnboardingFlow, type Workflow } from "../components/onboarding-flow";
 import { ResolutionImpact } from "../components/resolution-impact";
 import { preloadTurnstile, Turnstile, TURNSTILE_SITE_KEY, type CaptchaState } from "../components/turnstile";
 import { api, apiErrorCode, apiMessage, apiRetryAfter } from "../lib/api";
-import { rememberQrReferral } from "../lib/referral";
+import { captureScanLocation, rememberQrReferral } from "../lib/referral";
 import { getSession, hasSignedInHint, setSignedInHint, type Session } from "../lib/session";
 
 type LoginStep = "mobile" | "otp" | "onboarding";
@@ -193,6 +193,7 @@ export default function Home() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     rememberQrReferral(params.get("ref")); // an agent's QR code: the agent becomes the locked referrer
+    if (params.has("ref")) captureScanLocation(params); // where this QR was scanned (GPS, optional) + its printed place
     // ?login=1 opens the dialog straight away rather than after the session check below, except in a browser that
     // reached the dashboard: that check sends it on to /portal instead.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the URL is browser-only: reading it while rendering would mismatch the server HTML

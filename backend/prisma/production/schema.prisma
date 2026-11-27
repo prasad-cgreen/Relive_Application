@@ -132,6 +132,13 @@ model Referral {
   agentMobileEncrypted String?        @map("agent_mobile_encrypted")
   agentMobileLast4     String         @map("agent_mobile_last4")
   source               ReferralSource
+  // Where the QR code was scanned. lat/lng are from the customer's phone (null = GPS denied/unavailable); scanAddress
+  // is lat/lng reverse-geocoded to a readable place; scanPlaceLabel is the place printed into the QR (?loc=).
+  scanLat              Float?         @map("scan_lat")
+  scanLng              Float?         @map("scan_lng")
+  scanAccuracyM        Int?           @map("scan_accuracy_m")
+  scanAddress          String?        @map("scan_address")
+  scanPlaceLabel       String?        @map("scan_place_label")
   createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
   referredUser         User           @relation("ReferredUser", fields: [referredUserId], references: [id], onDelete: Cascade)
   agentUser            User?          @relation("ReferrerUser", fields: [agentUserId], references: [id], onDelete: SetNull)

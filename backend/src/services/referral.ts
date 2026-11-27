@@ -5,6 +5,7 @@ import { production } from "../database/clients.js";
 import { decrypt, encrypt, hashMobile } from "../lib/crypto.js";
 import { HttpError } from "../lib/errors.js";
 import { writeAudit } from "./audit.js";
+import { reverseGeocode } from "./geocode.js";
 
 /**
  * An agent's QR code link: the landing page opens the login with the agent locked in as the referrer. It carries the
@@ -44,7 +45,8 @@ export async function listAgents() {
   }));
 }
 
-export type ResolvedReferral = { mobile: string; agentUserId: string | null; isAgent: boolean; source: "QR" | "MANUAL" };
+export type ScanLocation = z.infer<typeof referralSchema>["location"];
+export type ResolvedReferral = { mobile: string; agentUserId: string | null; isAgent: boolean; source: "QR" | "MANUAL"; location?: ScanLocation };
 
 /**
  * Checks a referral code (the referrer's mobile number) before the step that saves it, so a typo is caught before a
@@ -69,7 +71,7 @@ export async function resolveReferral(userId: string, input: z.infer<typeof refe
   ]);
   if (self?.mobileHash === mobileHash) throw new HttpError(422, "REFERRAL_SELF", "You can't use your own mobile number as a referral code");
   if (!agent && !referrer) throw new HttpError(422, "REFERRAL_NOT_FOUND", "We couldn't find this referral number. Check it, or leave the field blank");
-  return { mobile, agentUserId: referrer?.id ?? null, isAgent: Boolean(agent), source: input.source };
+  return { mobile, agentUserId: referrer?.id ?? null, isAgent: Boolean(agent), source: input.source, location: input.location };
 }
 
 /**
@@ -78,15 +80,25 @@ export async function resolveReferral(userId: string, input: z.infer<typeof refe
  */
 export async function saveReferral(userId: string, referral: ResolvedReferral | null, requestId?: string) {
   if (!referral) return;
-  const { mobile, agentUserId, isAgent, source } = referral;
+  const { mobile, agentUserId, isAgent, source, location } = referral;
+  // Scan location (best-effort): coordinates from the customer's phone, the place printed into the QR (label), and the
+  // coordinates reverse-geocoded to a readable address. Geocoding is tolerant — a failure just leaves scanAddress null.
+  const hasCoords = location?.lat !== undefined && location?.lng !== undefined;
+  const scanAddress = hasCoords ? await reverseGeocode(location!.lat!, location!.lng!) : null;
   const { count } = await production.referral.createMany({
     data: [{
       referredUserId: userId, agentUserId, source,
       agentMobileHash: hashMobile(mobile), agentMobileLast4: mobile.slice(-4), agentMobileEncrypted: encrypt(mobile),
+      scanLat: location?.lat ?? null, scanLng: location?.lng ?? null,
+      scanAccuracyM: location?.accuracy !== undefined ? Math.round(location.accuracy) : null,
+      scanAddress, scanPlaceLabel: location?.label ?? null,
     }],
     skipDuplicates: true,
   });
   if (count) {
-    await writeAudit({ eventType: "REFERRAL_SAVED", userRef: userId, status: "SUCCESS", requestId, metadata: { source, agent: isAgent, referrerLast4: mobile.slice(-4) } });
+    await writeAudit({
+      eventType: "REFERRAL_SAVED", userRef: userId, status: "SUCCESS", requestId,
+      metadata: { source, agent: isAgent, referrerLast4: mobile.slice(-4), scanned: hasCoords, scanLabel: location?.label ?? null },
+    });
   }
 }

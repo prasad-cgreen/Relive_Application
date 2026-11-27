@@ -1628,6 +1628,11 @@ export const ReferralScalarFieldEnum = {
   agentMobileEncrypted: 'agentMobileEncrypted',
   agentMobileLast4: 'agentMobileLast4',
   source: 'source',
+  scanLat: 'scanLat',
+  scanLng: 'scanLng',
+  scanAccuracyM: 'scanAccuracyM',
+  scanAddress: 'scanAddress',
+  scanPlaceLabel: 'scanPlaceLabel',
   createdAt: 'createdAt'
 } as const
 
@@ -1922,6 +1927,20 @@ export type ListEnumReferralSourceFieldRefInput<$PrismaModel> = FieldRefInputTyp
 
 
 /**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+/**
  * Reference to a field of type 'ProfileSource'
  */
 export type EnumProfileSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProfileSource'>
@@ -2086,20 +2105,6 @@ export type EnumSupportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'SupportStatus[]'
  */
 export type ListEnumSupportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-/**
- * Reference to a field of type 'Float[]'
- */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
