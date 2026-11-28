@@ -74,6 +74,8 @@ export function OnboardingFlow({ initial, onComplete }: { initial: Workflow; onC
   const [referralLocked, setReferralLocked] = useState(() => referral !== "");
   // The number shown in the locked field: the QR link carries the agent's id, so their number is fetched here.
   const [qrMobile, setQrMobile] = useState(() => (isReferralMobile(referral) ? referral : ""));
+  // The referrer's (agent's) name, fetched alongside their number for the "Referred by …" line under the field.
+  const [referrerName, setReferrerName] = useState("");
   // What was last typed in the PAN / details forms: they are replaced by a spinner while saving, so after an error
   // (e.g. a referral number not found) they come back with the user's input instead of empty.
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -93,8 +95,12 @@ export function OnboardingFlow({ initial, onComplete }: { initial: Workflow; onC
   useEffect(() => {
     if (!referralLocked || !isAgentId(referral)) return;
     let current = true;
-    api.get<{ mobile: string }>(`/referral/agents/${referral}`)
-      .then(({ data }) => current && setQrMobile(data.mobile))
+    api.get<{ mobile: string; name: string }>(`/referral/agents/${referral}`)
+      .then(({ data }) => {
+        if (!current) return;
+        setQrMobile(data.mobile);
+        setReferrerName(data.name);
+      })
       .catch((requestError) => current && apiErrorCode(requestError) === "REFERRAL_NOT_FOUND" && showError(requestError));
     return () => { current = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once, for the QR code this tab opened with
@@ -189,6 +195,11 @@ export function OnboardingFlow({ initial, onComplete }: { initial: Workflow; onC
         />
         {referralLocked && <Lock className="mr-3 size-4 shrink-0 text-[#71867a]" aria-label="Locked" />}
       </div>
+      {referralLocked && referrerName && (
+        <p className="mt-1.5 text-xs font-semibold text-[#216b49] dark:text-emerald-400">
+          Referred by {referrerName}
+        </p>
+      )}
       <p id="referral-help" className="mt-1 text-[11px] text-[#71867a] dark:text-[#8ba295]">
         {referralLocked ? "Added from the QR code you scanned." : "Were you referred? Enter their mobile number."}
       </p>

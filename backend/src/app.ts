@@ -360,9 +360,9 @@ app.get("/api/v1/credit/insight", requireAuth, async (req, res) => {
 // An agent's QR link carries their id, not their number; onboarding shows the number once the user has signed in.
 app.get("/api/v1/referral/agents/:id", requireAuth, async (req, res) => {
   const id = z.string().uuid().safeParse(req.params.id);
-  const agent = id.success ? await production.agent.findFirst({ where: { id: id.data, active: true }, select: { mobileEncrypted: true } }) : null;
+  const agent = id.success ? await production.agent.findFirst({ where: { id: id.data, active: true }, select: { name: true, mobileEncrypted: true } }) : null;
   if (!agent) throw new HttpError(404, "REFERRAL_NOT_FOUND", "This QR code is no longer active. Enter a referrer's number, or leave the field blank");
-  res.json({ mobile: decrypt(agent.mobileEncrypted) });
+  res.json({ mobile: decrypt(agent.mobileEncrypted), name: agent.name });
 });
 
 app.post("/api/v1/profile/manual", requireAuth, sensitiveLimiter, async (req, res) => {
