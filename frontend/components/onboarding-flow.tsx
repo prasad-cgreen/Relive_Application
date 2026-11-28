@@ -196,8 +196,8 @@ export function OnboardingFlow({ initial, onComplete }: { initial: Workflow; onC
         {referralLocked && <Lock className="mr-3 size-4 shrink-0 text-[#71867a]" aria-label="Locked" />}
       </div>
       {referralLocked && referrerName && (
-        <p className="mt-1.5 text-xs font-semibold text-[#216b49] dark:text-emerald-400">
-          Referred by {referrerName}
+        <p className="mt-1.5 text-xs text-[#07130c] dark:text-[#e1e9e4]">
+          Referred by: <span className="font-bold text-[#216b49] dark:text-emerald-400">{referrerName}</span>
         </p>
       )}
       <p id="referral-help" className="mt-1 text-[11px] text-[#71867a] dark:text-[#8ba295]">
